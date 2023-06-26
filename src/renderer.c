@@ -33,7 +33,7 @@ static struct { int left, top, right, bottom; } clip;
 static void* check_alloc(void *ptr) {
   if (!ptr) {
     fprintf(stderr, "Fatal error: memory allocation failed\n");
-    exit(EXIT_FAILURE);
+    exit(-1);
   }
   return ptr;
 }

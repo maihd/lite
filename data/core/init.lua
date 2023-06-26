@@ -177,6 +177,8 @@ function core.load_plugins()
   local files = system.list_dir(EXEDIR .. "/data/plugins")
   for _, filename in ipairs(files) do
     local modname = "plugins." .. filename:gsub(".lua$", "")
+    print("Load plugin: " .. modname)
+    print("Load plugin filename: " .. filename)
     local ok = core.try(require, modname)
     if ok then
       core.log_quiet("Loaded plugin %q", modname)
@@ -230,7 +232,7 @@ end
 
 
 function core.push_clip_rect(x, y, w, h)
-  local x2, y2, w2, h2 = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
+  local x2, y2, w2, h2 = unpack(core.clip_rect_stack[#core.clip_rect_stack])
   local r, b, r2, b2 = x+w, y+h, x2+w2, y2+h2
   x, y = math.max(x, x2), math.max(y, y2)
   b, r = math.min(b, b2), math.min(r, r2)
@@ -242,7 +244,7 @@ end
 
 function core.pop_clip_rect()
   table.remove(core.clip_rect_stack)
-  local x, y, w, h = table.unpack(core.clip_rect_stack[#core.clip_rect_stack])
+  local x, y, w, h = unpack(core.clip_rect_stack[#core.clip_rect_stack])
   renderer.set_clip_rect(x, y, w, h)
 end
 
@@ -299,7 +301,8 @@ end
 
 
 function core.log_quiet(...)
-  return log(nil, nil, ...)
+  return log("!", style.text, ...)
+  -- return log(nil, nil, ...)
 end
 
 
@@ -409,7 +412,7 @@ function core.step()
   -- draw
   renderer.begin_frame()
   core.clip_rect_stack[1] = { 0, 0, width, height }
-  renderer.set_clip_rect(table.unpack(core.clip_rect_stack[1]))
+  renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
   core.root_view:draw()
   renderer.end_frame()
   return true

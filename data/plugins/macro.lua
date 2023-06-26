@@ -54,7 +54,7 @@ command.add(predicate, {
     local mk = keymap.modkeys
     keymap.modkeys = clone(modkeys)
     for _, ev in ipairs(event_buffer) do
-      on_event(table.unpack(ev))
+      on_event(unpack(ev))
       core.root_view:update()
     end
     keymap.modkeys = mk

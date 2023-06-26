@@ -244,7 +244,7 @@ function DocView:on_mouse_moved(x, y, ...)
 
   if self.mouse_selecting then
     local l1, c1 = self:resolve_screen_position(x, y)
-    local l2, c2 = table.unpack(self.mouse_selecting)
+    local l2, c2 = unpack(self.mouse_selecting)
     local clicks = self.mouse_selecting.clicks
     self.doc:set_selection(mouse_selection(self.doc, clicks, l1, c1, l2, c2))
   end

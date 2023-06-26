@@ -28,7 +28,7 @@ static double get_scale(void) {
 
 static void get_exe_filename(char *buf, int sz) {
 #if _WIN32
-  int len = GetModuleFileName(NULL, buf, sz - 1);
+  int len = GetModuleFileNameA(NULL, buf, sz - 1);
   buf[len] = '\0';
 #elif __linux__
   char path[512];
@@ -62,10 +62,19 @@ static void init_window_icon(void) {
 
 
 int main(int argc, char **argv) {
+#ifndef NDEBUG
+    AllocConsole();
+    freopen("CONIN$", "r", stdin);
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+#endif
+
 #ifdef _WIN32
-  HINSTANCE lib = LoadLibrary("user32.dll");
-  int (*SetProcessDPIAware)() = (void*) GetProcAddress(lib, "SetProcessDPIAware");
-  SetProcessDPIAware();
+  HINSTANCE lib = LoadLibraryA("user32.dll");
+  int (*SetProcessDPIAware)() = (void*)GetProcAddress(lib, "SetProcessDPIAware");
+  if (SetProcessDPIAware != NULL) {
+    SetProcessDPIAware();
+  }
 #endif
 
   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
@@ -84,7 +93,7 @@ int main(int argc, char **argv) {
   SDL_GetCurrentDisplayMode(0, &dm);
 
   window = SDL_CreateWindow(
-    "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dm.w * 0.8, dm.h * 0.8,
+    "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8), (int)(dm.h * 0.8),
     SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
   init_window_icon();
   ren_init(window);
@@ -113,11 +122,11 @@ int main(int argc, char **argv) {
 
   char exename[2048];
   get_exe_filename(exename, sizeof(exename));
+
   lua_pushstring(L, exename);
   lua_setglobal(L, "EXEFILE");
 
-
-  (void) luaL_dostring(L,
+  int errcode = luaL_dostring(L,
     "local core\n"
     "xpcall(function()\n"
     "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
@@ -134,9 +143,9 @@ int main(int argc, char **argv) {
     "  if core and core.on_error then\n"
     "    pcall(core.on_error, err)\n"
     "  end\n"
-    "  os.exit(1)\n"
+    //"  os.exit(1)\n"
     "end)");
-
+(void)errcode;
 
   lua_close(L);
   SDL_DestroyWindow(window);

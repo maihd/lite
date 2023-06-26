@@ -65,7 +65,7 @@ end
 
 
 function ResultsView:refresh()
-  self:begin_search(table.unpack(self.search_args))
+  self:begin_search(unpack(self.search_args))
 end
 
 

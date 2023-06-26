@@ -241,11 +241,11 @@ local function pop_undo(self, undo_stack, redo_stack)
 
   -- handle command
   if cmd.type == "insert" then
-    local line, col, text = table.unpack(cmd)
+    local line, col, text = unpack(cmd)
     self:raw_insert(line, col, text, redo_stack, cmd.time)
 
   elseif cmd.type == "remove" then
-    local line1, col1, line2, col2 = table.unpack(cmd)
+    local line1, col1, line2, col2 = unpack(cmd)
     self:raw_remove(line1, col1, line2, col2, redo_stack, cmd.time)
 
   elseif cmd.type == "selection" then

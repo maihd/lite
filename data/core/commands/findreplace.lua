@@ -32,7 +32,7 @@ end
 local function find(label, search_fn)
   local dv = core.active_view
   local sel = { dv.doc:get_selection() }
-  local text = dv.doc:get_text(table.unpack(sel))
+  local text = dv.doc:get_text(unpack(sel))
   local found = false
 
   core.command_view:set_text(text, true)
@@ -44,7 +44,7 @@ local function find(label, search_fn)
       push_previous_find(dv.doc, sel)
     else
       core.error("Couldn't find %q", text)
-      dv.doc:set_selection(table.unpack(sel))
+      dv.doc:set_selection(unpack(sel))
       dv:scroll_to_make_visible(sel[1], sel[2])
     end
 
@@ -55,13 +55,13 @@ local function find(label, search_fn)
       dv:scroll_to_line(line2, true)
       found = true
     else
-      dv.doc:set_selection(table.unpack(sel))
+      dv.doc:set_selection(unpack(sel))
       found = false
     end
 
   end, function(explicit)
     if explicit then
-      dv.doc:set_selection(table.unpack(sel))
+      dv.doc:set_selection(unpack(sel))
       dv:scroll_to_make_visible(sel[1], sel[2])
     end
   end)
@@ -134,7 +134,7 @@ command.add("core.docview", {
       core.error("No previous finds")
       return
     end
-    doc():set_selection(table.unpack(sel))
+    doc():set_selection(unpack(sel))
     core.active_view:scroll_to_line(sel[3], true)
   end,
 

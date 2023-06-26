@@ -1,0 +1,7 @@
+*.o
+*.exe
+*.a
+
+src/host/*.o
+src/host/*.exe
+src/host/*.a

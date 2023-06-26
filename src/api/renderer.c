@@ -12,10 +12,10 @@ static RenColor checkcolor(lua_State *L, int idx, int def) {
   lua_rawgeti(L, idx, 2);
   lua_rawgeti(L, idx, 3);
   lua_rawgeti(L, idx, 4);
-  color.r = luaL_checknumber(L, -4);
-  color.g = luaL_checknumber(L, -3);
-  color.b = luaL_checknumber(L, -2);
-  color.a = luaL_optnumber(L, -1, 255);
+  color.r = (uint8_t)luaL_checknumber(L, -4);
+  color.g = (uint8_t)luaL_checknumber(L, -3);
+  color.b = (uint8_t)luaL_checknumber(L, -2);
+  color.a = (uint8_t)luaL_optnumber(L, -1, 255);
   lua_pop(L, 4);
   return color;
 }
@@ -51,10 +51,10 @@ static int f_end_frame(lua_State *L) {
 
 static int f_set_clip_rect(lua_State *L) {
   RenRect rect;
-  rect.x = luaL_checknumber(L, 1);
-  rect.y = luaL_checknumber(L, 2);
-  rect.width = luaL_checknumber(L, 3);
-  rect.height = luaL_checknumber(L, 4);
+  rect.x = (int)luaL_checknumber(L, 1);
+  rect.y = (int)luaL_checknumber(L, 2);
+  rect.width = (int)luaL_checknumber(L, 3);
+  rect.height = (int)luaL_checknumber(L, 4);
   rencache_set_clip_rect(rect);
   return 0;
 }
@@ -62,10 +62,10 @@ static int f_set_clip_rect(lua_State *L) {
 
 static int f_draw_rect(lua_State *L) {
   RenRect rect;
-  rect.x = luaL_checknumber(L, 1);
-  rect.y = luaL_checknumber(L, 2);
-  rect.width = luaL_checknumber(L, 3);
-  rect.height = luaL_checknumber(L, 4);
+  rect.x = (int)luaL_checknumber(L, 1);
+  rect.y = (int)luaL_checknumber(L, 2);
+  rect.width = (int)luaL_checknumber(L, 3);
+  rect.height = (int)luaL_checknumber(L, 4);
   RenColor color = checkcolor(L, 5, 255);
   rencache_draw_rect(rect, color);
   return 0;

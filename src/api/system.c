@@ -1,14 +1,18 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include <dirent.h>
-#include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include "api.h"
+#include <stdio.h>
 #include "rencache.h"
+
 #ifdef _WIN32
-  #include <windows.h>
+    #define chdir _chdir
+    #include <windows.h>
+#else
+    #include <dirent.h>
+    #include <unistd.h>
 #endif
 
 extern SDL_Window *window;
@@ -74,8 +78,8 @@ top:
       SDL_GetWindowPosition(window, &wx, &wy);
       lua_pushstring(L, "filedropped");
       lua_pushstring(L, e.drop.file);
-      lua_pushnumber(L, mx - wx);
-      lua_pushnumber(L, my - wy);
+      lua_pushnumber(L, (lua_Number)mx - (lua_Number)wx);
+      lua_pushnumber(L, (lua_Number)my - (lua_Number)wy);
       SDL_free(e.drop.file);
       return 4;
 
@@ -134,7 +138,7 @@ top:
 
 static int f_wait_event(lua_State *L) {
   double n = luaL_checknumber(L, 1);
-  lua_pushboolean(L, SDL_WaitEventTimeout(NULL, n * 1000));
+  lua_pushboolean(L, SDL_WaitEventTimeout(NULL, (int)(n * 1000)));
   return 1;
 }
 
@@ -203,7 +207,7 @@ static int f_show_confirm_dialog(lua_State *L) {
   const char *msg = luaL_checkstring(L, 2);
 
 #if _WIN32
-  int id = MessageBox(0, msg, title, MB_YESNO | MB_ICONWARNING);
+  int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
   lua_pushboolean(L, id == IDYES);
 
 #else
@@ -227,8 +231,13 @@ static int f_show_confirm_dialog(lua_State *L) {
 
 static int f_chdir(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
+  #if _WIN32
+  BOOL err = SetCurrentDirectoryA(path);
+  if (!err) { luaL_error(L, "SetCurrentDirectory() failed"); }
+  #else
   int err = chdir(path);
   if (err) { luaL_error(L, "chdir() failed"); }
+  #endif
   return 0;
 }
 
@@ -236,25 +245,67 @@ static int f_chdir(lua_State *L) {
 static int f_list_dir(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
 
-  DIR *dir = opendir(path);
-  if (!dir) {
+#if _WIN32
+    char path_to_readdir[1024];
+    sprintf(path_to_readdir, "%s\\*", path);
+
+    WIN32_FIND_DATAA ffd;
+    HANDLE hFind = FindFirstFileA(path_to_readdir, &ffd);
+  if (INVALID_HANDLE_VALUE == hFind) {
+      DWORD dw = GetLastError();
+
+      char lpMsgBuf[1024];
+      FormatMessageA(
+          FORMAT_MESSAGE_ALLOCATE_BUFFER |
+          FORMAT_MESSAGE_FROM_SYSTEM |
+          FORMAT_MESSAGE_IGNORE_INSERTS,
+          NULL,
+          dw,
+          MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+          lpMsgBuf,
+          sizeof(lpMsgBuf), 
+          NULL);
+
     lua_pushnil(L);
-    lua_pushstring(L, strerror(errno));
+    lua_pushstring(L, lpMsgBuf);
     return 2;
   }
 
   lua_newtable(L);
-  int i = 1;
-  struct dirent *entry;
-  while ( (entry = readdir(dir)) ) {
-    if (strcmp(entry->d_name, "." ) == 0) { continue; }
-    if (strcmp(entry->d_name, "..") == 0) { continue; }
-    lua_pushstring(L, entry->d_name);
+  int i = 1; 
+  do
+  {
+    if (strcmp(ffd.cFileName, "." ) == 0) { continue; }
+    if (strcmp(ffd.cFileName, "..") == 0) { continue; }
+    lua_pushstring(L, ffd.cFileName);
     lua_rawseti(L, -2, i);
     i++;
   }
+  while (FindNextFileA(hFind, &ffd) != 0);
+
+  FindClose(hFind);
+#else
+  DIR* dir = opendir(path);
+  if (!dir) {
+      lua_pushnil(L);
+      lua_pushstring(L, strerror(errno));
+      return 2;
+  }
+
+  lua_newtable(L);
+  int i = 1;
+  struct dirent* entry;
+  while ((entry = readdir(dir))) {
+      if (strcmp(entry->d_name, ".") == 0) { continue; }
+      if (strcmp(entry->d_name, "..") == 0) { continue; }
+      lua_pushstring(L, entry->d_name);
+      lua_rawseti(L, -2, i);
+      i++;
+  }
 
   closedir(dir);
+#endif
+
   return 1;
 }
 
@@ -262,6 +313,14 @@ static int f_list_dir(lua_State *L) {
 #ifdef _WIN32
   #include <windows.h>
   #define realpath(x, y) _fullpath(y, x, MAX_PATH)
+#endif
+
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 static int f_absolute_path(lua_State *L) {
@@ -286,7 +345,7 @@ static int f_get_file_info(lua_State *L) {
   }
 
   lua_newtable(L);
-  lua_pushnumber(L, s.st_mtime);
+  lua_pushnumber(L, (lua_Number)s.st_mtime);
   lua_setfield(L, -2, "modified");
 
   lua_pushnumber(L, s.st_size);
@@ -330,7 +389,7 @@ static int f_get_time(lua_State *L) {
 
 static int f_sleep(lua_State *L) {
   double n = luaL_checknumber(L, 1);
-  SDL_Delay(n * 1000);
+  SDL_Delay((Uint32)(n * 1000));
   return 0;
 }
 
@@ -339,10 +398,11 @@ static int f_exec(lua_State *L) {
   size_t len;
   const char *cmd = luaL_checklstring(L, 1, &len);
   char *buf = malloc(len + 32);
-  if (!buf) { luaL_error(L, "buffer allocation failed"); }
+  if (!buf) { luaL_error(L, "buffer allocation failed"); return 0; }
 #if _WIN32
   sprintf(buf, "cmd /c \"%s\"", cmd);
-  WinExec(buf, SW_HIDE);
+  //WinExec(buf, SW_HIDE);
+  system(buf);
 #else
   sprintf(buf, "%s &", cmd);
   int res = system(buf);
@@ -374,7 +434,7 @@ static int f_fuzzy_match(lua_State *L) {
   }
   if (*ptn) { return 0; }
 
-  lua_pushnumber(L, score - (int) strlen(str));
+  lua_pushnumber(L, (lua_Number)score - (lua_Number)strlen(str));
   return 1;
 }
 
