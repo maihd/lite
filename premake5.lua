@@ -8,8 +8,6 @@ do
     language "C"
     location (PROJECT_DIR)
 
-    targetdir (BUILD_DIR)
-
     configurations { "Debug", "Release" }
     platforms { "x86", "x64" }
 
@@ -52,11 +50,26 @@ do
         path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/include"),
     }
 
+    filter { "configurations:Debug" }
+    do
+        targetdir (BUILD_DIR)
+
+        postbuildcommands {
+            "xcopy \"" .. path.join(ROOT_DIR, "data") .. "\" \"$(OutDir)\\data\" /D /E /I /F /Y",
+        }
+
+        filter {}
+    end
+
     filter { "configurations:Release" }
     do
+        targetdir (ROOT_DIR)
+
         defines {
             "NDEBUG"
         }
+
+        filter {}
     end
 
     filter { "system:windows" }
@@ -94,10 +107,6 @@ do
 
         filter {}
     end
-
-    postbuildcommands {
-        "xcopy \"" .. path.join(ROOT_DIR, "data") .. "\" \"$(OutDir)\\data\" /D /E /I /F /Y",
-    }
 
     filter {}
 end

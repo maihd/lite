@@ -29,6 +29,7 @@ local function project_scan_thread()
 
   local function get_files(path, t)
     coroutine.yield()
+
     t = t or {}
     local size_limit = config.file_size_limit * 10e5
     local all = system.list_dir(path) or {}

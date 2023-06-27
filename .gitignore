@@ -1,2 +1,12 @@
-build
-project
+lite.exe
+lite.exp
+lite.pdb
+
+sdl2.dll
+lua51.dll
+
+error.txt
+
+/build
+/project
+

@@ -1,0 +1,61 @@
+---
+IndentWidth: 4
+UseTab: Never
+InsertNewlineAtEOF: true
+#KeepEmptyLinesAtEOF: true
+#InsertTrailingCommas: Wrapped
+IntegerLiteralSeparator:
+  Binary: 0
+  Decimal: 3
+  Hex: -1
+---
+Language: Cpp
+ColumnLimit: 100
+DerivePointerAlignment: false
+PointerAlignment: Left
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignEscapedNewlines: Right
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: Always
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: MultiLine
+AttributeMacros: []
+BitFieldColonSpacing: Both
+BreakBeforeBraces: Allman
+IndentCaseLabels: false
+InsertBraces: true
+#BraceWrappingAfterControlStatementStyle: Always
+#BreakBeforeBraces: Custom
+#BraceWrapping:
+#  AfterCaseLabel: true
+#  AfterClass: true
+#  AfterEnum: true
+#  AfterUnion: true
+#  AfterStruct: true
+#  AfterFunction: true
+#  AfterNamespace: true
+#  AfterExternBlock: false
+#  BeforeElse: true
+#  BeforeLambdaBody: false
+#  IndentBraces: true
+#  SplitEmptyFunction: true
+#  SplitEmptyRecord: true
+#  SplitEmptyNamespace: true
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+  AlignCompound: true
+  PadOperators: true
+CompactNamespaces: false
