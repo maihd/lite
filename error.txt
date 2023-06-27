@@ -1,0 +1,1 @@
+Error: D:\Projects\lite/data/core/init.lua:99: attempt to get length of a nil value

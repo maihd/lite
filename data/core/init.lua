@@ -90,11 +90,13 @@ function core.init()
     if info.type == "file" then
       table.insert(files, system.absolute_path(ARGS[i]))
     elseif info.type == "dir" then
-      project_dir = ARGS[i]
+      project_dir = system.absolute_path(ARGS[i])
     end
   end
 
   system.chdir(project_dir)
+  core.project_dir = project_dir
+  core.project_dir_name = project_dir:sub(#project_dir:match("(.*[/\\])") + 1)
 
   core.frame_start = 0
   core.clip_rect_stack = {{ 0,0,0,0 }}
@@ -404,7 +406,8 @@ function core.step()
 
   -- update window title
   local name = core.active_view:get_name()
-  local title = (name ~= "---") and (name .. " - lite") or  "lite"
+  local title_root = core.project_dir_name .. " - lite"
+  local title = (name ~= "---") and (name .. " - " .. title_root) or title_root
   if title ~= core.window_title then
     system.set_window_title(title)
     core.window_title = title
