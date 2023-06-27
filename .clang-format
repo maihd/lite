@@ -5,8 +5,10 @@ InsertNewlineAtEOF: true
 #KeepEmptyLinesAtEOF: true
 #InsertTrailingCommas: Wrapped
 IntegerLiteralSeparator:
-  Binary: 0
+  Binary: -1
   Decimal: 3
+  DecimalMinDigits: 7
+  HexMinDigits: 9
   Hex: -1
 ---
 Language: Cpp

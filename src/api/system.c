@@ -149,7 +149,7 @@ top:
 static int f_wait_event(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
-    lua_pushboolean(L, SDL_WaitEventTimeout(NULL, (int)(n * 1'000)));
+    lua_pushboolean(L, SDL_WaitEventTimeout(NULL, (int)(n * 1000)));
     return 1;
 }
 
@@ -263,7 +263,7 @@ static int f_list_dir(lua_State* L)
     const char* path = luaL_checkstring(L, 1);
 
 #if _WIN32
-    char path_to_readdir[1'024];
+    char path_to_readdir[1024];
     sprintf(path_to_readdir, "%s\\*", path);
 
     WIN32_FIND_DATAA ffd;
@@ -272,7 +272,7 @@ static int f_list_dir(lua_State* L)
     {
         DWORD dw = GetLastError();
 
-        char lpMsgBuf[1'024];
+        char lpMsgBuf[1024];
         FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                            FORMAT_MESSAGE_IGNORE_INSERTS,
                        NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
@@ -425,7 +425,7 @@ static int f_get_time(lua_State* L)
 static int f_sleep(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
-    SDL_Delay((Uint32)(n * 1'000));
+    SDL_Delay((Uint32)(n * 1000));
     return 0;
 }
 

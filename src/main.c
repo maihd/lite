@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     lua_pushnumber(L, get_scale());
     lua_setglobal(L, "SCALE");
 
-    char exename[2'048];
+    char exename[2048];
     get_exe_filename(exename, sizeof(exename));
 
     lua_pushstring(L, exename);
