@@ -1,12 +1,15 @@
 #include "api.h"
 
+#define __static_assert(cond) ((void)(int[(cond) ? 1 : -1]){0})
+#define __count_of(array)                                                                          \
+    (__static_assert(sizeof(array) >= sizeof(array[0])), (sizeof(array) / sizeof(array[0])))
+
 int luaopen_system(lua_State* L);
 int luaopen_renderer(lua_State* L);
 
 static const luaL_Reg libs[] = {
     {"system",   luaopen_system  },
     {"renderer", luaopen_renderer},
-    {NULL,       NULL            }
 };
 
 static int lua_absindex(lua_State* L, int i)
@@ -62,7 +65,7 @@ static void luaL_requiref(lua_State* L, const char* modname, lua_CFunction openf
 
 void api_load_libs(lua_State* L)
 {
-    for (int i = 0; libs[i].name; i++)
+    for (int i = 0; i < __count_of(libs); i++)
     {
         luaL_requiref(L, libs[i].name, libs[i].func, 1);
     }

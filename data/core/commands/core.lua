@@ -22,17 +22,19 @@ command.add(nil, {
   end,
 
   ["core:reload-module"] = function()
-    core.command_view:enter("Reload Module", function(text, item)
-      local text = item and item.text or text
-      core.reload_module(text)
-      core.log("Reloaded module %q", text)
-    end, function(text)
-      local items = {}
-      for name in pairs(package.loaded) do
-        table.insert(items, name)
-      end
-      return common.fuzzy_match(items, text)
-    end)
+    core.command_view:enter("Reload Module",
+      function(text, item)
+        local text = item and item.text or text
+        core.reload_module(text)
+        core.log("Reloaded module %q", text)
+      end,
+      function(text)
+        local items = {}
+        for name in pairs(package.loaded) do
+          table.insert(items, name)
+        end
+        return common.fuzzy_match(items, text)
+      end)
   end,
 
   ["core:find-command"] = function()

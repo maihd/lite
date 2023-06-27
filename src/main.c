@@ -54,9 +54,15 @@ static void init_window_icon(void)
 #endif
 }
 
+#ifdef _WIN32
+#define USE_TERMINAL_CONSOLE 1
+#else
+#define USE_TERMINAL_CONSOLE 0
+#endif
+
 int main(int argc, char** argv)
 {
-#ifndef NDEBUG
+#if USE_TERMINAL_CONSOLE
     AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
@@ -121,7 +127,7 @@ int main(int argc, char** argv)
     lua_setglobal(L, "EXEFILE");
 
     int errcode = luaL_dostring(L,
-                                "local core\n"
+                                "local core, err\n"
                                 "xpcall(function()\n"
                                 "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
                                 "  PATHSEP = package.config:sub(1, 1)\n"
@@ -132,18 +138,36 @@ int main(int argc, char** argv)
                                 "  core = require('core')\n"
                                 "  core.init()\n"
                                 "  core.run()\n"
-                                "end, function(err)\n"
-                                "  print('Error: ' .. tostring(err))\n"
-                                "  print(debug.traceback(nil, 2))\n"
+                                "end, function(...)\n"
+                                "  err = ...\n"
                                 "  if core and core.on_error then\n"
                                 "    pcall(core.on_error, err)\n"
                                 "  end\n"
                                 //"  os.exit(1)\n"
-                                "end)");
-    (void)errcode;
+                                "end)\n"
+                                "print(\"Execute end checking error...\")\n"
+                                "if err then\n"
+                                "  print('Error: ' .. tostring(err))\n"
+                                "  print(debug.traceback(nil, 2))\n"
+                                "  error(err)\n"
+                                "end\n");
+    if (errcode != 0)
+    {
+        const char* title  = "lite";
+        const char* errmsg = lua_tostring(L, -1);
+        if (errmsg == NULL)
+        {
+            errmsg = "Unknown error!";
+        }
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
+    }
 
     lua_close(L);
     SDL_DestroyWindow(window);
+
+#if USE_TERMINAL_CONSOLE
+    FreeConsole();
+#endif
 
     return EXIT_SUCCESS;
 }
