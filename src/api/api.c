@@ -28,6 +28,7 @@ static int luaL_getsubtable(lua_State* L, int i, const char* name)
     {
         return 1;
     }
+
     lua_pop(L, 1);
     lua_newtable(L);
     lua_pushstring(L, name);
@@ -39,8 +40,7 @@ static int luaL_getsubtable(lua_State* L, int i, const char* name)
 static void luaL_requiref(lua_State* L, const char* modname, lua_CFunction openf, int glb)
 {
     luaL_checkstack(L, 3, "not enough stack slots available");
-    luaL_getsubtable(L, LUA_REGISTRYINDEX, "_LOADED");
-    if (lua_type(L, -1) != LUA_TNIL)
+    if (luaL_getsubtable(L, LUA_REGISTRYINDEX, "_LOADED"))
     {
         lua_getfield(L, -1, modname);
         lua_pop(L, 1);
