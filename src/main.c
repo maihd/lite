@@ -55,7 +55,11 @@ static void init_window_icon(void)
 }
 
 #ifdef _WIN32
+#ifdef NDEBUG
+#define USE_TERMINAL_CONSOLE 0
+#else
 #define USE_TERMINAL_CONSOLE 1
+#endif
 #else
 #define USE_TERMINAL_CONSOLE 0
 #endif
