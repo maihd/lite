@@ -116,7 +116,11 @@ function StatusView:get_items()
     }
   end
 
-  return {}, {
+  return {
+      style.icon_font, "d",
+      style.font, style.dim, self.separator2,
+      style.font, core.project_dir_name
+  }, {
     style.icon_font, "g",
     style.font, style.dim, self.separator2,
     #core.docs, style.text, " / ",

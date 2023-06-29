@@ -82,8 +82,11 @@ local commands = {
 
   ["doc:copy"] = function()
     if doc():has_selection() then
-      local text = doc():get_text(doc():get_selection())
-      system.set_clipboard(text)
+        local text = doc():get_text(doc():get_selection())
+        system.set_clipboard(text)
+    else
+        local text = doc():get_current_line()
+        system.set_clipboard(text)
     end
   end,
 

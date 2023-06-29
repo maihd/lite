@@ -220,6 +220,13 @@ function Doc:get_text(line1, col1, line2, col2)
 end
 
 
+function Doc:get_current_line()
+    local line_index = self:get_selection(true)
+    local line = self.lines[line_index]
+    return line
+end
+
+
 function Doc:get_char(line, col)
   line, col = self:sanitize_position(line, col)
   return self.lines[line]:sub(col, col)

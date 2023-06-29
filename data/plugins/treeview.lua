@@ -44,7 +44,7 @@ end
 
 
 function TreeView:get_name()
-  return "Project"
+  return "---"
 end
 
 
@@ -189,9 +189,19 @@ node:split("left", view, true)
 
 -- register commands and keymap
 command.add(nil, {
-  ["treeview:toggle"] = function()
-    view.visible = not view.visible
-  end,
+    ["treeview:toggle"] = function()
+        view.visible = not view.visible
+    end,
+
+    ["treeview:toggle-focus"] = function()
+        view.visible = not view.visible
+--         if view.visible then
+--             core.set_active_view(view)
+--         else
+--             core.set_active_view(core.last_active_view)
+--         end
+    end
 })
 
 keymap.add { ["ctrl+\\"] = "treeview:toggle" }
+keymap.add { ["ctrl+b"] = "treeview:toggle-focus" }

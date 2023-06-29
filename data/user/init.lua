@@ -10,4 +10,4 @@ local style = require "core.style"
 
 -- key binding:
 keymap.add { ["ctrl+e"] = "core:find-file" }
-keymap.add { ["ctrl+b"] = "treeview:toggle" }
+-- keymap.add { ["ctrl+b"] = "treeview:toggle" }
