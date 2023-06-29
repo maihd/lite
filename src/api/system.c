@@ -1,11 +1,11 @@
-#include "api.h"
-#include "rencache.h"
-#include <SDL2/SDL.h>
 #include <ctype.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include <sys/stat.h>
+#include <SDL2/SDL.h>
 
 #ifdef _WIN32
 #define chdir _chdir
@@ -14,6 +14,9 @@
 #include <dirent.h>
 #include <unistd.h>
 #endif
+
+#include "api.h"
+#include "rencache.h"
 
 extern SDL_Window* window;
 

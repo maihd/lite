@@ -1,7 +1,9 @@
 #include "api/api.h"
 #include "renderer.h"
 #include <SDL2/SDL.h>
+
 #include <stdio.h>
+#include <string.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -44,8 +46,8 @@ static void get_exe_filename(char* buf, int sz)
 
 static void init_window_icon(void)
 {
-#ifndef _WIN32
-#include "../icon.inl"
+#if !defined(_WIN32) && !defined(__MINGW32__)
+#include "../res/icon.inl"
     (void)icon_rgba_len; /* unused */
     SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(icon_rgba, 64, 64, 32, 64 * 4, 0x000000ff,
                                                  0x0000ff00, 0x00ff0000, 0xff000000);
