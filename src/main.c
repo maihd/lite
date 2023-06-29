@@ -64,8 +64,23 @@ static void init_window_icon(void)
 #define USE_TERMINAL_CONSOLE 0
 #endif
 
+#ifdef _WIN32
+#include <Windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmd, int nShowCmd)
+#else
 int main(int argc, char** argv)
+#endif
 {
+#if defined(_WIN32)
+    (void)hInstance;
+    (void)hPrevInstance;
+    (void)pCmd;
+    (void)nShowCmd;
+
+    int argc = __argc;
+    char** argv = __argv;
+#endif
+
 #if USE_TERMINAL_CONSOLE
     AllocConsole();
     freopen("CONIN$", "r", stdin);

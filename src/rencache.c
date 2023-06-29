@@ -45,14 +45,14 @@ static bool      show_debug;
 // static inline int max(int a, int b) { return a > b ? a : b; }
 
 /* 32bit fnv-1a hash */
-#define HASH_INITIAL 2'166'136'261
+#define HASH_INITIAL 2166136261
 
 static void hash(unsigned* h, const void* data, int size)
 {
     const unsigned char* p = data;
     while (size--)
     {
-        *h = (*h ^ *p++) * 16'777'619;
+        *h = (*h ^ *p++) * 16777619;
     }
 }
 

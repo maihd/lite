@@ -52,6 +52,8 @@ do
 
     filter { "configurations:Debug" }
     do
+        debugargs { "../data" }
+
         targetdir (BUILD_DIR)
 
         postbuildcommands {
@@ -63,6 +65,8 @@ do
 
     filter { "configurations:Release" }
     do
+        debugargs { "../data" }
+
         targetdir (ROOT_DIR)
 
         defines {

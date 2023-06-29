@@ -212,6 +212,27 @@ static int f_window_has_focus(lua_State* L)
     return 1;
 }
 
+static int f_get_window_opacity(lua_State* L)
+{
+    float opacity;
+    if (SDL_GetWindowOpacity(window, &opacity))
+    {
+        lua_pushstring(L, "window is invalid");
+        lua_error(L);
+        return 0;
+    }
+
+    lua_pushnumber(L, opacity);
+    return 1;
+}
+
+static int f_set_window_opacity(lua_State* L)
+{
+    float opacity = (float)luaL_checknumber(L, 1);
+    SDL_SetWindowOpacity(window, opacity);
+    return 0;
+}
+
 static int f_show_confirm_dialog(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
@@ -497,6 +518,8 @@ static const luaL_Reg lib[] = {
     {"set_cursor",          f_set_cursor         },
     {"set_window_title",    f_set_window_title   },
     {"set_window_mode",     f_set_window_mode    },
+    {"get_window_opacity",  f_get_window_opacity },
+    {"set_window_opacity",  f_set_window_opacity },
     {"window_has_focus",    f_window_has_focus   },
     {"show_confirm_dialog", f_show_confirm_dialog},
     {"chdir",               f_chdir              },
