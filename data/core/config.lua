@@ -1,6 +1,6 @@
 local config = {}
 
-config.project_scan_rate = 0.1 -- seconds
+config.project_scan_rate = 1.0 -- seconds
 config.fps = 60
 config.max_log_items = 80
 config.message_timeout = 3
