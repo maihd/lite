@@ -21,6 +21,7 @@ style.syntax["symbol"] = { common.color "#181818" }
 style.syntax["comment"] = { common.color "#22a21f" }
 style.syntax["keyword"] = { common.color "#fb6620" }
 style.syntax["keyword2"] = { common.color "#fc1785" }
+style.syntax["macro"] = { common.color "#ee72a1" }
 style.syntax["number"] = { common.color "#1586d2" }
 style.syntax["literal"] = { common.color "#1586d2" }
 style.syntax["string"] = { common.color "#1586d2" }

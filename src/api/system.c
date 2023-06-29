@@ -49,101 +49,102 @@ static int f_poll_event(lua_State* L)
     int       mx, my, wx, wy;
     SDL_Event e;
 
-top:
-    if (!SDL_PollEvent(&e))
+    while (SDL_PollEvent(&e))
     {
-        return 0;
-    }
-
-    switch (e.type)
-    {
-    case SDL_QUIT: lua_pushstring(L, "quit"); return 1;
-
-    case SDL_WINDOWEVENT:
-        if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+        switch (e.type)
         {
-            lua_pushstring(L, "resized");
-            lua_pushnumber(L, e.window.data1);
-            lua_pushnumber(L, e.window.data2);
-            return 3;
-        }
-        else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
-        {
-            rencache_invalidate();
-            lua_pushstring(L, "exposed");
+        case SDL_QUIT:
+            lua_pushstring(L, "quit");
             return 1;
+
+        case SDL_WINDOWEVENT:
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+            {
+                lua_pushstring(L, "resized");
+                lua_pushnumber(L, e.window.data1);
+                lua_pushnumber(L, e.window.data2);
+                return 3;
+            }
+            else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
+            {
+                rencache_invalidate();
+                lua_pushstring(L, "exposed");
+                return 1;
+            }
+
+            // on some systems, when alt-tabbing to the window SDL will queue up
+            // several KEYDOWN events for the `tab` key; we flush all keydown
+            // events on focus so these are discarded
+            if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            {
+                SDL_FlushEvent(SDL_KEYDOWN);
+            }
+            break;
+
+        case SDL_DROPFILE:
+            SDL_GetGlobalMouseState(&mx, &my);
+            SDL_GetWindowPosition(window, &wx, &wy);
+            lua_pushstring(L, "filedropped");
+            lua_pushstring(L, e.drop.file);
+            lua_pushnumber(L, (lua_Number)mx - (lua_Number)wx);
+            lua_pushnumber(L, (lua_Number)my - (lua_Number)wy);
+            SDL_free(e.drop.file);
+            return 4;
+
+        case SDL_KEYDOWN:
+            lua_pushstring(L, "keypressed");
+            lua_pushstring(L, key_name(buf, e.key.keysym.sym));
+            return 2;
+
+        case SDL_KEYUP:
+            lua_pushstring(L, "keyreleased");
+            lua_pushstring(L, key_name(buf, e.key.keysym.sym));
+            return 2;
+
+        case SDL_TEXTINPUT:
+            lua_pushstring(L, "textinput");
+            lua_pushstring(L, e.text.text);
+            return 2;
+
+        case SDL_MOUSEBUTTONDOWN:
+            if (e.button.button == 1)
+            {
+                SDL_CaptureMouse(1);
+            }
+            lua_pushstring(L, "mousepressed");
+            lua_pushstring(L, button_name(e.button.button));
+            lua_pushnumber(L, e.button.x);
+            lua_pushnumber(L, e.button.y);
+            lua_pushnumber(L, e.button.clicks);
+            return 5;
+
+        case SDL_MOUSEBUTTONUP:
+            if (e.button.button == 1)
+            {
+                SDL_CaptureMouse(0);
+            }
+            lua_pushstring(L, "mousereleased");
+            lua_pushstring(L, button_name(e.button.button));
+            lua_pushnumber(L, e.button.x);
+            lua_pushnumber(L, e.button.y);
+            return 4;
+
+        case SDL_MOUSEMOTION:
+            lua_pushstring(L, "mousemoved");
+            lua_pushnumber(L, e.motion.x);
+            lua_pushnumber(L, e.motion.y);
+            lua_pushnumber(L, e.motion.xrel);
+            lua_pushnumber(L, e.motion.yrel);
+            return 5;
+
+        case SDL_MOUSEWHEEL:
+            lua_pushstring(L, "mousewheel");
+            lua_pushnumber(L, e.wheel.y);
+            return 2;
+
+        default:
+            break;
         }
-        /* on some systems, when alt-tabbing to the window SDL will queue up
-        ** several KEYDOWN events for the `tab` key; we flush all keydown
-        ** events on focus so these are discarded */
-        if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-        {
-            SDL_FlushEvent(SDL_KEYDOWN);
-        }
-        goto top;
-
-    case SDL_DROPFILE:
-        SDL_GetGlobalMouseState(&mx, &my);
-        SDL_GetWindowPosition(window, &wx, &wy);
-        lua_pushstring(L, "filedropped");
-        lua_pushstring(L, e.drop.file);
-        lua_pushnumber(L, (lua_Number)mx - (lua_Number)wx);
-        lua_pushnumber(L, (lua_Number)my - (lua_Number)wy);
-        SDL_free(e.drop.file);
-        return 4;
-
-    case SDL_KEYDOWN:
-        lua_pushstring(L, "keypressed");
-        lua_pushstring(L, key_name(buf, e.key.keysym.sym));
-        return 2;
-
-    case SDL_KEYUP:
-        lua_pushstring(L, "keyreleased");
-        lua_pushstring(L, key_name(buf, e.key.keysym.sym));
-        return 2;
-
-    case SDL_TEXTINPUT:
-        lua_pushstring(L, "textinput");
-        lua_pushstring(L, e.text.text);
-        return 2;
-
-    case SDL_MOUSEBUTTONDOWN:
-        if (e.button.button == 1)
-        {
-            SDL_CaptureMouse(1);
-        }
-        lua_pushstring(L, "mousepressed");
-        lua_pushstring(L, button_name(e.button.button));
-        lua_pushnumber(L, e.button.x);
-        lua_pushnumber(L, e.button.y);
-        lua_pushnumber(L, e.button.clicks);
-        return 5;
-
-    case SDL_MOUSEBUTTONUP:
-        if (e.button.button == 1)
-        {
-            SDL_CaptureMouse(0);
-        }
-        lua_pushstring(L, "mousereleased");
-        lua_pushstring(L, button_name(e.button.button));
-        lua_pushnumber(L, e.button.x);
-        lua_pushnumber(L, e.button.y);
-        return 4;
-
-    case SDL_MOUSEMOTION:
-        lua_pushstring(L, "mousemoved");
-        lua_pushnumber(L, e.motion.x);
-        lua_pushnumber(L, e.motion.y);
-        lua_pushnumber(L, e.motion.xrel);
-        lua_pushnumber(L, e.motion.yrel);
-        return 5;
-
-    case SDL_MOUSEWHEEL:
-        lua_pushstring(L, "mousewheel");
-        lua_pushnumber(L, e.wheel.y);
-        return 2;
-
-    default: goto top;
     }
 
     return 0;
@@ -284,7 +285,7 @@ static int f_chdir(lua_State* L)
 
 static int f_list_dir(lua_State* L)
 {
-    size_t len;
+    size_t      len;
     const char* path = luaL_optlstring(L, 1, NULL, &len);
     if (path == NULL)
     {
@@ -304,11 +305,11 @@ static int f_list_dir(lua_State* L)
     {
         DWORD dw = GetLastError();
 
-        char lpMsgBuf[1024];
-        DWORD nMsgBufLen = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                           FORMAT_MESSAGE_IGNORE_INSERTS,
-                       NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
-                       sizeof(lpMsgBuf), NULL);
+        char  lpMsgBuf[1024];
+        DWORD nMsgBufLen = FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf, sizeof(lpMsgBuf), NULL);
 
         lua_pushnil(L);
         lua_pushlstring(L, lpMsgBuf, nMsgBufLen);
