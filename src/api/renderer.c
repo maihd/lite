@@ -9,6 +9,7 @@ static RenColor checkcolor(lua_State* L, int idx, int def)
     {
         return (RenColor){def, def, def, 255};
     }
+
     lua_rawgeti(L, idx, 1);
     lua_rawgeti(L, idx, 2);
     lua_rawgeti(L, idx, 3);
@@ -74,13 +75,13 @@ static int f_draw_rect(lua_State* L)
 
 static int f_draw_text(lua_State* L)
 {
-    RenFont**   font  = luaL_checkudata(L, 1, API_TYPE_FONT);
-    const char* text  = luaL_checkstring(L, 2);
-    int         x     = luaL_checknumber(L, 3);
-    int         y     = luaL_checknumber(L, 4);
-    RenColor    color = checkcolor(L, 5, 255);
-    x                 = rencache_draw_text(*font, text, x, y, color);
-    lua_pushnumber(L, x);
+    RenFont**   font   = luaL_checkudata(L, 1, API_TYPE_FONT);
+    const char* text   = luaL_checkstring(L, 2);
+    int         x      = luaL_checknumber(L, 3);
+    int         y      = luaL_checknumber(L, 4);
+    RenColor    color  = checkcolor(L, 5, 255);
+    int         next_x = rencache_draw_text(*font, text, x, y, color);
+    lua_pushnumber(L, next_x);
     return 1;
 }
 

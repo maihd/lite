@@ -66,6 +66,8 @@ static void init_window_icon(void)
 #define USE_TERMINAL_CONSOLE 0
 #endif
 
+static void lua_main(int argc, const char** argv);
+
 #ifdef _WIN32
 #include <Windows.h>
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmd, int nShowCmd)
@@ -79,7 +81,7 @@ int main(int argc, char** argv)
     (void)pCmd;
     (void)nShowCmd;
 
-    int argc = __argc;
+    int    argc = __argc;
     char** argv = __argv;
 #endif
 
@@ -120,6 +122,20 @@ int main(int argc, char** argv)
     init_window_icon();
     ren_init(window);
 
+    lua_main(argc, (const char**)argv);
+
+    ren_deinit();
+    SDL_DestroyWindow(window);
+
+#if USE_TERMINAL_CONSOLE
+    FreeConsole();
+#endif
+
+    return EXIT_SUCCESS;
+}
+
+void lua_main(int argc, const char** argv)
+{
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     api_load_libs(L);
@@ -184,11 +200,4 @@ int main(int argc, char** argv)
     }
 
     lua_close(L);
-    SDL_DestroyWindow(window);
-
-#if USE_TERMINAL_CONSOLE
-    FreeConsole();
-#endif
-
-    return EXIT_SUCCESS;
 }

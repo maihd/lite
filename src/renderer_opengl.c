@@ -1,23 +1,21 @@
-#pragma once
+#include <stdio.h>
 
-#include <stdint.h>
+#include "renderer.h"
 
-typedef struct RenImage RenImage;
-typedef struct RenFont  RenFont;
+// typedef struct RenImage RenImage;
+// typedef struct RenFont  RenFont;
 
-typedef struct RenColor
-{
-    uint8_t b, g, r, a;
-} RenColor;
+// typedef struct RenColor
+// {
+//     uint8_t b, g, r, a;
+// } RenColor;
 
-typedef struct RenRect
-{
-    int x, y, width, height;
-} RenRect;
+// typedef struct RenRect
+// {
+//     int x, y, width, height;
+// } RenRect;
 
 void ren_init(void* win_handle);
-void ren_deinit(void);
-
 void ren_update_rects(RenRect* rects, int count);
 void ren_set_clip_rect(RenRect rect);
 void ren_get_size(int* x, int* y);

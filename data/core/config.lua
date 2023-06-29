@@ -13,7 +13,7 @@ config.undo_merge_timeout = 0.3
 config.max_undos = 10000
 config.highlight_current_line = true
 config.line_height = 1.2
-config.indent_size = 2
+config.indent_size = 4
 config.tab_type = "soft"
 config.line_limit = 80
 

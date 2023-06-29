@@ -1,11 +1,11 @@
 #include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 
-#include <sys/stat.h>
 #include <SDL2/SDL.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #define chdir _chdir

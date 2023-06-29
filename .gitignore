@@ -1,6 +1,9 @@
+.vscode
+
 lite.exe
 lite.exp
 lite.pdb
+lite.lib
 
 sdl2.dll
 lua51.dll
@@ -9,4 +12,3 @@ error.txt
 
 /build
 /project
-

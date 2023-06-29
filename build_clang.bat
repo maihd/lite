@@ -2,8 +2,8 @@
 
 echo compiling (windows - clang - x64)...
 
-clang src/*.c src/api/*.c src/lib/stb/*.c^
-    -O3 -std=c11 -fno-strict-aliasing -Isrc^
+clang src/main.c src/rencache.c src/renderer.c src/api/*.c src/lib/stb/*.c^
+    -O3 -std=c11 -fno-strict-aliasing -Isrc -DNDEBUG^
     -DLUA_USE_POPEN -D_CRT_SECURE_NO_WARNINGS^
     -lKernel32 -lUser32^
     -Ilibs/SDL2-devel-2.0.16-VC/include^

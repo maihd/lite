@@ -123,7 +123,7 @@ keymap.add {
   ["ctrl+shift+s"] = "doc:save-as",
 
   ["ctrl+z"] = "doc:undo",
-  ["ctrl+y"] = "doc:redo",
+  ["ctrl+shift+z"] = "doc:redo",
   ["ctrl+x"] = "doc:cut",
   ["ctrl+c"] = "doc:copy",
   ["ctrl+v"] = "doc:paste",
