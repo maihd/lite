@@ -17,7 +17,7 @@ local function replace(chr)
 end
 
 
-command.add("core.docview", {
+command.add("core.doc_view", {
   ["quote:quote"] = function()
     core.active_view.doc:replace(function(text)
       return '"' .. text:gsub("[\0-\31\\\"]", replace) .. '"'

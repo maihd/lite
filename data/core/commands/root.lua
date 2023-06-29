@@ -1,6 +1,6 @@
 local core = require "core"
 local style = require "core.style"
-local DocView = require "core.docview"
+local DocView = require "core.doc_view"
 local command = require "core.command"
 local common = require "core.common"
 

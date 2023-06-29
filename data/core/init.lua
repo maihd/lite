@@ -78,9 +78,9 @@ end
 function core.init()
   command = require "core.command"
   keymap = require "core.keymap"
-  RootView = require "core.rootview"
-  StatusView = require "core.statusview"
-  CommandView = require "core.commandview"
+  RootView = require "core.root_view"
+  StatusView = require "core.status_view"
+  CommandView = require "core.command_view"
   Doc = require "core.doc"
 
   local project_dir = EXEDIR

@@ -3,7 +3,7 @@ local command = require "core.command"
 local common = require "core.common"
 local config = require "core.config"
 local translate = require "core.doc.translate"
-local DocView = require "core.docview"
+local DocView = require "core.doc_view"
 
 
 local function dv()
@@ -365,4 +365,4 @@ commands["doc:move-to-next-char"] = function()
   end
 end
 
-command.add("core.docview", commands)
+command.add("core.doc_view", commands)

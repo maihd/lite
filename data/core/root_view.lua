@@ -4,7 +4,7 @@ local style = require "core.style"
 local keymap = require "core.keymap"
 local Object = require "core.object"
 local View = require "core.view"
-local DocView = require "core.docview"
+local DocView = require "core.doc_view"
 
 
 local EmptyView = View:extend()

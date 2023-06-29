@@ -33,7 +33,6 @@ syntax.add {
     ["extern"]       = "keyword",
     ["static"]       = "keyword",
     ["volatile"]     = "keyword",
-    ["const"]        = "keyword",
     ["class"]        = "keyword",
     ["interface"]    = "keyword",
     ["switch"]       = "keyword",

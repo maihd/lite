@@ -22,7 +22,7 @@ local function trim_trailing_whitespace(doc)
 end
 
 
-command.add("core.docview", {
+command.add("core.doc_view", {
   ["trim-whitespace:trim-trailing-whitespace"] = function()
     trim_trailing_whitespace(core.active_view.doc)
   end,

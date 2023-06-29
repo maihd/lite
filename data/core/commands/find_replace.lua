@@ -2,7 +2,7 @@ local core = require "core"
 local command = require "core.command"
 local config = require "core.config"
 local search = require "core.doc.search"
-local DocView = require "core.docview"
+local DocView = require "core.doc_view"
 
 local max_previous_finds = 50
 
@@ -99,7 +99,7 @@ command.add(has_selection, {
   end
 })
 
-command.add("core.docview", {
+command.add("core.doc_view", {
   ["find-replace:find"] = function()
     find("Find Text", function(doc, line, col, text)
       local opt = { wrap = true, no_case = true }

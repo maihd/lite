@@ -23,7 +23,7 @@ local function wordwrap_text(text, limit)
 end
 
 
-command.add("core.docview", {
+command.add("core.doc_view", {
   ["reflow:reflow"] = function()
     local doc = core.active_view.doc
     doc:replace(function(text)

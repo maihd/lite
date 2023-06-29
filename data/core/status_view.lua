@@ -3,8 +3,8 @@ local common = require "core.common"
 local command = require "core.command"
 local config = require "core.config"
 local style = require "core.style"
-local DocView = require "core.docview"
-local LogView = require "core.logview"
+local DocView = require "core.doc_view"
+local LogView = require "core.log_view"
 local View = require "core.view"
 
 
