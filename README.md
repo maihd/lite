@@ -32,6 +32,7 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 ## TODOs
 - Fix BOM on `C#` files.
 - Add polyfill `table.unpack`.
+- Make typing work with UniKey (Vietnamese typing method).
 - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Use fast string algorithms (code editting are working on string heavily)
 - Convert to use native API instead of large library like SDL.
