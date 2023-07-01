@@ -3,6 +3,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 /// StringView
@@ -10,9 +11,27 @@
 /// Utf8 support
 typedef struct StringView
 {
-    size_t size;
-    const char* data;
+    uint32_t hash;
+    uint32_t length;
+    const char* buffer;
 } StringView;
+
+/// StringBuffer
+/// Data structure contain mutable string
+/// Utf8 support
+/// This type is pointer type (maybe another term help clear this section)
+/// @sample(maihd):
+///     StringBuffer* - right
+///     StringBuffer  - wrong
+typedef struct StringBuffer
+{
+    uint32_t mark;
+    uint32_t hash;
+    uint32_t flags;
+    uint32_t length;
+    uint32_t capacity;
+    char data[];
+} StringBuffer;
 
 /// Calculate string length (utf8 support)
 const size_t string_count(const char* string);
