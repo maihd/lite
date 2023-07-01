@@ -29,10 +29,14 @@ This fork is attempt to speed up the application, and adding features for person
 
 ## TODOs
 - Fix BOM on C# files. 
+- Fast or flexible, friendly experience on IO operations. (Maybe add async IO) 
 - Use fast string algorithms (code editting are working on string heavily) 
 - Convert to use native API instead of large library like SDL. 
-- Make app morre robust. 
+- Make app more robust. 
 - Add more render backends: OpenGL, Vulkan, Dear ImGui. 
+- Compile to Lua to bytecode. 
+- Package data. 
+- exe-only application. (data embed into exe) 
 - Make it embedding ready. 
 
 ## Customization
