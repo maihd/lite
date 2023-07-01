@@ -19,7 +19,7 @@ possible; easy to modify and extend, or to use without doing either.
 ## Note
 This fork is attempt to speed up the application, and adding features for personal use.
 And importantly, this fork use LuaJIT, some plugins must be port (table.unpack -> unpack), and not disable FFI, use at your risk.
-The *simple* will be keep in the interfaces, *implementation* will be seperate into two categorys: *simple* and *optimized*.
+The *simple* will be keep in the interfaces, *implementation* will be seperated into two categories: *simple* and *optimized*.
 
 ## Changes
 - Use LuaJIT instead of Lua 5.2
