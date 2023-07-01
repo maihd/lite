@@ -94,6 +94,8 @@ keymap.add {
   ["alt+shift+l"] = "root:split-right",
   ["alt+shift+i"] = "root:split-up",
   ["alt+shift+k"] = "root:split-down",
+
+  -- @todo(maihd): add switch-toggle command
   ["alt+j"] = "root:switch-to-left",
   ["alt+l"] = "root:switch-to-right",
   ["alt+i"] = "root:switch-to-up",
