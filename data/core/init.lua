@@ -88,7 +88,9 @@ function core.init()
   for i = 2, #ARGS do
     local info = system.get_file_info(ARGS[i]) or {}
     if info.type == "file" then
-      table.insert(files, system.absolute_path(ARGS[i]))
+      local file_path = system.absolute_path(ARGS[i])
+      table.insert(files, file_path)
+      project_dir = file_path:sub(1, #file_path:match("(.*[/\\])") - 1)
     elseif info.type == "dir" then
       project_dir = system.absolute_path(ARGS[i])
     end
@@ -109,6 +111,8 @@ function core.init()
   core.root_view = RootView()
   core.command_view = CommandView()
   core.status_view = StatusView()
+
+  core.log(core.project_dir)
 
   core.root_view.root_node:split("down", core.command_view, true)
   core.root_view.root_node.b:split("down", core.status_view, true)
