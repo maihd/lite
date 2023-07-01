@@ -17,7 +17,9 @@ something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
 ## Note
-This fork is attempt to speed up the application, and adding features for personal use. 
+This fork is attempt to speed up the application, and adding features for personal use.
+And importantly, this fork use LuaJIT, some plugins must be port (table.unpack -> unpack), and not disable FFI, use at your risk.
+The *simple* will be keep in the interfaces, *implementation* will be seperate into two categorys: *simple* and *optimized*.
 
 ## Changes
 - Use LuaJIT instead of Lua 5.2
@@ -28,16 +30,22 @@ This fork is attempt to speed up the application, and adding features for person
 - Add clang-format
 
 ## TODOs
-- Fix BOM on C# files. 
-- Fast or flexible, friendly experience on IO operations. (Maybe add async IO) 
-- Use fast string algorithms (code editting are working on string heavily) 
-- Convert to use native API instead of large library like SDL. 
-- Make app more robust. 
-- Add more render backends: OpenGL, Vulkan, Dear ImGui. 
-- Compile to Lua to bytecode. 
-- Package data. 
-- exe-only application. (data embed into exe) 
-- Make it embedding ready. 
+- Fix BOM on `C#` files.
+- Add polyfill `table.unpack`.
+- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+- Use fast string algorithms (code editting are working on string heavily)
+- Convert to use native API instead of large library like SDL.
+- Make app more robust.
+- Bootstrap version for debugging and development.
+- Display launching messagebox with style and helper.
+- Add more render backends: OpenGL, Vulkan, Dear ImGui.
+- Compile to Lua to bytecode.
+- Package data. exe-only application. (data embed into exe, faster startup)
+- Make it embedding ready.
+- Better mouse interacting.
+- Software distributing
+    - Installer
+    - Add item to OS context menu.
 
 ## Customization
 Additional functionality can be added through plugins which are available from
@@ -51,6 +59,11 @@ You can build the project yourself on Linux using the `build.sh` script
 or on Windows using the `build.bat` script *([MinGW](https://nuwen.net/mingw.html) is required)*.
 Note that the project does not need to be rebuilt if you are only making changes
 to the Lua portion of the code.
+
+## Building with premake5
+- Running `premake5 <toolchain>` (gmake, XCode, Visual Studio, `premake5 --help` for more details)
+- Open/build with your selection toolchain
+- Open build folder if in debug mode, root location if in release mode
 
 ## Contributing
 Any additional functionality that can be added through a plugin should be done
