@@ -16,6 +16,25 @@ lite is a lightweight text editor written mostly in Lua — it aims to provide
 something practical, pretty, *small* and fast, implemented as simply as
 possible; easy to modify and extend, or to use without doing either.
 
+## Note
+This fork is attempt to speed up the application, and adding features for personal use. 
+
+## Changes
+- Use LuaJIT instead of Lua 5.2
+- Check directory changed based on last write time instead of file diffs
+- Add premake5 to generate Visual Studio project, for debugging purpose
+- Add clang build script on Windows
+- Display MessageBox when app failed to launch
+- Add clang-format
+
+## TODOs
+- Fix BOM on C# files. 
+- Use fast string algorithms (code editting are working on string heavily) 
+- Convert to use native API instead of large library like SDL. 
+- Make app morre robust. 
+- Add more render backends: OpenGL, Vulkan, Dear ImGui. 
+- Make it embedding ready. 
+
 ## Customization
 Additional functionality can be added through plugins which are available from
 the [plugins repository](https://github.com/rxi/lite-plugins); additional color
