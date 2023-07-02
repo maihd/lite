@@ -9,6 +9,7 @@ syntax.add {
         { pattern = { "#", "[ \n]" },       type = "keyword2" },
         { pattern = { '"', '"', '\\' },     type = "string"   },
         { pattern = { "'", "'", '\\' },     type = "string"   },
+        { pattern = { "<", ">", '\\' },     type = "string"   }, -- @note(maihd): trick to highlight include path
         { pattern = "-?0x%x+",              type = "number"   },
         { pattern = "-?%d+[%d%.eE]*f?",     type = "number"   },
         { pattern = "-?%.?%d+f?",           type = "number"   },
@@ -46,10 +47,16 @@ syntax.add {
 
         -- C11 keywords
         ["alignas"] = "keyword",
-        ["alignas"] = "keyword",
+        ["alignof"] = "keyword",
         ["constexpr"] = "keyword",
         ["thread_local"] = "keyword",
         ["static_assert"] = "keyword",
+
+        ["_Bool"] = "keyword",
+        ["_Alignas"] = "keyword",
+        ["_Alignof"] = "keyword",
+        ["_Thread_local"] = "keyword",
+        ["_Static_assert"] = "keyword",
 
         -- Custom keywords
         ["__comptime"] = "keyword",
