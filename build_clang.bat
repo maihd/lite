@@ -2,7 +2,7 @@
 
 echo compiling (windows - clang - x64)...
 
-clang src/main.c src/rencache.c src/renderer.c src/lite_string.c src/lite_file.c src/api/*.c src/lib/stb/*.c^
+clang src/*.c src/api/*.c src/lib/stb/*.c^
     -O3 -std=c11 -fno-strict-aliasing -Isrc -DNDEBUG^
     -DLUA_USE_POPEN -D_CRT_SECURE_NO_WARNINGS^
     -lKernel32 -lUser32^
