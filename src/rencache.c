@@ -73,7 +73,7 @@ static inline int cell_idx(int x, int y)
 static inline bool rects_overlap(RenRect a, RenRect b)
 {
     return b.x + b.width >= a.x && b.x <= a.x + a.width &&
-           b.y + b.height >= a.y && b.y <= a.y + a.height;
+        b.y + b.height >= a.y && b.y <= a.y + a.height;
 }
 
 static RenRect intersect_rects(RenRect a, RenRect b)
@@ -166,9 +166,9 @@ int rencache_draw_text(RenFont* font, const char* text, int x, int y,
     RenRect rect;
     rect.x      = x;
     rect.y      = y;
-    rect.width  = ren_get_font_width(font, text);
-    rect.height = ren_get_font_height(font);
-
+    rect.width  = lite_get_font_width(font, text);
+    rect.height = lite_get_font_height(font);
+    
     if (rects_overlap(screen_rect, rect))
     {
         int      sz  = strlen(text) + 1;
@@ -179,10 +179,10 @@ int rencache_draw_text(RenFont* font, const char* text, int x, int y,
             cmd->color     = color;
             cmd->font      = font;
             cmd->rect      = rect;
-            cmd->tab_width = ren_get_font_tab_width(font);
+            cmd->tab_width = lite_get_font_tab_width(font);
         }
     }
-
+    
     return x + rect.width;
 }
 
@@ -195,7 +195,7 @@ void rencache_begin_frame(void)
 {
     /* reset all cells if the screen width/height has changed */
     int w, h;
-    ren_get_size(&w, &h);
+    lite_renderer_get_size(&w, &h);
     if (screen_rect.width != w || h != screen_rect.height)
     {
         screen_rect.width  = w;
@@ -210,7 +210,7 @@ static void update_overlapping_cells(RenRect r, unsigned h)
     int y1 = r.y / CELL_SIZE;
     int x2 = (r.x + r.width) / CELL_SIZE;
     int y2 = (r.y + r.height) / CELL_SIZE;
-
+    
     for (int y = y1; y <= y2; y++)
     {
         for (int x = x1; x <= x2; x++)
@@ -257,7 +257,7 @@ void rencache_end_frame(void)
         hash(&h, cmd, cmd->size);
         update_overlapping_cells(r, h);
     }
-
+    
     /* push rects for all cells changed from last frame, reset cells */
     int rect_count = 0;
     int max_x      = screen_rect.width / CELL_SIZE + 1;
@@ -275,7 +275,7 @@ void rencache_end_frame(void)
             cells_prev[idx] = HASH_INITIAL;
         }
     }
-
+    
     /* expand rects from cells to pixels */
     for (int i = 0; i < rect_count; i++)
     {
@@ -286,46 +286,48 @@ void rencache_end_frame(void)
         r->height *= CELL_SIZE;
         *r = intersect_rects(*r, screen_rect);
     }
-
+    
     /* redraw updated regions */
     bool has_free_commands = false;
     for (int i = 0; i < rect_count; i++)
     {
         /* draw */
         RenRect r = rect_buf[i];
-        ren_set_clip_rect(r);
-
+        lite_renderer_set_clip_rect(r);
+        
         cmd = NULL;
         while (next_command(&cmd))
         {
             switch (cmd->type)
             {
-            case FREE_FONT: has_free_commands = true; break;
-            case SET_CLIP:
-                ren_set_clip_rect(intersect_rects(cmd->rect, r));
+                case FREE_FONT: has_free_commands = true; break;
+                case SET_CLIP:
+                lite_renderer_set_clip_rect(intersect_rects(cmd->rect, r));
                 break;
-            case DRAW_RECT: ren_draw_rect(cmd->rect, cmd->color); break;
-            case DRAW_TEXT:
-                ren_set_font_tab_width(cmd->font, cmd->tab_width);
-                ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y,
-                              cmd->color);
+                case DRAW_RECT: lite_draw_rect(cmd->rect, cmd->color); break;
+                case DRAW_TEXT:
+                lite_set_font_tab_width(cmd->font, cmd->tab_width);
+                lite_draw_text(cmd->font, 
+                               cmd->text, 
+                               cmd->rect.x, cmd->rect.y,
+                               cmd->color);
                 break;
             }
         }
-
+        
         if (show_debug)
         {
             RenColor color = {rand(), rand(), rand(), 50};
-            ren_draw_rect(r, color);
+            lite_draw_rect(r, color);
         }
     }
-
+    
     /* update dirty rects */
     if (rect_count > 0)
     {
-        ren_update_rects(rect_buf, rect_count);
+        lite_renderer_update_rects(rect_buf, rect_count);
     }
-
+    
     /* free fonts */
     if (has_free_commands)
     {
@@ -334,11 +336,11 @@ void rencache_end_frame(void)
         {
             if (cmd->type == FREE_FONT)
             {
-                ren_free_font(cmd->font);
+                lite_free_font(cmd->font);
             }
         }
     }
-
+    
     /* swap cell buffer and reset */
     unsigned* tmp   = cells;
     cells           = cells_prev;

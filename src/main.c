@@ -82,59 +82,59 @@ int main(int argc, char** argv)
     (void)hPrevInstance;
     (void)pCmd;
     (void)nShowCmd;
-
+    
     int    argc = __argc;
     char** argv = __argv;
 #endif
-
+    
 #if USE_TERMINAL_CONSOLE
     AllocConsole();
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
     freopen("CONOUT$", "w", stderr);
 #endif
-
+    
 #ifdef _WIN32
     HINSTANCE lib = LoadLibraryA("user32.dll");
     int (*SetProcessDPIAware)() =
-        (void*)GetProcAddress(lib, "SetProcessDPIAware");
+    (void*)GetProcAddress(lib, "SetProcessDPIAware");
     if (SetProcessDPIAware != NULL)
     {
         SetProcessDPIAware();
     }
 #endif
-
+    
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     SDL_EnableScreenSaver();
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     atexit(SDL_Quit);
-
+    
 #ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR /* Available since 2.0.8 */
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 #endif
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 #endif
-
+    
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
-
+    
     window = SDL_CreateWindow(
-        "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8),
-        (int)(dm.h * 0.8),
-        SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+                              "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8),
+                              (int)(dm.h * 0.8),
+                              SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
     init_window_icon();
-    ren_init(window);
-
+    lite_renderer_init(window);
+    
     lua_main(argc, (const char**)argv);
-
-    ren_deinit();
+    
+    lite_renderer_deinit();
     SDL_DestroyWindow(window);
-
+    
 #if USE_TERMINAL_CONSOLE
     FreeConsole();
 #endif
-
+    
     return EXIT_SUCCESS;
 }
 
@@ -143,7 +143,7 @@ void lua_main(int argc, const char** argv)
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     api_load_libs(L);
-
+    
     lua_newtable(L);
     for (int i = 0; i < argc; i++)
     {
@@ -151,48 +151,47 @@ void lua_main(int argc, const char** argv)
         lua_rawseti(L, -2, i + 1);
     }
     lua_setglobal(L, "ARGS");
-
+    
     lua_pushstring(L, "1.11");
     lua_setglobal(L, "VERSION");
-
+    
     lua_pushstring(L, SDL_GetPlatform());
     lua_setglobal(L, "PLATFORM");
-
+    
     lua_pushnumber(L, get_scale());
     lua_setglobal(L, "SCALE");
-
+    
     char exename[2048];
     get_exe_filename(exename, sizeof(exename));
-
+    
     lua_pushstring(L, exename);
     lua_setglobal(L, "EXEFILE");
-
-    int errcode = luaL_dostring(
-        L,
-        "local core, err\n"
-        "xpcall(function()\n"
-        "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
-        "  PATHSEP = package.config:sub(1, 1)\n"
-        //"  PATHSEP = \"/\"\n"
-        "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
-        "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
-        "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
-        "  core = require('core')\n"
-        "  core.init()\n"
-        "  core.run()\n"
-        "end, function(...)\n"
-        "  err = ...\n"
-        "  if core and core.on_error then\n"
-        "    pcall(core.on_error, err)\n"
-        "  end\n"
-        //"  os.exit(1)\n"
-        "end)\n"
-        "print(\"Execute end checking error...\")\n"
-        "if err then\n"
-        "  print('Error: ' .. tostring(err))\n"
-        "  print(debug.traceback(nil, 2))\n"
-        "  error(err)\n"
-        "end\n");
+    
+    int errcode = luaL_dostring(L,
+                                "local core, err\n"
+                                "xpcall(function()\n"
+                                "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
+                                "  PATHSEP = package.config:sub(1, 1)\n"
+                                //"  PATHSEP = \"/\"\n"
+                                "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
+                                "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
+                                "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
+                                "  core = require('core')\n"
+                                "  core.init()\n"
+                                "  core.run()\n"
+                                "end, function(...)\n"
+                                "  err = ...\n"
+                                "  if core and core.on_error then\n"
+                                "    pcall(core.on_error, err)\n"
+                                "  end\n"
+                                //"  os.exit(1)\n"
+                                "end)\n"
+                                "print(\"Execute end checking error...\")\n"
+                                "if err then\n"
+                                "  print('Error: ' .. tostring(err))\n"
+                                "  print(debug.traceback(nil, 2))\n"
+                                "  error(err)\n"
+                                "end\n");
     if (errcode != 0)
     {
         const char* title  = "lite";
@@ -203,6 +202,6 @@ void lua_main(int argc, const char** argv)
         }
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, window);
     }
-
+    
     lua_close(L);
 }

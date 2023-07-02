@@ -9,7 +9,7 @@ static RenColor checkcolor(lua_State* L, int idx, int def)
     {
         return (RenColor){def, def, def, 255};
     }
-
+    
     lua_rawgeti(L, idx, 1);
     lua_rawgeti(L, idx, 2);
     lua_rawgeti(L, idx, 3);
@@ -32,7 +32,7 @@ static int f_show_debug(lua_State* L)
 static int f_get_size(lua_State* L)
 {
     int w, h;
-    ren_get_size(&w, &h);
+    lite_renderer_get_size(&w, &h);
     lua_pushnumber(L, w);
     lua_pushnumber(L, h);
     return 2;
