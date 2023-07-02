@@ -49,8 +49,9 @@ static void init_window_icon(void)
 #if !defined(_WIN32) && !defined(__MINGW32__)
 #include "../res/icon.inl"
     (void)icon_rgba_len; /* unused */
-    SDL_Surface* surf = SDL_CreateRGBSurfaceFrom(icon_rgba, 64, 64, 32, 64 * 4, 0x000000ff,
-                                                 0x0000ff00, 0x00ff0000, 0xff000000);
+    SDL_Surface* surf =
+        SDL_CreateRGBSurfaceFrom(icon_rgba, 64, 64, 32, 64 * 4, 0x000000ff,
+                                 0x0000ff00, 0x00ff0000, 0xff000000);
     SDL_SetWindowIcon(window, surf);
     SDL_FreeSurface(surf);
 #endif
@@ -70,7 +71,8 @@ static void lua_main(int argc, const char** argv);
 
 #ifdef _WIN32
 #include <Windows.h>
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmd, int nShowCmd)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmd,
+                   int nShowCmd)
 #else
 int main(int argc, char** argv)
 #endif
@@ -93,8 +95,9 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef _WIN32
-    HINSTANCE lib               = LoadLibraryA("user32.dll");
-    int (*SetProcessDPIAware)() = (void*)GetProcAddress(lib, "SetProcessDPIAware");
+    HINSTANCE lib = LoadLibraryA("user32.dll");
+    int (*SetProcessDPIAware)() =
+        (void*)GetProcAddress(lib, "SetProcessDPIAware");
     if (SetProcessDPIAware != NULL)
     {
         SetProcessDPIAware();
@@ -116,9 +119,10 @@ int main(int argc, char** argv)
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
 
-    window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              (int)(dm.w * 0.8), (int)(dm.h * 0.8),
-                              SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
+    window = SDL_CreateWindow(
+        "", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8),
+        (int)(dm.h * 0.8),
+        SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_HIDDEN);
     init_window_icon();
     ren_init(window);
 
@@ -163,31 +167,32 @@ void lua_main(int argc, const char** argv)
     lua_pushstring(L, exename);
     lua_setglobal(L, "EXEFILE");
 
-    int errcode = luaL_dostring(L,
-                                "local core, err\n"
-                                "xpcall(function()\n"
-                                "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
-                                "  PATHSEP = package.config:sub(1, 1)\n"
-                                //"  PATHSEP = \"/\"\n"
-                                "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
-                                "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
-                                "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
-                                "  core = require('core')\n"
-                                "  core.init()\n"
-                                "  core.run()\n"
-                                "end, function(...)\n"
-                                "  err = ...\n"
-                                "  if core and core.on_error then\n"
-                                "    pcall(core.on_error, err)\n"
-                                "  end\n"
-                                //"  os.exit(1)\n"
-                                "end)\n"
-                                "print(\"Execute end checking error...\")\n"
-                                "if err then\n"
-                                "  print('Error: ' .. tostring(err))\n"
-                                "  print(debug.traceback(nil, 2))\n"
-                                "  error(err)\n"
-                                "end\n");
+    int errcode = luaL_dostring(
+        L,
+        "local core, err\n"
+        "xpcall(function()\n"
+        "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
+        "  PATHSEP = package.config:sub(1, 1)\n"
+        //"  PATHSEP = \"/\"\n"
+        "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
+        "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
+        "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
+        "  core = require('core')\n"
+        "  core.init()\n"
+        "  core.run()\n"
+        "end, function(...)\n"
+        "  err = ...\n"
+        "  if core and core.on_error then\n"
+        "    pcall(core.on_error, err)\n"
+        "  end\n"
+        //"  os.exit(1)\n"
+        "end)\n"
+        "print(\"Execute end checking error...\")\n"
+        "if err then\n"
+        "  print('Error: ' .. tostring(err))\n"
+        "  print(debug.traceback(nil, 2))\n"
+        "  error(err)\n"
+        "end\n");
     if (errcode != 0)
     {
         const char* title  = "lite";

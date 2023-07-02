@@ -13,4 +13,3 @@ size_t string_count(const char* string)
 
     return count;
 }
-

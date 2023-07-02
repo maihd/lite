@@ -1,4 +1,5 @@
 #include "rencache.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,8 +72,8 @@ static inline int cell_idx(int x, int y)
 
 static inline bool rects_overlap(RenRect a, RenRect b)
 {
-    return b.x + b.width >= a.x && b.x <= a.x + a.width && b.y + b.height >= a.y &&
-           b.y <= a.y + a.height;
+    return b.x + b.width >= a.x && b.x <= a.x + a.width &&
+           b.y + b.height >= a.y && b.y <= a.y + a.height;
 }
 
 static RenRect intersect_rects(RenRect a, RenRect b)
@@ -159,7 +160,8 @@ void rencache_draw_rect(RenRect rect, RenColor color)
     }
 }
 
-int rencache_draw_text(RenFont* font, const char* text, int x, int y, RenColor color)
+int rencache_draw_text(RenFont* font, const char* text, int x, int y,
+                       RenColor color)
 {
     RenRect rect;
     rect.x      = x;
@@ -299,11 +301,14 @@ void rencache_end_frame(void)
             switch (cmd->type)
             {
             case FREE_FONT: has_free_commands = true; break;
-            case SET_CLIP: ren_set_clip_rect(intersect_rects(cmd->rect, r)); break;
+            case SET_CLIP:
+                ren_set_clip_rect(intersect_rects(cmd->rect, r));
+                break;
             case DRAW_RECT: ren_draw_rect(cmd->rect, cmd->color); break;
             case DRAW_TEXT:
                 ren_set_font_tab_width(cmd->font, cmd->tab_width);
-                ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y, cmd->color);
+                ren_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y,
+                              cmd->color);
                 break;
             }
         }

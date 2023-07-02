@@ -10,7 +10,7 @@ IntegerLiteralSeparator:
   Hex: -1
 ---
 Language: Cpp
-ColumnLimit: 100
+ColumnLimit: 80
 DerivePointerAlignment: false
 PointerAlignment: Left
 AlignArrayOfStructures: Left

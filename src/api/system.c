@@ -53,9 +53,7 @@ static int f_poll_event(lua_State* L)
     {
         switch (e.type)
         {
-        case SDL_QUIT:
-            lua_pushstring(L, "quit");
-            return 1;
+        case SDL_QUIT: lua_pushstring(L, "quit"); return 1;
 
         case SDL_WINDOWEVENT:
             if (e.window.event == SDL_WINDOWEVENT_RESIZED)
@@ -142,8 +140,7 @@ static int f_poll_event(lua_State* L)
             lua_pushnumber(L, e.wheel.y);
             return 2;
 
-        default:
-            break;
+        default: break;
         }
     }
 
@@ -159,11 +156,12 @@ static int f_wait_event(lua_State* L)
 
 static SDL_Cursor* cursor_cache[SDL_SYSTEM_CURSOR_HAND + 1];
 
-static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh", "sizev", "hand", NULL};
+static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
+                                    "sizev", "hand",  NULL};
 
-static const int cursor_enums[] = {SDL_SYSTEM_CURSOR_ARROW, SDL_SYSTEM_CURSOR_IBEAM,
-                                   SDL_SYSTEM_CURSOR_SIZEWE, SDL_SYSTEM_CURSOR_SIZENS,
-                                   SDL_SYSTEM_CURSOR_HAND};
+static const int cursor_enums[] = {
+    SDL_SYSTEM_CURSOR_ARROW, SDL_SYSTEM_CURSOR_IBEAM, SDL_SYSTEM_CURSOR_SIZEWE,
+    SDL_SYSTEM_CURSOR_SIZENS, SDL_SYSTEM_CURSOR_HAND};
 
 static int f_set_cursor(lua_State* L)
 {
@@ -197,7 +195,8 @@ enum
 static int f_set_window_mode(lua_State* L)
 {
     int n = luaL_checkoption(L, 1, "normal", window_opts);
-    SDL_SetWindowFullscreen(window, n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    SDL_SetWindowFullscreen(
+        window, n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     if (n == WIN_NORMAL)
     {
         SDL_RestoreWindow(window);
@@ -309,7 +308,8 @@ static int f_list_dir(lua_State* L)
         DWORD nMsgBufLen = FormatMessageA(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                 FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf, sizeof(lpMsgBuf), NULL);
+            NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
+            sizeof(lpMsgBuf), NULL);
 
         lua_pushnil(L);
         lua_pushlstring(L, lpMsgBuf, nMsgBufLen);
@@ -466,7 +466,8 @@ static int f_set_clipboard(lua_State* L)
 
 static int f_get_time(lua_State* L)
 {
-    double n = SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
+    double n =
+        SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
     lua_pushnumber(L, n);
     return 1;
 }
