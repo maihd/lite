@@ -9,7 +9,7 @@ syntax.add {
         { pattern = { "#", "[ \n]" },       type = "keyword2" },
         { pattern = { '"', '"', '\\' },     type = "string"   },
         { pattern = { "'", "'", '\\' },     type = "string"   },
-        { pattern = { "<", ">", '\\' },     type = "string"   }, -- @note(maihd): trick to highlight include path
+--         { pattern = "<[[%a_][%w_]*.\\]*>",  type = "string"   }, -- @note(maihd): trick to highlight include path
         { pattern = "-?0x%x+",              type = "number"   },
         { pattern = "-?%d+[%d%.eE]*f?",     type = "number"   },
         { pattern = "-?%.?%d+f?",           type = "number"   },

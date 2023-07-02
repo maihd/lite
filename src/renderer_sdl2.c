@@ -47,7 +47,7 @@ static void* check_alloc(void* ptr)
         fprintf(stderr, "Fatal error: memory allocation failed\n");
         exit(-1);
     }
-    
+
     return ptr;
 }
 
@@ -74,12 +74,12 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
         n   = 0;
         break;
     }
-    
+
     while (n--)
     {
         res = (res << 6) | (*(++p) & 0x3f);
     }
-    
+
     *dst = res;
     return p + 1;
 }
@@ -87,13 +87,13 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
 void lite_renderer_init(void* win_handle)
 {
     assert(win);
-    
+
     window            = (SDL_Window*)win_handle;
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     lite_renderer_set_clip_rect((RenRect){
-                                    .x = 0, 
-                                    .y = 0, 
-                                    .width = (int32_t)surf->w, 
+                                    .x = 0,
+                                    .y = 0,
+                                    .width = (int32_t)surf->w,
                                     .height = (int32_t)surf->h
                                 });
 }
@@ -109,7 +109,7 @@ void lite_renderer_deinit(void)
 void lite_renderer_update_rects(RenRect* rects, int32_t count)
 {
     SDL_UpdateWindowSurfaceRects(window, (SDL_Rect*)rects, count);
-    
+
     static bool initial_frame = true;
     if (initial_frame)
     {
@@ -130,7 +130,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 {
     assert(x);
     assert(y);
-    
+
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     *x                = (int32_t)surf->w;
     *y                = (int32_t)surf->h;
@@ -139,7 +139,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 RenImage* lite_new_image(int32_t width, int32_t height)
 {
     assert(width > 0 && height > 0);
-    
+
     // @todo(maihd): use Arena instead of malloc
     RenImage* image =
         malloc(sizeof(RenImage) + width * height * sizeof(RenColor));
@@ -158,22 +158,22 @@ void lite_free_image(RenImage* image)
 static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
 {
     GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
-    
+
     /* init image */
     int32_t width  = 1024;
     int32_t height = 1024;
-    
+
     for (;;)
     {
         set->image = lite_new_image(width, height);
-        
+
         /* load glyphs */
         float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
             stbtt_ScaleForPixelHeight(&font->stbfont, 1);
         int32_t res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
                                            (void*)set->image->pixels, width,
                                            height, idx * 256, 256, set->glyphs);
-        
+
         /* retry with a larger image buffer if the buffer wasn't large enough */
         if (res < 0)
         {
@@ -182,10 +182,10 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
             lite_free_image(set->image);
             continue;
         }
-        
+
         break;
     }
-    
+
     /* adjust glyph yoffsets and xadvance */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
@@ -196,7 +196,7 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
         set->glyphs[i].yoff += scaled_ascent;
         set->glyphs[i].xadvance = floor(set->glyphs[i].xadvance);
     }
-    
+
     // convert 8bit data to 32bit
     // @todo: why must be pre-convert?
     // @todo: why must be in reverted-order loop?
@@ -206,7 +206,7 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
         set->image->pixels[i] =
         (RenColor){.r = 255, .g = 255, .b = 255, .a = n};
     }
-    
+
     return set;
 }
 
@@ -217,24 +217,24 @@ static GlyphSet* get_glyphset(RenFont* font, int32_t codepoint)
     {
         font->sets[idx] = load_glyphset(font, idx);
     }
-    
+
     return font->sets[idx];
 }
 
 RenFont* lite_load_font(const char* filename, float size)
 {
-    RenFont* font = NULL;
-    FILE*    fp   = NULL;
-    
+    RenFont* font = nullptr;
+    FILE*    fp   = nullptr;
+
     /* init font */
     font       = check_alloc(calloc(1, sizeof(RenFont)));
     font->size = size;
-    
+
     /* load font into buffer */
     fp = fopen(filename, "rb");
     if (!fp)
     {
-        return NULL;
+        return nullptr;
     }
     /* get size */
     fseek(fp, 0, SEEK_END);
@@ -245,39 +245,28 @@ RenFont* lite_load_font(const char* filename, float size)
     int32_t _  = fread(font->data, 1, buf_size, fp);
     (void)_;
     fclose(fp);
-    fp = NULL;
-    
+    fp = nullptr;
+
     /* init stbfont */
     int32_t ok = stbtt_InitFont(&font->stbfont, font->data, 0);
     if (!ok)
     {
-        goto fail;
+        free(font->data);
+        return nullptr;
     }
-    
+
     /* get height and scale */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
     font->height = (ascent - descent + linegap) * scale + 0.5;
-    
+
     /* make tab and newline glyphs invisible */
     stbtt_bakedchar* g = get_glyphset(font, '\n')->glyphs;
     g['\t'].x1         = g['\t'].x0;
     g['\n'].x1         = g['\n'].x0;
-    
+
     return font;
-    
-    fail:
-    if (fp)
-    {
-        fclose(fp);
-    }
-    if (font)
-    {
-        free(font->data);
-    }
-    free(font);
-    return NULL;
 }
 
 void lite_free_font(RenFont* font)
@@ -363,19 +352,19 @@ void lite_draw_rect(RenRect rect, RenColor color)
     {
         return;
     }
-    
+
     int32_t x1 = rect.x < clip.left ? clip.left : rect.x;
     int32_t y1 = rect.y < clip.top ? clip.top : rect.y;
     int32_t x2 = rect.x + rect.width;
     int32_t y2 = rect.y + rect.height;
     x2         = x2 > clip.right ? clip.right : x2;
     y2         = y2 > clip.bottom ? clip.bottom : y2;
-    
+
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     RenColor*    d    = (RenColor*)surf->pixels;
     d += x1 + y1 * surf->w;
     int32_t dr = surf->w - (x2 - x1);
-    
+
     if (color.a == 0xff)
     {
         rect_draw_loop(color);
@@ -392,7 +381,7 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         return;
     }
-    
+
     /* clip */
     int32_t n;
     if ((n = clip.left - x) > 0)
@@ -415,12 +404,12 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         sub->height -= n;
     }
-    
+
     if (sub->width <= 0 || sub->height <= 0)
     {
         return;
     }
-    
+
     /* draw */
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     RenColor*    s    = image->pixels;
@@ -429,7 +418,7 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     d += x + y * surf->w;
     int32_t sr = image->width - sub->width;
     int32_t dr = surf->w - sub->width;
-    
+
     for (int32_t j = 0; j < sub->height; j++)
     {
         for (int32_t i = 0; i < sub->width; i++)
