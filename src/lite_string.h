@@ -7,12 +7,12 @@
 /// StringView
 /// Data structure contain string characters and it length
 /// Utf8 support
-typedef struct StringView
+typedef struct LiteStringView
 {
     uint32_t    hash;
     uint32_t    length;
     const char* buffer;
-} StringView;
+} LiteStringView;
 
 /// StringBuffer
 /// Data structure contain mutable string
@@ -21,7 +21,7 @@ typedef struct StringView
 /// @sample(maihd):
 ///     StringBuffer* - right
 ///     StringBuffer  - wrong
-typedef struct StringBuffer
+typedef struct LiteStringBuffer
 {
     uint32_t mark;
     uint32_t hash;
@@ -29,9 +29,19 @@ typedef struct StringBuffer
     uint32_t length;
     uint32_t capacity;
     char     data[];
-} StringBuffer;
+} LiteStringBuffer;
 
 /// Calculate string length (utf8 support)
-const size_t string_count(const char* string);
+const uint32_t lite_string_count(const char* string);
+
+/// Create StringView
+static __forceinline LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t hash)
+{
+    LiteStringView string_view;
+    string_view.hash = hash;
+    string_view.length = length;
+    string_view.buffer = string;
+    return string_view;
+}
 
 //! new empty line, required by GCC

@@ -17,6 +17,7 @@
 
 #include "api.h"
 #include "rencache.h"
+#include "lite_file.h"
 
 extern SDL_Window* window;
 
@@ -24,10 +25,10 @@ static const char* button_name(int button)
 {
     switch (button)
     {
-    case 1: return "left";
-    case 2: return "middle";
-    case 3: return "right";
-    default: return "?";
+        case 1: return "left";
+        case 2: return "middle";
+        case 3: return "right";
+        default: return "?";
     }
 }
 
@@ -48,14 +49,14 @@ static int f_poll_event(lua_State* L)
     char      buf[16];
     int       mx, my, wx, wy;
     SDL_Event e;
-
+    
     while (SDL_PollEvent(&e))
     {
         switch (e.type)
         {
-        case SDL_QUIT: lua_pushstring(L, "quit"); return 1;
-
-        case SDL_WINDOWEVENT:
+            case SDL_QUIT: lua_pushstring(L, "quit"); return 1;
+            
+            case SDL_WINDOWEVENT:
             if (e.window.event == SDL_WINDOWEVENT_RESIZED)
             {
                 lua_pushstring(L, "resized");
@@ -69,7 +70,7 @@ static int f_poll_event(lua_State* L)
                 lua_pushstring(L, "exposed");
                 return 1;
             }
-
+            
             // on some systems, when alt-tabbing to the window SDL will queue up
             // several KEYDOWN events for the `tab` key; we flush all keydown
             // events on focus so these are discarded
@@ -78,8 +79,8 @@ static int f_poll_event(lua_State* L)
                 SDL_FlushEvent(SDL_KEYDOWN);
             }
             break;
-
-        case SDL_DROPFILE:
+            
+            case SDL_DROPFILE:
             SDL_GetGlobalMouseState(&mx, &my);
             SDL_GetWindowPosition(window, &wx, &wy);
             lua_pushstring(L, "filedropped");
@@ -88,23 +89,23 @@ static int f_poll_event(lua_State* L)
             lua_pushnumber(L, (lua_Number)my - (lua_Number)wy);
             SDL_free(e.drop.file);
             return 4;
-
-        case SDL_KEYDOWN:
+            
+            case SDL_KEYDOWN:
             lua_pushstring(L, "keypressed");
             lua_pushstring(L, key_name(buf, e.key.keysym.sym));
             return 2;
-
-        case SDL_KEYUP:
+            
+            case SDL_KEYUP:
             lua_pushstring(L, "keyreleased");
             lua_pushstring(L, key_name(buf, e.key.keysym.sym));
             return 2;
-
-        case SDL_TEXTINPUT:
+            
+            case SDL_TEXTINPUT:
             lua_pushstring(L, "textinput");
             lua_pushstring(L, e.text.text);
             return 2;
-
-        case SDL_MOUSEBUTTONDOWN:
+            
+            case SDL_MOUSEBUTTONDOWN:
             if (e.button.button == 1)
             {
                 SDL_CaptureMouse(1);
@@ -115,8 +116,8 @@ static int f_poll_event(lua_State* L)
             lua_pushnumber(L, e.button.y);
             lua_pushnumber(L, e.button.clicks);
             return 5;
-
-        case SDL_MOUSEBUTTONUP:
+            
+            case SDL_MOUSEBUTTONUP:
             if (e.button.button == 1)
             {
                 SDL_CaptureMouse(0);
@@ -126,24 +127,24 @@ static int f_poll_event(lua_State* L)
             lua_pushnumber(L, e.button.x);
             lua_pushnumber(L, e.button.y);
             return 4;
-
-        case SDL_MOUSEMOTION:
+            
+            case SDL_MOUSEMOTION:
             lua_pushstring(L, "mousemoved");
             lua_pushnumber(L, e.motion.x);
             lua_pushnumber(L, e.motion.y);
             lua_pushnumber(L, e.motion.xrel);
             lua_pushnumber(L, e.motion.yrel);
             return 5;
-
-        case SDL_MOUSEWHEEL:
+            
+            case SDL_MOUSEWHEEL:
             lua_pushstring(L, "mousewheel");
             lua_pushnumber(L, e.wheel.y);
             return 2;
-
-        default: break;
+            
+            default: break;
         }
     }
-
+    
     return 0;
 }
 
@@ -157,7 +158,7 @@ static int f_wait_event(lua_State* L)
 static SDL_Cursor* cursor_cache[SDL_SYSTEM_CURSOR_HAND + 1];
 
 static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
-                                    "sizev", "hand",  NULL};
+    "sizev", "hand",  NULL};
 
 static const int cursor_enums[] = {
     SDL_SYSTEM_CURSOR_ARROW, SDL_SYSTEM_CURSOR_IBEAM, SDL_SYSTEM_CURSOR_SIZEWE,
@@ -196,7 +197,7 @@ static int f_set_window_mode(lua_State* L)
 {
     int n = luaL_checkoption(L, 1, "normal", window_opts);
     SDL_SetWindowFullscreen(
-        window, n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+                            window, n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     if (n == WIN_NORMAL)
     {
         SDL_RestoreWindow(window);
@@ -224,7 +225,7 @@ static int f_get_window_opacity(lua_State* L)
         lua_error(L);
         return 0;
     }
-
+    
     lua_pushnumber(L, opacity);
     return 1;
 }
@@ -240,11 +241,11 @@ static int f_show_confirm_dialog(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
     const char* msg   = luaL_checkstring(L, 2);
-
+    
 #if _WIN32
     int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
     lua_pushboolean(L, id == IDYES);
-
+    
 #else
     SDL_MessageBoxButtonData buttons[] = {
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
@@ -282,6 +283,24 @@ static int f_chdir(lua_State* L)
     return 0;
 }
 
+static int f_file_time(lua_State* L)
+{
+    size_t      len;
+    const char* path = luaL_optlstring(L, 1, NULL, &len);
+    if (path == NULL)
+    {
+        const char errmsg[] = "list_dir: first parameter must be a string!";
+        lua_pushnil(L);
+        lua_pushlstring(L, errmsg, sizeof(errmsg) - 1);
+        return 2;
+    }
+    
+    uint64_t file_time = lite_file_write_time(lite_string_view(path, (uint32_t)len, 0u));
+    lua_Number lua_file_time = (lua_Number)file_time;
+    lua_pushnumber(L, lua_file_time);
+    return 1;
+}
+
 static int f_list_dir(lua_State* L)
 {
     size_t      len;
@@ -293,29 +312,29 @@ static int f_list_dir(lua_State* L)
         lua_pushlstring(L, errmsg, sizeof(errmsg) - 1);
         return 2;
     }
-
+    
 #if _WIN32
     char path_to_readdir[1024];
     sprintf(path_to_readdir, "%s\\*", path);
-
+    
     WIN32_FIND_DATAA ffd;
     HANDLE           hFind = FindFirstFileA(path_to_readdir, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
     {
         DWORD dw = GetLastError();
-
+        
         char  lpMsgBuf[1024];
         DWORD nMsgBufLen = FormatMessageA(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
-            sizeof(lpMsgBuf), NULL);
-
+                                          FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                                          FORMAT_MESSAGE_IGNORE_INSERTS,
+                                          NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
+                                          sizeof(lpMsgBuf), NULL);
+        
         lua_pushnil(L);
         lua_pushlstring(L, lpMsgBuf, nMsgBufLen);
         return 2;
     }
-
+    
     lua_newtable(L);
     int i = 1;
     do {
@@ -331,7 +350,7 @@ static int f_list_dir(lua_State* L)
         lua_rawseti(L, -2, i);
         i++;
     } while (FindNextFileA(hFind, &ffd) != 0);
-
+    
     FindClose(hFind);
 #else
     DIR* dir = opendir(path);
@@ -341,7 +360,7 @@ static int f_list_dir(lua_State* L)
         lua_pushstring(L, strerror(errno));
         return 2;
     }
-
+    
     lua_newtable(L);
     int            i = 1;
     struct dirent* entry;
@@ -359,10 +378,10 @@ static int f_list_dir(lua_State* L)
         lua_rawseti(L, -2, i);
         i++;
     }
-
+    
     closedir(dir);
 #endif
-
+    
     return 1;
 }
 
@@ -411,7 +430,7 @@ static int f_absolute_path(lua_State* L)
 static int f_get_file_info(lua_State* L)
 {
     const char* path = luaL_checkstring(L, 1);
-
+    
     struct stat s;
     int         err = stat(path, &s);
     if (err < 0)
@@ -420,14 +439,14 @@ static int f_get_file_info(lua_State* L)
         lua_pushstring(L, strerror(errno));
         return 2;
     }
-
+    
     lua_newtable(L);
     lua_pushnumber(L, (lua_Number)s.st_mtime);
     lua_setfield(L, -2, "modified");
-
+    
     lua_pushnumber(L, s.st_size);
     lua_setfield(L, -2, "size");
-
+    
     if (S_ISREG(s.st_mode))
     {
         lua_pushstring(L, "file");
@@ -441,7 +460,7 @@ static int f_get_file_info(lua_State* L)
         lua_pushnil(L);
     }
     lua_setfield(L, -2, "type");
-
+    
     return 1;
 }
 
@@ -508,7 +527,7 @@ static int f_fuzzy_match(lua_State* L)
     const char* ptn   = luaL_checkstring(L, 2);
     int         score = 0;
     int         run   = 0;
-
+    
     while (*str && *ptn)
     {
         while (*str == ' ')
@@ -536,7 +555,7 @@ static int f_fuzzy_match(lua_State* L)
     {
         return 0;
     }
-
+    
     lua_pushnumber(L, (lua_Number)score - (lua_Number)strlen(str));
     return 1;
 }
@@ -552,6 +571,7 @@ static const luaL_Reg lib[] = {
     {"window_has_focus",    f_window_has_focus   },
     {"show_confirm_dialog", f_show_confirm_dialog},
     {"chdir",               f_chdir              },
+    {"file_time", f_file_time },
     {"list_dir",            f_list_dir           },
     {"absolute_path",       f_absolute_path      },
     {"get_file_info",       f_get_file_info      },

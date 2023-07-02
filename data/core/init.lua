@@ -60,13 +60,27 @@ local function project_scan_thread()
     return t
   end
 
+--   local function is_project_changed(current_dir)
+--     current_dir = current_dir or core.project_dir
+--     local t = system.file_time(current_dir)
+--     return
+--   end
+
   while true do
-    -- get project files and replace previous table if the new table is
-    -- different
-    local t = get_files(".")
-    if diff_files(core.project_files, t) then
-      core.project_files = t
-      core.redraw = true
+    -- get project directory write time, replace previous if the directory is written
+    local t = system.file_time(core.project_dir)
+    if t > core.project_dir_time then
+        local project_files = get_files(".")
+        core.project_files = project_files
+        core.project_dir_time = t
+    else
+        -- get project files and replace previous table if the new table is
+        -- different
+        local t = get_files(".")
+        if diff_files(core.project_files, t) then
+          core.project_files = t
+          core.redraw = true
+        end
     end
 
     -- wait for next scan
@@ -99,6 +113,8 @@ function core.init()
   system.chdir(project_dir)
   core.project_dir = project_dir
   core.project_dir_name = project_dir:sub(#project_dir:match("(.*[/\\])") + 1)
+  -- core.project_dir_time = system.file_time(core.project_dir) -- @note(maihd): this cause project files does not loaded in ProjectView
+  core.project_dir_time = 0
 
   core.frame_start = 0
   core.clip_rect_stack = {{ 0,0,0,0 }}
@@ -106,6 +122,7 @@ function core.init()
   core.docs = {}
   core.threads = setmetatable({}, { __mode = "k" })
   core.project_files = {}
+-- core.project_files = get_files(core.project_dir)
   core.redraw = true
 
   core.root_view = RootView()

@@ -39,15 +39,15 @@
 #define __comptime constexpr
 #else
 #define __comptime                                                             \
-    static_assert(                                                             \
-        0,                                                                     \
-        "Only C++14 and above support comptime function"); // @note(maihd): add
-                                                           // ';' here because
-                                                           // we donot know is
-                                                           // static_assert a
-                                                           // expression or not
-                                                           // base on compilers
-                                                           // implementation
+static_assert(                                                             \
+0,                                                                     \
+"Only C++14 and above support comptime function"); // @note(maihd): add
+// ';' here because
+// we donot know is
+// static_assert a
+// expression or not
+// base on compilers
+// implementation
 #endif
 
 /// alignas attribute
