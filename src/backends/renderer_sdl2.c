@@ -6,6 +6,8 @@
 
 #include "lib/stb/stb_truetype.h"
 #include <SDL2/SDL.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 #include "renderer.h"
 
@@ -33,6 +35,8 @@ struct RenFont
 };
 
 static SDL_Window* window;
+static RenImage g_surface;
+
 static struct
 {
     int32_t left, top, right, bottom;
@@ -47,7 +51,7 @@ static void* check_alloc(void* ptr)
         fprintf(stderr, "Fatal error: memory allocation failed\n");
         exit(-1);
     }
-
+    
     return ptr;
 }
 
@@ -74,12 +78,12 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
         n   = 0;
         break;
     }
-
+    
     while (n--)
     {
         res = (res << 6) | (*(++p) & 0x3f);
     }
-
+    
     *dst = res;
     return p + 1;
 }
@@ -87,9 +91,15 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
 void lite_renderer_init(void* win_handle)
 {
     assert(win);
-
+    
     window            = (SDL_Window*)win_handle;
     SDL_Surface* surf = SDL_GetWindowSurface(window);
+    g_surface = (RenImage){
+        .width = (int32_t)surf->w,
+        .height = (int32_t)surf->h,
+        .pixels = (RenColor*)surf->pixels
+    };
+    
     lite_renderer_set_clip_rect((RenRect){
                                     .x = 0,
                                     .y = 0,
@@ -106,10 +116,122 @@ void lite_renderer_deinit(void)
     }
 }
 
+#if 0
+// @note(maihd): copy from SDL2 src
+struct SDL_Window
+{
+    const void *magic;
+    SDL_WindowID id;
+    char *title;
+    SDL_Surface *icon;
+    int x, y;
+    int w, h;
+    int min_w, min_h;
+    int max_w, max_h;
+    int last_pixel_w, last_pixel_h;
+    Uint32 flags;
+    Uint32 pending_flags;
+    float display_scale;
+    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
+    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
+    SDL_DisplayID last_displayID;
+    
+    /* Stored position and size for windowed mode */
+    SDL_Rect windowed;
+    
+    /* Whether or not the intial position was defined */
+    SDL_bool undefined_x;
+    SDL_bool undefined_y;
+    
+    SDL_DisplayMode requested_fullscreen_mode;
+    SDL_DisplayMode current_fullscreen_mode;
+    
+    float opacity;
+    
+    SDL_Surface *surface;
+    SDL_bool surface_valid;
+    
+    SDL_bool is_hiding;
+    SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
+    SDL_bool is_destroying;
+    SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
+    
+    SDL_Rect mouse_rect;
+    
+    SDL_WindowShaper *shaper;
+    
+    SDL_HitTest hit_test;
+    void *hit_test_data;
+    
+    SDL_WindowUserData *data;
+    
+    SDL_WindowData *driverdata;
+    
+    SDL_Window *prev;
+    SDL_Window *next;
+    
+    SDL_Window *parent;
+    SDL_Window *first_child;
+    SDL_Window *prev_sibling;
+    SDL_Window *next_sibling;
+};
+
+// @note(maihd): copy from SDL2 src
+struct SDL_WindowData
+{
+    SDL_Window *window;
+    HWND hwnd;
+    HWND parent;
+    HDC hdc;
+    HDC mdc;
+#if 0
+    HINSTANCE hinstance;
+    HBITMAP hbm;
+    WNDPROC wndproc;
+    HHOOK keyboard_hook;
+    SDL_bool created;
+    WPARAM mouse_button_flags;
+    LPARAM last_pointer_update;
+    WCHAR high_surrogate;
+    SDL_bool initializing;
+    SDL_bool expected_resize;
+    SDL_bool in_border_change;
+    SDL_bool in_title_click;
+    Uint8 focus_click_pending;
+    SDL_bool skip_update_clipcursor;
+    Uint64 last_updated_clipcursor;
+    SDL_bool mouse_relative_mode_center;
+    SDL_bool windowed_mode_was_maximized;
+    SDL_bool in_window_deactivation;
+    RECT cursor_clipped_rect;
+    SDL_Point last_raw_mouse_position;
+    SDL_bool mouse_tracked;
+    SDL_bool destroy_parent_with_window;
+    SDL_DisplayID last_displayID;
+    WCHAR *ICMFileName;
+    SDL_Window *keyboard_focus;
+    struct SDL_VideoData *videodata;
+#ifdef SDL_VIDEO_OPENGL_EGL
+    EGLSurface egl_surface;
+#endif
+    
+    /* Whether we retain the content of the window when changing state */
+    UINT copybits_flag;
+#endif
+};
+#endif
+
 void lite_renderer_update_rects(RenRect* rects, int32_t count)
 {
-    SDL_UpdateWindowSurfaceRects(window, (SDL_Rect*)rects, count);
-
+    // @note(maihd): this algorithm from SDL2 src
+    //struct SDL_WindowData* data = window->driverdata;
+    //for (int32_t i = 0; i < count; ++i)
+    //{
+    //BitBlt(data->hdc, rects[i].x, rects[i].y, rects[i].width, rects[i].height,
+    //data->mdc, rects[i].x, rects[i].y, SRCCOPY);
+    //}
+    SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, count);
+    
     static bool initial_frame = true;
     if (initial_frame)
     {
@@ -130,7 +252,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 {
     assert(x);
     assert(y);
-
+    
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     *x                = (int32_t)surf->w;
     *y                = (int32_t)surf->h;
@@ -139,7 +261,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 RenImage* lite_new_image(int32_t width, int32_t height)
 {
     assert(width > 0 && height > 0);
-
+    
     // @todo(maihd): use Arena instead of malloc
     RenImage* image =
         malloc(sizeof(RenImage) + width * height * sizeof(RenColor));
@@ -158,22 +280,22 @@ void lite_free_image(RenImage* image)
 static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
 {
     GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
-
+    
     /* init image */
     int32_t width  = 1024;
     int32_t height = 1024;
-
+    
     for (;;)
     {
         set->image = lite_new_image(width, height);
-
+        
         /* load glyphs */
         float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
             stbtt_ScaleForPixelHeight(&font->stbfont, 1);
         int32_t res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
                                            (void*)set->image->pixels, width,
                                            height, idx * 256, 256, set->glyphs);
-
+        
         /* retry with a larger image buffer if the buffer wasn't large enough */
         if (res < 0)
         {
@@ -182,10 +304,10 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
             lite_free_image(set->image);
             continue;
         }
-
+        
         break;
     }
-
+    
     /* adjust glyph yoffsets and xadvance */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
@@ -196,7 +318,7 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
         set->glyphs[i].yoff += scaled_ascent;
         set->glyphs[i].xadvance = floor(set->glyphs[i].xadvance);
     }
-
+    
     // convert 8bit data to 32bit
     // @todo: why must be pre-convert?
     // @todo: why must be in reverted-order loop?
@@ -206,7 +328,7 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
         set->image->pixels[i] =
         (RenColor){.r = 255, .g = 255, .b = 255, .a = n};
     }
-
+    
     return set;
 }
 
@@ -217,7 +339,7 @@ static GlyphSet* get_glyphset(RenFont* font, int32_t codepoint)
     {
         font->sets[idx] = load_glyphset(font, idx);
     }
-
+    
     return font->sets[idx];
 }
 
@@ -225,11 +347,11 @@ RenFont* lite_load_font(const char* filename, float size)
 {
     RenFont* font = nullptr;
     FILE*    fp   = nullptr;
-
+    
     /* init font */
     font       = check_alloc(calloc(1, sizeof(RenFont)));
     font->size = size;
-
+    
     /* load font into buffer */
     fp = fopen(filename, "rb");
     if (!fp)
@@ -246,7 +368,7 @@ RenFont* lite_load_font(const char* filename, float size)
     (void)_;
     fclose(fp);
     fp = nullptr;
-
+    
     /* init stbfont */
     int32_t ok = stbtt_InitFont(&font->stbfont, font->data, 0);
     if (!ok)
@@ -254,18 +376,18 @@ RenFont* lite_load_font(const char* filename, float size)
         free(font->data);
         return nullptr;
     }
-
+    
     /* get height and scale */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
     font->height = (ascent - descent + linegap) * scale + 0.5;
-
+    
     /* make tab and newline glyphs invisible */
     stbtt_bakedchar* g = get_glyphset(font, '\n')->glyphs;
     g['\t'].x1         = g['\t'].x0;
     g['\n'].x1         = g['\n'].x0;
-
+    
     return font;
 }
 
@@ -352,19 +474,18 @@ void lite_draw_rect(RenRect rect, RenColor color)
     {
         return;
     }
-
+    
     int32_t x1 = rect.x < clip.left ? clip.left : rect.x;
     int32_t y1 = rect.y < clip.top ? clip.top : rect.y;
     int32_t x2 = rect.x + rect.width;
     int32_t y2 = rect.y + rect.height;
     x2         = x2 > clip.right ? clip.right : x2;
     y2         = y2 > clip.bottom ? clip.bottom : y2;
-
-    SDL_Surface* surf = SDL_GetWindowSurface(window);
-    RenColor*    d    = (RenColor*)surf->pixels;
-    d += x1 + y1 * surf->w;
-    int32_t dr = surf->w - (x2 - x1);
-
+    
+    RenColor* d = g_surface.pixels;
+    d += x1 + y1 * g_surface.width;
+    int32_t dr = g_surface.width - (x2 - x1);
+    
     if (color.a == 0xff)
     {
         rect_draw_loop(color);
@@ -381,7 +502,7 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         return;
     }
-
+    
     /* clip */
     int32_t n;
     if ((n = clip.left - x) > 0)
@@ -404,21 +525,20 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         sub->height -= n;
     }
-
+    
     if (sub->width <= 0 || sub->height <= 0)
     {
         return;
     }
-
+    
     /* draw */
-    SDL_Surface* surf = SDL_GetWindowSurface(window);
     RenColor*    s    = image->pixels;
-    RenColor*    d    = (RenColor*)surf->pixels;
+    RenColor*    d    = g_surface.pixels;
     s += sub->x + sub->y * image->width;
-    d += x + y * surf->w;
+    d += x + y * g_surface.width;
     int32_t sr = image->width - sub->width;
-    int32_t dr = surf->w - sub->width;
-
+    int32_t dr = g_surface.width - sub->width;
+    
     for (int32_t j = 0; j < sub->height; j++)
     {
         for (int32_t i = 0; i < sub->width; i++)
