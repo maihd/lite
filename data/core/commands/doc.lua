@@ -327,6 +327,14 @@ local commands = {
       end
     end, common.path_suggest)
   end,
+
+  ["doc:create-cursor-prev-line"] = function()
+    -- @todo(maihd): not implement, multi-cursor does not support now
+  end,
+
+  ["doc:create-cursor-next-line"] = function()
+    -- @todo(maihd): not implement, multi-cursor does not support now
+  end
 }
 
 

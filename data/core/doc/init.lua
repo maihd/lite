@@ -47,6 +47,7 @@ end
 function Doc:reset()
   self.lines = { "\n" }
   self.selection = { a = { line=1, col=1 }, b = { line=1, col=1 } }
+  self.selections = {} -- @todo(maihd): multiple selections to make multiple cursors work
   self.undo_stack = { idx = 1 }
   self.redo_stack = { idx = 1 }
   self.clean_change_id = 1
