@@ -28,10 +28,11 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Add clang build script on Windows
 - Display MessageBox when app failed to launch
 - Add clang-format
+- Skip opening binary file.
 
 ## TODOs
-- Fix BOM on `C#` files.
-- Open binary in readonly-mode.
+- Fix BOM on Unicode files.
+- Open binary file in preview-mode.
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
 - Make typing work with UniKey (Vietnamese typing method).
 - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
