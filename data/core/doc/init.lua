@@ -71,13 +71,29 @@ function Doc:load(filename)
   self:reset()
   self.filename = filename
   self.lines = {}
+
   for line in fp:lines() do
+    local start = 1
+    if #self.lines == 0 then
+        if line:byte(1) == 0xff or line:byte(1) == 0xbe then
+            start = 3
+        elseif line:byte(1) == 0xef
+        and line:byte(2) == 0xbb
+        and line:byte(3) == 0xbf
+        then
+            start = 4
+        end
+
+        -- @todo(maihd): convert Utf16/32 to utf8 buffer
+    end
+
     if line:byte(-1) == 13 then
-      line = line:sub(1, -2)
+      line = line:sub(start, -2)
       self.crlf = true
     end
     table.insert(self.lines, line .. "\n")
   end
+
   if #self.lines == 0 then
     table.insert(self.lines, "\n")
   end
