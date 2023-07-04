@@ -26,19 +26,26 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Check directory changed based on last write time instead of file diffs
 - Add premake5 to generate Visual Studio project, for debugging purpose
 - Add clang build script on Windows
-- Display MessageBox when app failed to launch
-- Add clang-format
+- Display MessageBox when app failed to launch.
+- Add clang-format.
 - Skip opening binary file.
+- Fix BOM on Unicode files.
+- Soft tab VSCode-like.
+- Languages: Batch, `C#`, C.
 
 ## TODOs
-- Fix BOM on Unicode files.
-- Open binary file in preview-mode.
+- Align line numbers near code.
+- Display icon to show log type.
+- Double click to log line to open source.
+- Make app more robust.
+- Refactor C source.
+- Line wrapping.
+- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
 - Make typing work with UniKey (Vietnamese typing method).
-- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+- Open binary file in preview-mode.
 - Use fast string algorithms (code editting are working on string heavily)
 - Convert to use native API instead of large library like SDL.
-- Make app more robust.
 - Bootstrap version for debugging and development.
 - Display launching messagebox with style and helper.
 - Add more render backends: OpenGL, Vulkan, Dear ImGui.
