@@ -155,6 +155,64 @@ static int f_wait_event(lua_State* L)
     return 1;
 }
 
+static int f_is_binary_file(lua_State* L)
+{
+    const char* file_path = luaL_checkstring(L, 1);
+    
+    FILE* file = fopen(file_path, "rb");
+    if (!file)
+    {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    
+    uint8_t first_4_bytes[128];
+    size_t bytes_read = fread(first_4_bytes, 1, sizeof(first_4_bytes), file);
+    fclose(file);
+    
+    // Utf8 BOM
+    if (first_4_bytes[0] == 0xef
+        && first_4_bytes[1] == 0xbb
+        && first_4_bytes[2] == 0xbf)
+    {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    
+    // Utf32 BOM 
+    if (*(uint32_t*)first_4_bytes == 0xfffe00)
+    {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    
+    // Utf16 BOM 
+    if ((first_4_bytes[0] == 0xfe && first_4_bytes[1] == 0xff)
+        || (first_4_bytes[0] == 0xff && first_4_bytes[1] == 0xfe))
+    {
+        lua_pushboolean(L, false);
+        return 1;
+    }
+    
+    // ASCII or binary
+    uint8_t* c = first_4_bytes;
+    for (size_t i = 0; i < bytes_read; i++)
+    {
+        if (c[i] < 0x20 
+            && c[i] != '\n' 
+            && c[i] != '\t' 
+            && c[i] != '\r' 
+            && c[i] != '\f')
+        {
+            lua_pushboolean(L, true);
+            return 1;
+        }
+    }
+    
+    lua_pushboolean(L, false);
+    return 1;
+}
+
 static SDL_Cursor* cursor_cache[SDL_SYSTEM_CURSOR_HAND + 1];
 
 static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
@@ -572,6 +630,7 @@ static const luaL_Reg lib[] = {
     {"show_confirm_dialog", f_show_confirm_dialog},
     {"chdir",               f_chdir              },
     {"file_time", f_file_time },
+    {"is_binary_file", f_is_binary_file },
     {"list_dir",            f_list_dir           },
     {"absolute_path",       f_absolute_path      },
     {"get_file_info",       f_get_file_info      },

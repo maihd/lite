@@ -117,7 +117,10 @@ function TreeView:on_mouse_pressed(button, x, y)
     self.hovered_item.expanded = not self.hovered_item.expanded
   else
     core.try(function()
-      core.root_view:open_doc(core.open_doc(self.hovered_item.filename))
+      local doc = core.open_doc(self.hovered_item.filename)
+      if doc then
+        core.root_view:open_doc(doc)
+      end
     end)
   end
 end

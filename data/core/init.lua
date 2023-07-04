@@ -274,9 +274,10 @@ end
 
 
 function core.open_doc(filename)
+  local abs_filename = system.absolute_path(filename)
+
   if filename then
     -- try to find existing doc for filename
-    local abs_filename = system.absolute_path(filename)
     for _, doc in ipairs(core.docs) do
       if doc.filename
       and abs_filename == system.absolute_path(doc.filename) then
@@ -284,6 +285,15 @@ function core.open_doc(filename)
       end
     end
   end
+
+  -- check is binary file; skip opening
+  -- @note(maihd): if open binary file, memory may leak
+  local is_binary = system.is_binary_file(abs_filename)
+  if is_binary then
+      core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
+      return nil
+  end
+
   -- no existing doc for filename; create new
   local doc = Doc(filename)
   table.insert(core.docs, doc)
