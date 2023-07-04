@@ -20,8 +20,13 @@ local function get_indent_string(cursor)
   if config.tab_type == "hard" then
     return "\t"
   end
-  cursor = cursor or 0
-  return string.rep(" ", config.indent_size - ((cursor - 1) % config.indent_size))
+
+  if cursor then
+    cursor = cursor or 0
+    return string.rep(" ", config.indent_size - ((cursor - 1) % config.indent_size))
+  end
+
+  return string.rep(" ", config.indent_size)
 end
 
 
