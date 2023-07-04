@@ -16,11 +16,12 @@ local function doc()
 end
 
 
-local function get_indent_string()
+local function get_indent_string(cursor)
   if config.tab_type == "hard" then
     return "\t"
   end
-  return string.rep(" ", config.indent_size)
+  cursor = cursor or 0
+  return string.rep(" ", config.indent_size - ((cursor - 1) % config.indent_size))
 end
 
 
@@ -174,10 +175,12 @@ local commands = {
   end,
 
   ["doc:indent"] = function()
-    local text = get_indent_string()
     if doc():has_selection() then
+      local text = get_indent_string()
       insert_at_start_of_selected_lines(text)
     else
+      local _, cursor = doc():get_selection(false)
+      local text = get_indent_string(cursor)
       doc():text_input(text)
     end
   end,

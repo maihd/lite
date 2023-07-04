@@ -298,6 +298,10 @@ function DocView:draw_line_text(idx, x, y)
   local font = self:get_font()
   for _, type, text in self.doc.highlighter:each_token(idx) do
     local color = style.syntax[type]
+-- @note(maihd): convert space to '.' for debugging
+--     if config.draw_space_dot then
+--         text = text:gsub("% ", ".")
+--     end
     tx = renderer.draw_text(font, text, tx, ty, color)
   end
 end

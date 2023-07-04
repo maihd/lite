@@ -157,59 +157,18 @@ static int f_wait_event(lua_State* L)
 
 static int f_is_binary_file(lua_State* L)
 {
-    const char* file_path = luaL_checkstring(L, 1);
-    
-    FILE* file = fopen(file_path, "rb");
-    if (!file)
+    size_t length;
+    const char* file_path = luaL_checklstring(L, 1, &length);
+    if (file_path == NULL)
     {
-        lua_pushboolean(L, false);
-        return 1;
+        const char errmsg[] = "is_binary_file: first parameter must be a string!";
+        lua_pushnil(L);
+        lua_pushlstring(L, errmsg, sizeof(errmsg) - 1);
+        return 2;
     }
     
-    uint8_t first_4_bytes[128];
-    size_t bytes_read = fread(first_4_bytes, 1, sizeof(first_4_bytes), file);
-    fclose(file);
-    
-    // Utf8 BOM
-    if (first_4_bytes[0] == 0xef
-        && first_4_bytes[1] == 0xbb
-        && first_4_bytes[2] == 0xbf)
-    {
-        lua_pushboolean(L, false);
-        return 1;
-    }
-    
-    // Utf32 BOM 
-    if (*(uint32_t*)first_4_bytes == 0xfffe00)
-    {
-        lua_pushboolean(L, false);
-        return 1;
-    }
-    
-    // Utf16 BOM 
-    if ((first_4_bytes[0] == 0xfe && first_4_bytes[1] == 0xff)
-        || (first_4_bytes[0] == 0xff && first_4_bytes[1] == 0xfe))
-    {
-        lua_pushboolean(L, false);
-        return 1;
-    }
-    
-    // ASCII or binary
-    uint8_t* c = first_4_bytes;
-    for (size_t i = 0; i < bytes_read; i++)
-    {
-        if (c[i] < 0x20 
-            && c[i] != '\n' 
-            && c[i] != '\t' 
-            && c[i] != '\r' 
-            && c[i] != '\f')
-        {
-            lua_pushboolean(L, true);
-            return 1;
-        }
-    }
-    
-    lua_pushboolean(L, false);
+    bool result = lite_is_binary_file(lite_string_view(file_path, length, 0));
+    lua_pushboolean(L, result);
     return 1;
 }
 
@@ -362,8 +321,8 @@ static int f_file_time(lua_State* L)
 static int f_list_dir(lua_State* L)
 {
     size_t      len;
-    const char* path = luaL_optlstring(L, 1, NULL, &len);
-    if (path == NULL)
+    const char* path = luaL_optlstring(L, 1, nullptr, &len);
+    if (path == nullptr)
     {
         const char errmsg[] = "list_dir: first parameter must be a string!";
         lua_pushnil(L);

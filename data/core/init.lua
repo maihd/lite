@@ -267,38 +267,37 @@ end
 
 
 function core.pop_clip_rect()
-  table.remove(core.clip_rect_stack)
-  local x, y, w, h = unpack(core.clip_rect_stack[#core.clip_rect_stack])
-  renderer.set_clip_rect(x, y, w, h)
+    table.remove(core.clip_rect_stack)
+    local x, y, w, h = unpack(core.clip_rect_stack[#core.clip_rect_stack])
+    renderer.set_clip_rect(x, y, w, h)
 end
 
 
 function core.open_doc(filename)
-  local abs_filename = system.absolute_path(filename)
+    if filename then
+        -- try to find existing doc for filename
+        local abs_filename = system.absolute_path(filename)
+        for _, doc in ipairs(core.docs) do
+          if doc.filename
+          and abs_filename == system.absolute_path(doc.filename) then
+            return doc
+          end
+        end
 
-  if filename then
-    -- try to find existing doc for filename
-    for _, doc in ipairs(core.docs) do
-      if doc.filename
-      and abs_filename == system.absolute_path(doc.filename) then
-        return doc
-      end
+        -- check is binary file; skip opening
+        -- @note(maihd): if open binary file, memory may leak
+        local is_binary = system.is_binary_file(abs_filename)
+            if is_binary then
+                core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
+            return nil
+        end
     end
-  end
 
-  -- check is binary file; skip opening
-  -- @note(maihd): if open binary file, memory may leak
-  local is_binary = system.is_binary_file(abs_filename)
-  if is_binary then
-      core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
-      return nil
-  end
-
-  -- no existing doc for filename; create new
-  local doc = Doc(filename)
-  table.insert(core.docs, doc)
-  core.log_quiet(filename and "Opened doc \"%s\"" or "Opened new doc", filename)
-  return doc
+    -- no existing doc for filename; create new
+    local doc = Doc(filename)
+    table.insert(core.docs, doc)
+    core.log_quiet(filename and "Opened doc \"%s\"" or "Opened new doc", filename)
+    return doc
 end
 
 
