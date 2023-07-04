@@ -31,7 +31,7 @@ int main(int argc, char** argv)
 #endif
     
 #if USE_TERMINAL_CONSOLE
-    lite_open_console();
+    lite_console_open();
 #endif
     
     lite_window_open();
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     lite_window_close();
     
 #if USE_TERMINAL_CONSOLE
-    lite_close_console();
+    lite_console_close();
 #endif
     
     return EXIT_SUCCESS;

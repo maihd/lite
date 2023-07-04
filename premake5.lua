@@ -28,8 +28,12 @@ do
     -- end
 
     files {
-        path.join(ROOT_DIR, "src/**.h"),
-        path.join(ROOT_DIR, "src/**.c"),
+        path.join(ROOT_DIR, "src/*.h"),
+        path.join(ROOT_DIR, "src/*.c"),
+        path.join(ROOT_DIR, "src/api/**.h"),
+        path.join(ROOT_DIR, "src/api/**.c"),
+        path.join(ROOT_DIR, "src/lib/**.h"),
+        path.join(ROOT_DIR, "src/lib/**.c"),
     }
 
     links {

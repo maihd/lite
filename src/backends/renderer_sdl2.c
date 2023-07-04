@@ -90,7 +90,7 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
 
 void lite_renderer_init(void* win_handle)
 {
-    assert(win);
+    assert(win_handle);
     
     window            = (SDL_Window*)win_handle;
     SDL_Surface* surf = SDL_GetWindowSurface(window);
@@ -482,6 +482,14 @@ void lite_draw_rect(RenRect rect, RenColor color)
     x2         = x2 > clip.right ? clip.right : x2;
     y2         = y2 > clip.bottom ? clip.bottom : y2;
     
+    // @note(maihd): trick, need to handle resize event instead
+    SDL_Surface* surface = SDL_GetWindowSurface(window);
+    g_surface = (RenImage){
+        .width = (uint32_t)surface->w,
+        .height = (uint32_t)surface->h,
+        .pixels = (RenColor*)surface->pixels,
+    };
+
     RenColor* d = g_surface.pixels;
     d += x1 + y1 * g_surface.width;
     int32_t dr = g_surface.width - (x2 - x1);
@@ -530,6 +538,14 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         return;
     }
+
+    // @note(maihd): trick, need to handle resize event instead
+    SDL_Surface* surface = SDL_GetWindowSurface(window);
+    g_surface = (RenImage){
+        .width = (uint32_t)surface->w,
+        .height = (uint32_t)surface->h,
+        .pixels = (RenColor*)surface->pixels,
+    };
     
     /* draw */
     RenColor*    s    = image->pixels;
