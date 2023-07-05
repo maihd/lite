@@ -34,9 +34,9 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Languages: Batch, `C#`, C.
 - Double click to log line to open file.
 - Refactor C source.
+- Align line numbers near code.
 
 ## TODOs
-- Align line numbers near code.
 - Display icon to show log type.
 - Make app more robust.
 - Line wrapping.
