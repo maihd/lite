@@ -129,7 +129,7 @@ function core.init()
     core.command_view = CommandView()
     core.status_view = StatusView()
 
-    core.log(core.project_dir)
+--     core.log(core.project_dir)
 
     core.root_view.root_node:split("down", core.command_view, true)
     core.root_view.root_node.b:split("down", core.status_view, true)
@@ -321,8 +321,8 @@ function core.log(...)
 end
 
 function core.log_quiet(...)
-    return log("!", style.text, ...)
-    -- return log(nil, nil, ...)
+    -- return log("!", style.text, ...)
+    return log(nil, nil, ...)
 end
 
 function core.error(...)
@@ -388,7 +388,7 @@ function core.step()
     for type, a, b, c, d, e in system.poll_event do
         -- if type == "mousemoved" then
         --     mouse_move = { a, b, c, d, e}
-        --     mouse_move_before_pressed = not mouse_press 
+        --     mouse_move_before_pressed = not mouse_press
         -- elseif type == "mousepressed" then
         --     mouse_press = core.mouse_press or {}
         --     if mouse_press[a] then
@@ -419,7 +419,7 @@ function core.step()
     --     for _, event in pairs(mouse_press or {}) do
     --         core.try(core.on_event, "mousepressed", unpack(event))
     --     end
-        
+
     --     if mouse_move then
     --         core.try(core.on_event, "mousemoved", unpack(mouse_move))
     --     end

@@ -217,9 +217,11 @@ end
 command.add(nil, {
     ["project-search:find"] = function()
         local dv = core.active_view
-        local sel = { dv.doc:get_selection() }
-        local text = dv.doc:get_text(unpack(sel))
-        core.command_view:set_text(text, true)
+        if dv.doc then
+            local sel = { dv.doc:get_selection() }
+            local text = dv.doc:get_text(unpack(sel))
+            core.command_view:set_text(text, true)
+        end
 
         core.command_view:enter("Find Text In Project", function(text)
             text = text:lower()
