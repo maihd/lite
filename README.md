@@ -33,12 +33,12 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Soft tab VSCode-like.
 - Languages: Batch, `C#`, C.
 - Double click to log line to open file.
+- Refactor C source.
 
 ## TODOs
 - Align line numbers near code.
 - Display icon to show log type.
 - Make app more robust.
-- Refactor C source.
 - Line wrapping.
 - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
