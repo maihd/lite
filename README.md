@@ -32,11 +32,11 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Fix BOM on Unicode files.
 - Soft tab VSCode-like.
 - Languages: Batch, `C#`, C.
+- Double click to log line to open file.
 
 ## TODOs
 - Align line numbers near code.
 - Display icon to show log type.
-- Double click to log line to open source.
 - Make app more robust.
 - Refactor C source.
 - Line wrapping.
