@@ -331,8 +331,9 @@ function DocView:draw_line_gutter(idx, x, y)
         color = style.line_number2
     end
     local yoffset = self:get_line_text_y_offset()
-    x = x + style.padding.x
-    renderer.draw_text(self:get_font(), idx, x, y + yoffset, color)
+    local font = self:get_font()
+    x = x + style.padding.x + font:get_width(#self.doc.lines) - font:get_width(idx) 
+    renderer.draw_text(font, idx, x, y + yoffset, color)
 end
 
 function DocView:draw()
