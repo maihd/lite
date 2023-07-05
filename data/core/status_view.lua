@@ -109,10 +109,19 @@ function StatusView:get_items()
             self.separator,
             string.format("%d%%", line / #dv.doc.lines * 100),
         }, {
+            -- Language
+            style.icon_font, "p",
+            style.font, style.dim, self.separator2, style.text,
+            style.font, dv.doc:get_language_name(),
+            self.separator,
+
+            -- Lines
             style.icon_font, "g",
             style.font, style.dim, self.separator2, style.text,
             #dv.doc.lines, " lines",
             self.separator,
+
+            -- Line ending
             dv.doc.crlf and "CRLF" or "LF"
         }
     end

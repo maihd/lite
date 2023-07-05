@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "MarkDown",
   files = { "%.md$", "%.markdown$" },
   patterns = {
     { pattern = "\\.",                    type = "normal"   },

@@ -37,68 +37,70 @@ end
 
 
 function Doc:new(filename)
-  self:reset()
-  if filename then
-    self:load(filename)
-  end
+    self:reset()
+    if filename then
+        self:load(filename)
+    end
 end
 
 
 function Doc:reset()
-  self.lines = { "\n" }
-  self.selection = { a = { line=1, col=1 }, b = { line=1, col=1 } }
-  self.selections = {} -- @todo(maihd): multiple selections to make multiple cursors work
-  self.undo_stack = { idx = 1 }
-  self.redo_stack = { idx = 1 }
-  self.clean_change_id = 1
-  self.highlighter = Highlighter(self)
-  self:reset_syntax()
+    self.lines = { "\n" }
+    self.selection = { a = { line=1, col=1 }, b = { line=1, col=1 } }
+    self.selections = {} -- @todo(maihd): multiple selections to make multiple cursors work
+    self.undo_stack = { idx = 1 }
+    self.redo_stack = { idx = 1 }
+    self.clean_change_id = 1
+    self.highlighter = Highlighter(self)
+    self:reset_syntax()
 end
 
 
 function Doc:reset_syntax()
-  local header = self:get_text(1, 1, self:position_offset(1, 1, 128))
-  local syn = syntax.get(self.filename or "", header)
-  if self.syntax ~= syn then
-    self.syntax = syn
-    self.highlighter:reset()
-  end
+    local header = self:get_text(1, 1, self:position_offset(1, 1, 128))
+    local syn = syntax.get(self.filename or "", header)
+    if self.syntax ~= syn then
+        self.syntax = syn
+        self.highlighter:reset()
+    end
 end
 
 
 function Doc:load(filename)
-  local fp = assert( io.open(filename, "rb") )
-  self:reset()
-  self.filename = filename
-  self.lines = {}
+    local fp = assert( io.open(filename, "rb") )
+    self:reset()
+    self.filename = filename
+    self.lines = {}
 
-  for line in fp:lines() do
-    local start = 1
-    if #self.lines == 0 then
-        if line:byte(1) == 0xff or line:byte(1) == 0xbe then
-            start = 3
-        elseif line:byte(1) == 0xef
-        and line:byte(2) == 0xbb
-        and line:byte(3) == 0xbf
-        then
-            start = 4
+    for line in fp:lines() do
+        local start = 1
+        if #self.lines == 0 then
+            if line:byte(1) == 0xff or line:byte(1) == 0xbe then
+                start = 3
+            elseif line:byte(1) == 0xef
+               and line:byte(2) == 0xbb
+               and line:byte(3) == 0xbf
+            then
+                start = 4
+            end
+
+            -- @todo(maihd): convert Utf16/32 to utf8 buffer
         end
 
-        -- @todo(maihd): convert Utf16/32 to utf8 buffer
+        -- Line ending
+        if line:byte(-1) == 13 then
+            line = line:sub(start, -2)
+            self.crlf = true
+        end
+        table.insert(self.lines, line .. "\n")
+    end
+    fp:close()
+
+    if #self.lines == 0 then
+        table.insert(self.lines, "\n")
     end
 
-    if line:byte(-1) == 13 then
-      line = line:sub(start, -2)
-      self.crlf = true
-    end
-    table.insert(self.lines, line .. "\n")
-  end
-
-  if #self.lines == 0 then
-    table.insert(self.lines, "\n")
-  end
-  fp:close()
-  self:reset_syntax()
+    self:reset_syntax()
 end
 
 
@@ -118,6 +120,11 @@ end
 
 function Doc:get_name()
   return self.filename or "unsaved"
+end
+
+
+function Doc:get_language_name()
+    return (self.syntax and self.syntax.name) or "Plain"
 end
 
 

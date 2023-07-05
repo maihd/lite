@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "Batch",
     files = "%.bat$",
     headers = "^#!.*[ /]batch",
     comment = "::",

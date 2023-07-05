@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "4coder",
     files = { "%.4coder$" },
     comment = "//",
     patterns = {

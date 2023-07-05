@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "Lua",
   files = "%.lua$",
   headers = "^#!.*[ /]lua",
   comment = "--",

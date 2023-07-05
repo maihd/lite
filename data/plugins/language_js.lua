@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "JavaScript",
   files = { "%.js$" },
   comment = "//",
   patterns = {
