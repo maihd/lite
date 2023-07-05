@@ -13,258 +13,249 @@ local core = {}
 
 
 local function project_scan_thread()
-  local function diff_files(a, b)
-    if #a ~= #b then return true end
-    for i, v in ipairs(a) do
-      if b[i].filename ~= v.filename
-      or b[i].modified ~= v.modified then
-        return true
-      end
-    end
-  end
-
-  local function compare_file(a, b)
-    return a.filename < b.filename
-  end
-
-  local function get_files(path, t)
-    coroutine.yield()
-
-    t = t or {}
-    local size_limit = config.file_size_limit * 10e5
-    local all = system.list_dir(path) or {}
-    local dirs, files = {}, {}
-
-    for _, file in ipairs(all) do
-      if not config.ignore_files or not common.match_pattern(file, config.ignore_files) then
-        local file = (path ~= "." and path .. PATHSEP or "") .. file
-        local info = system.get_file_info(file)
-        if info and info.size < size_limit then
-          info.filename = file
-          table.insert(info.type == "dir" and dirs or files, info)
-        end
-      end
-    end
-
-    table.sort(dirs, compare_file)
-    for _, f in ipairs(dirs) do
-      table.insert(t, f)
-      get_files(f.filename, t)
-    end
-
-    table.sort(files, compare_file)
-    for _, f in ipairs(files) do
-      table.insert(t, f)
-    end
-
-    return t
-  end
-
---   local function is_project_changed(current_dir)
---     current_dir = current_dir or core.project_dir
---     local t = system.file_time(current_dir)
---     return
---   end
-
-  while true do
-    -- get project directory write time, replace previous if the directory is written
-    local t = system.file_time(core.project_dir)
-    if t > core.project_dir_time then
-        local project_files = get_files(".")
-        core.project_files = project_files
-        core.project_dir_time = t
-    else
-        -- get project files and replace previous table if the new table is
-        -- different
-        local t = get_files(".")
-        if diff_files(core.project_files, t) then
-          core.project_files = t
-          core.redraw = true
+    local function diff_files(a, b)
+        if #a ~= #b then return true end
+        for i, v in ipairs(a) do
+            if b[i].filename ~= v.filename
+                or b[i].modified ~= v.modified then
+                return true
+            end
         end
     end
 
-    -- wait for next scan
-    coroutine.yield(config.project_scan_rate)
-  end
+    local function compare_file(a, b)
+        return a.filename < b.filename
+    end
+
+    local function get_files(path, t)
+        coroutine.yield()
+
+        t = t or {}
+        local size_limit = config.file_size_limit * 10e5
+        local all = system.list_dir(path) or {}
+        local dirs, files = {}, {}
+
+        for _, file in ipairs(all) do
+            if not config.ignore_files or not common.match_pattern(file, config.ignore_files) then
+                local file = (path ~= "." and path .. PATHSEP or "") .. file
+                local info = system.get_file_info(file)
+                if info and info.size < size_limit then
+                    info.filename = file
+                    table.insert(info.type == "dir" and dirs or files, info)
+                end
+            end
+        end
+
+        table.sort(dirs, compare_file)
+        for _, f in ipairs(dirs) do
+            table.insert(t, f)
+            get_files(f.filename, t)
+        end
+
+        table.sort(files, compare_file)
+        for _, f in ipairs(files) do
+            table.insert(t, f)
+        end
+
+        return t
+    end
+
+    --   local function is_project_changed(current_dir)
+    --     current_dir = current_dir or core.project_dir
+    --     local t = system.file_time(current_dir)
+    --     return
+    --   end
+
+    while true do
+        -- get project directory write time, replace previous if the directory is written
+        local t = system.file_time(core.project_dir)
+        if t > core.project_dir_time then
+            local project_files = get_files(".")
+            core.project_files = project_files
+            core.project_dir_time = t
+        else
+            -- get project files and replace previous table if the new table is
+            -- different
+            local t = get_files(".")
+            if diff_files(core.project_files, t) then
+                core.project_files = t
+                core.redraw = true
+            end
+        end
+
+        -- wait for next scan
+        coroutine.yield(config.project_scan_rate)
+    end
 end
 
 
 function core.init()
-  command = require "core.command"
-  keymap = require "core.keymap"
-  RootView = require "core.root_view"
-  StatusView = require "core.status_view"
-  CommandView = require "core.command_view"
-  Doc = require "core.doc"
+    command = require "core.command"
+    keymap = require "core.keymap"
+    RootView = require "core.root_view"
+    StatusView = require "core.status_view"
+    CommandView = require "core.command_view"
+    Doc = require "core.doc"
 
-  local project_dir = EXEDIR
-  local files = {}
-  for i = 2, #ARGS do
-    local info = system.get_file_info(ARGS[i]) or {}
-    if info.type == "file" then
-      local file_path = system.absolute_path(ARGS[i])
-      table.insert(files, file_path)
-      project_dir = file_path:sub(1, #file_path:match("(.*[/\\])") - 1)
-    elseif info.type == "dir" then
-      project_dir = system.absolute_path(ARGS[i])
+    local project_dir = EXEDIR
+    local files = {}
+    for i = 2, #ARGS do
+        local info = system.get_file_info(ARGS[i]) or {}
+        if info.type == "file" then
+            local file_path = system.absolute_path(ARGS[i])
+            table.insert(files, file_path)
+            project_dir = file_path:sub(1, #file_path:match("(.*[/\\])") - 1)
+        elseif info.type == "dir" then
+            project_dir = system.absolute_path(ARGS[i])
+        end
     end
-  end
 
-  system.chdir(project_dir)
-  core.project_dir = project_dir
-  core.project_dir_name = project_dir:sub(#project_dir:match("(.*[/\\])") + 1)
-  -- core.project_dir_time = system.file_time(core.project_dir) -- @note(maihd): this cause project files does not loaded in ProjectView
-  core.project_dir_time = 0
+    system.chdir(project_dir)
+    core.project_dir = project_dir
+    core.project_dir_name = project_dir:sub(#project_dir:match("(.*[/\\])") + 1)
+    -- core.project_dir_time = system.file_time(core.project_dir) -- @note(maihd): this cause project files does not loaded in ProjectView
+    core.project_dir_time = 0
 
-  core.frame_start = 0
-  core.clip_rect_stack = {{ 0,0,0,0 }}
-  core.log_items = {}
-  core.docs = {}
-  core.threads = setmetatable({}, { __mode = "k" })
-  core.project_files = {}
--- core.project_files = get_files(core.project_dir)
-  core.redraw = true
+    core.frame_start = 0
+    core.clip_rect_stack = { { 0, 0, 0, 0 } }
+    core.log_items = {}
+    core.docs = {}
+    core.threads = setmetatable({}, { __mode = "k" })
+    core.project_files = {}
+    -- core.project_files = get_files(core.project_dir)
+    core.redraw = true
 
-  core.root_view = RootView()
-  core.command_view = CommandView()
-  core.status_view = StatusView()
+    core.root_view = RootView()
+    core.command_view = CommandView()
+    core.status_view = StatusView()
 
-  core.log(core.project_dir)
+    core.log(core.project_dir)
 
-  core.root_view.root_node:split("down", core.command_view, true)
-  core.root_view.root_node.b:split("down", core.status_view, true)
+    core.root_view.root_node:split("down", core.command_view, true)
+    core.root_view.root_node.b:split("down", core.status_view, true)
 
-  core.add_thread(project_scan_thread)
-  command.add_defaults()
-  local got_plugin_error = not core.load_plugins()
-  local got_user_error = not core.try(require, "user")
-  local got_project_error = not core.load_project_module()
+    core.add_thread(project_scan_thread)
+    command.add_defaults()
+    local got_plugin_error = not core.load_plugins()
+    local got_user_error = not core.try(require, "user")
+    local got_project_error = not core.load_project_module()
 
-  for _, filename in ipairs(files) do
-    core.root_view:open_doc(core.open_doc(filename))
-  end
+    for _, filename in ipairs(files) do
+        core.root_view:open_doc(core.open_doc(filename))
+    end
 
-  if got_plugin_error or got_user_error or got_project_error then
-    command.perform("core:open-log")
-  end
+    if got_plugin_error or got_user_error or got_project_error then
+        command.perform("core:open-log")
+    end
 end
-
 
 local temp_uid = (system.get_time() * 1000) % 0xffffffff
 local temp_file_prefix = string.format(".lite_temp_%08x", temp_uid)
 local temp_file_counter = 0
 
 local function delete_temp_files()
-  for _, filename in ipairs(system.list_dir(EXEDIR)) do
-    if filename:find(temp_file_prefix, 1, true) == 1 then
-      os.remove(EXEDIR .. PATHSEP .. filename)
+    for _, filename in ipairs(system.list_dir(EXEDIR)) do
+        if filename:find(temp_file_prefix, 1, true) == 1 then
+            os.remove(EXEDIR .. PATHSEP .. filename)
+        end
     end
-  end
 end
 
 function core.temp_filename(ext)
-  temp_file_counter = temp_file_counter + 1
-  return EXEDIR .. PATHSEP .. temp_file_prefix
-      .. string.format("%06x", temp_file_counter) .. (ext or "")
+    temp_file_counter = temp_file_counter + 1
+    return EXEDIR .. PATHSEP .. temp_file_prefix
+        .. string.format("%06x", temp_file_counter) .. (ext or "")
 end
-
 
 function core.quit(force)
-  if force then
-    delete_temp_files()
-    os.exit()
-  end
-  local dirty_count = 0
-  local dirty_name
-  for _, doc in ipairs(core.docs) do
-    if doc:is_dirty() then
-      dirty_count = dirty_count + 1
-      dirty_name = doc:get_name()
+    if force then
+        delete_temp_files()
+        os.exit()
     end
-  end
-  if dirty_count > 0 then
-    local text
-    if dirty_count == 1 then
-      text = string.format("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
-    else
-      text = string.format("%d docs have unsaved changes. Quit anyway?", dirty_count)
+    local dirty_count = 0
+    local dirty_name
+    for _, doc in ipairs(core.docs) do
+        if doc:is_dirty() then
+            dirty_count = dirty_count + 1
+            dirty_name = doc:get_name()
+        end
     end
-    local confirm = system.show_confirm_dialog("Unsaved Changes", text)
-    if not confirm then return end
-  end
-  core.quit(true)
+    if dirty_count > 0 then
+        local text
+        if dirty_count == 1 then
+            text = string.format("\"%s\" has unsaved changes. Quit anyway?", dirty_name)
+        else
+            text = string.format("%d docs have unsaved changes. Quit anyway?", dirty_count)
+        end
+        local confirm = system.show_confirm_dialog("Unsaved Changes", text)
+        if not confirm then return end
+    end
+    core.quit(true)
 end
-
 
 function core.load_plugins()
-  local no_errors = true
-  local files = system.list_dir(EXEDIR .. "/data/plugins")
-  for _, filename in ipairs(files) do
-    local modname = "plugins." .. filename:gsub(".lua$", "")
-    print("Load plugin: " .. modname)
-    print("Load plugin filename: " .. filename)
-    local ok = core.try(require, modname)
-    if ok then
-      core.log_quiet("Loaded plugin %q", modname)
-    else
-      no_errors = false
+    local no_errors = true
+    local files = system.list_dir(EXEDIR .. "/data/plugins")
+    for _, filename in ipairs(files) do
+        local modname = "plugins." .. filename:gsub(".lua$", "")
+        print("Load plugin: " .. modname)
+        print("Load plugin filename: " .. filename)
+        local ok = core.try(require, modname)
+        if ok then
+            core.log_quiet("Loaded plugin %q", modname)
+        else
+            no_errors = false
+        end
     end
-  end
-  return no_errors
+    return no_errors
 end
-
 
 function core.load_project_module()
-  local filename = ".lite_project.lua"
-  if system.get_file_info(filename) then
-    return core.try(function()
-      local fn, err = loadfile(filename)
-      if not fn then error("Error when loading project module:\n\t" .. err) end
-      fn()
-      core.log_quiet("Loaded project module")
-    end)
-  end
-  return true
+    local filename = ".lite_project.lua"
+    if system.get_file_info(filename) then
+        return core.try(function()
+            local fn, err = loadfile(filename)
+            if not fn then error("Error when loading project module:\n\t" .. err) end
+            fn()
+            core.log_quiet("Loaded project module")
+        end)
+    end
+    return true
 end
-
 
 function core.reload_module(name)
-  local old = package.loaded[name]
-  package.loaded[name] = nil
-  local new = require(name)
-  if type(old) == "table" then
-    for k, v in pairs(new) do old[k] = v end
-    package.loaded[name] = old
-  end
+    local old = package.loaded[name]
+    package.loaded[name] = nil
+    local new = require(name)
+    if type(old) == "table" then
+        for k, v in pairs(new) do old[k] = v end
+        package.loaded[name] = old
+    end
 end
-
 
 function core.set_active_view(view)
-  assert(view, "Tried to set active view to nil")
-  if view ~= core.active_view then
-    core.last_active_view = core.active_view
-    core.active_view = view
-  end
+    assert(view, "Tried to set active view to nil")
+    if view ~= core.active_view then
+        core.last_active_view = core.active_view
+        core.active_view = view
+    end
 end
-
 
 function core.add_thread(f, weak_ref)
-  local key = weak_ref or #core.threads + 1
-  local fn = function() return core.try(f) end
-  core.threads[key] = { cr = coroutine.create(fn), wake = 0 }
+    local key = weak_ref or #core.threads + 1
+    local fn = function() return core.try(f) end
+    core.threads[key] = { cr = coroutine.create(fn), wake = 0 }
 end
-
 
 function core.push_clip_rect(x, y, w, h)
-  local x2, y2, w2, h2 = unpack(core.clip_rect_stack[#core.clip_rect_stack])
-  local r, b, r2, b2 = x+w, y+h, x2+w2, y2+h2
-  x, y = math.max(x, x2), math.max(y, y2)
-  b, r = math.min(b, b2), math.min(r, r2)
-  w, h = r-x, b-y
-  table.insert(core.clip_rect_stack, { x, y, w, h })
-  renderer.set_clip_rect(x, y, w, h)
+    local x2, y2, w2, h2 = unpack(core.clip_rect_stack[#core.clip_rect_stack])
+    local r, b, r2, b2 = x + w, y + h, x2 + w2, y2 + h2
+    x, y = math.max(x, x2), math.max(y, y2)
+    b, r = math.min(b, b2), math.min(r, r2)
+    w, h = r - x, b - y
+    table.insert(core.clip_rect_stack, { x, y, w, h })
+    renderer.set_clip_rect(x, y, w, h)
 end
-
 
 function core.pop_clip_rect()
     table.remove(core.clip_rect_stack)
@@ -272,23 +263,22 @@ function core.pop_clip_rect()
     renderer.set_clip_rect(x, y, w, h)
 end
 
-
 function core.open_doc(filename)
     if filename then
         -- try to find existing doc for filename
         local abs_filename = system.absolute_path(filename)
         for _, doc in ipairs(core.docs) do
-          if doc.filename
-          and abs_filename == system.absolute_path(doc.filename) then
-            return doc
-          end
+            if doc.filename
+                and abs_filename == system.absolute_path(doc.filename) then
+                return doc
+            end
         end
 
         -- check is binary file; skip opening
         -- @note(maihd): if open binary file, memory may leak
         local is_binary = system.is_binary_file(abs_filename)
-            if is_binary then
-                core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
+        if is_binary then
+            core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
             return nil
         end
     end
@@ -300,218 +290,242 @@ function core.open_doc(filename)
     return doc
 end
 
-
 function core.get_views_referencing_doc(doc)
-  local res = {}
-  local views = core.root_view.root_node:get_children()
-  for _, view in ipairs(views) do
-    if view.doc == doc then table.insert(res, view) end
-  end
-  return res
+    local res = {}
+    local views = core.root_view.root_node:get_children()
+    for _, view in ipairs(views) do
+        if view.doc == doc then table.insert(res, view) end
+    end
+    return res
 end
 
-
 local function log(icon, icon_color, fmt, ...)
-  local text = string.format(fmt, ...)
-  if icon then
-    core.status_view:show_message(icon, icon_color, text)
-  end
+    local text = string.format(fmt, ...)
+    if icon then
+        core.status_view:show_message(icon, icon_color, text)
+    end
 
-  local info = debug.getinfo(2, "Sl")
-  local at = string.format("%s:%d", info.short_src, info.currentline)
-  local item = { text = text, time = os.time(), at = at }
-  table.insert(core.log_items, item)
-  if #core.log_items > config.max_log_items then
-    table.remove(core.log_items, 1)
-  end
-  return item
+    local info = debug.getinfo(2, "Sl")
+    local at = string.format("%s:%d", info.short_src, info.currentline)
+    local item = { text = text, time = os.time(), at = at }
+    table.insert(core.log_items, item)
+    if #core.log_items > config.max_log_items then
+        table.remove(core.log_items, 1)
+    end
+    return item
 end
 
 
 function core.log(...)
-  return log("i", style.text, ...)
+    return log("i", style.text, ...)
 end
-
 
 function core.log_quiet(...)
-  return log("!", style.text, ...)
-  -- return log(nil, nil, ...)
+    return log("!", style.text, ...)
+    -- return log(nil, nil, ...)
 end
-
 
 function core.error(...)
-  return log("!", style.accent, ...)
+    return log("!", style.accent, ...)
 end
-
 
 function core.try(fn, ...)
-  local err
-  local ok, res = xpcall(fn, function(msg)
-    local item = core.error("%s", msg)
-    item.info = debug.traceback(nil, 2):gsub("\t", "")
-    err = msg
-  end, ...)
-  if ok then
-    return true, res
-  end
-  return false, err
+    local err
+    local ok, res = xpcall(fn, function(msg)
+        local item = core.error("%s", msg)
+        item.info = debug.traceback(nil, 2):gsub("\t", "")
+        err = msg
+    end, ...)
+    if ok then
+        return true, res
+    end
+    return false, err
 end
-
 
 function core.on_event(type, ...)
-  local did_keymap = false
-  if type == "textinput" then
-    core.root_view:on_text_input(...)
-  elseif type == "keypressed" then
-    did_keymap = keymap.on_key_pressed(...)
-  elseif type == "keyreleased" then
-    keymap.on_key_released(...)
-  elseif type == "mousemoved" then
-    core.root_view:on_mouse_moved(...)
-  elseif type == "mousepressed" then
-    core.root_view:on_mouse_pressed(...)
-  elseif type == "mousereleased" then
-    core.root_view:on_mouse_released(...)
-  elseif type == "mousewheel" then
-    core.root_view:on_mouse_wheel(...)
-  elseif type == "filedropped" then
-    local filename, mx, my = ...
-    local info = system.get_file_info(filename)
-    if info and info.type == "dir" then
-      system.exec(string.format("%q %q", EXEFILE, filename))
-    else
-      local ok, doc = core.try(core.open_doc, filename)
-      if ok then
-        local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
-        node:set_active_view(node.active_view)
-        core.root_view:open_doc(doc)
-      end
+    local did_keymap = false
+    if type == "textinput" then
+        core.root_view:on_text_input(...)
+    elseif type == "keypressed" then
+        did_keymap = keymap.on_key_pressed(...)
+    elseif type == "keyreleased" then
+        keymap.on_key_released(...)
+    elseif type == "mousemoved" then
+        core.root_view:on_mouse_moved(...)
+    elseif type == "mousepressed" then
+        core.root_view:on_mouse_pressed(...)
+    elseif type == "mousereleased" then
+        core.root_view:on_mouse_released(...)
+    elseif type == "mousewheel" then
+        core.root_view:on_mouse_wheel(...)
+    elseif type == "filedropped" then
+        local filename, mx, my = ...
+        local info = system.get_file_info(filename)
+        if info and info.type == "dir" then
+            system.exec(string.format("%q %q", EXEFILE, filename))
+        else
+            local ok, doc = core.try(core.open_doc, filename)
+            if ok then
+                local node = core.root_view.root_node:get_child_overlapping_point(mx, my)
+                node:set_active_view(node.active_view)
+                core.root_view:open_doc(doc)
+            end
+        end
+    elseif type == "quit" then
+        core.quit()
     end
-  elseif type == "quit" then
-    core.quit()
-  end
-  return did_keymap
+    return did_keymap
 end
-
 
 function core.step()
-  -- handle events
-  local did_keymap = false
-  local mouse_moved = false
-  local mouse = { x = 0, y = 0, dx = 0, dy = 0 }
+    -- handle events
+    local did_keymap = false
 
-  for type, a,b,c,d in system.poll_event do
-    if type == "mousemoved" then
-      mouse_moved = true
-      mouse.x, mouse.y = a, b
-      mouse.dx, mouse.dy = mouse.dx + c, mouse.dy + d
-    elseif type == "textinput" and did_keymap then
-      did_keymap = false
-    else
-      local _, res = core.try(core.on_event, type, a, b, c, d)
-      did_keymap = res or did_keymap
+    local mouse_move = nil
+    local mouse_press = nil
+    local mouse_move_before_pressed = false
+
+    for type, a, b, c, d, e in system.poll_event do
+        -- if type == "mousemoved" then
+        --     mouse_move = { a, b, c, d, e}
+        --     mouse_move_before_pressed = not mouse_press 
+        -- elseif type == "mousepressed" then
+        --     mouse_press = core.mouse_press or {}
+        --     if mouse_press[a] then
+        --         mouse_press[a][4] = mouse_press[a][4] + 1
+        --     else
+        --         mouse_press[a] = { a, b, c, 1, e }
+        --     end
+
+        --     mouse_move_before_pressed = not mouse_move
+        -- else
+        if type == "textinput" and did_keymap then
+            did_keymap = false
+        else
+            local _, res = core.try(core.on_event, type, a, b, c, d, e)
+            did_keymap = res or did_keymap
+        end
+        core.redraw = true
     end
-    core.redraw = true
-  end
-  if mouse_moved then
-    core.try(core.on_event, "mousemoved", mouse.x, mouse.y, mouse.dx, mouse.dy)
-  end
+    -- if mouse_move_before_pressed then
+    --     if mouse_move then
+    --         core.try(core.on_event, "mousemoved", unpack(mouse_move))
+    --     end
 
-  local width, height = renderer.get_size()
+    --     for _, event in pairs(mouse_press or {}) do
+    --         core.try(core.on_event, "mousepressed", unpack(event))
+    --     end
+    -- else
+    --     for _, event in pairs(mouse_press or {}) do
+    --         core.try(core.on_event, "mousepressed", unpack(event))
+    --     end
+        
+    --     if mouse_move then
+    --         core.try(core.on_event, "mousemoved", unpack(mouse_move))
+    --     end
+    -- end
 
-  -- update
-  core.root_view.size.x, core.root_view.size.y = width, height
-  core.root_view:update()
-  if not core.redraw then return false end
-  core.redraw = false
+    local width, height = renderer.get_size()
 
-  -- close unreferenced docs
-  for i = #core.docs, 1, -1 do
-    local doc = core.docs[i]
-    if #core.get_views_referencing_doc(doc) == 0 then
-      table.remove(core.docs, i)
-      core.log_quiet("Closed doc \"%s\"", doc:get_name())
+    -- update
+    core.root_view.size.x, core.root_view.size.y = width, height
+    core.root_view:update()
+    if not core.redraw then return false end
+    core.redraw = false
+
+    -- close unreferenced docs
+    for i = #core.docs, 1, -1 do
+        local doc = core.docs[i]
+        if #core.get_views_referencing_doc(doc) == 0 then
+            table.remove(core.docs, i)
+            core.log_quiet("Closed doc \"%s\"", doc:get_name())
+        end
     end
-  end
 
-  -- update window title
-  local name = core.active_view:get_name()
-  local title_root = core.project_dir_name .. " - lite"
-  local title = (name ~= "---") and (name .. " - " .. title_root) or title_root
-  if title ~= core.window_title then
-    system.set_window_title(title)
-    core.window_title = title
-  end
+    -- update window title
+    local name = core.active_view:get_name()
+    local title_root = core.project_dir_name .. " - lite"
+    local title = (name ~= "---") and (name .. " - " .. title_root) or title_root
+    if title ~= core.window_title then
+        system.set_window_title(title)
+        core.window_title = title
+    end
 
-  -- draw
-  renderer.begin_frame()
-  core.clip_rect_stack[1] = { 0, 0, width, height }
-  renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
-  core.root_view:draw()
-  renderer.end_frame()
-  return true
+    -- draw
+    renderer.begin_frame()
+    core.clip_rect_stack[1] = { 0, 0, width, height }
+    renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
+    core.root_view:draw()
+    renderer.end_frame()
+    return true
 end
 
-
 local run_threads = coroutine.wrap(function()
-  while true do
-    local max_time = 1 / config.fps - 0.004
-    local ran_any_threads = false
+    while true do
+        local max_time = 1 / config.fps - 0.004
+        local ran_any_threads = false
 
-    for k, thread in pairs(core.threads) do
-      -- run thread
-      if thread.wake < system.get_time() then
-        local _, wait = assert(coroutine.resume(thread.cr))
-        if coroutine.status(thread.cr) == "dead" then
-          if type(k) == "number" then
-            table.remove(core.threads, k)
-          else
-            core.threads[k] = nil
-          end
-        elseif wait then
-          thread.wake = system.get_time() + wait
+        for k, thread in pairs(core.threads) do
+            -- run thread
+            if thread.wake < system.get_time() then
+                local _, wait = assert(coroutine.resume(thread.cr))
+                if coroutine.status(thread.cr) == "dead" then
+                    if type(k) == "number" then
+                        table.remove(core.threads, k)
+                    else
+                        core.threads[k] = nil
+                    end
+                elseif wait then
+                    thread.wake = system.get_time() + wait
+                end
+                ran_any_threads = true
+            end
+
+            -- stop running threads if we're about to hit the end of frame
+            if system.get_time() - core.frame_start > max_time then
+                coroutine.yield()
+            end
         end
-        ran_any_threads = true
-      end
 
-      -- stop running threads if we're about to hit the end of frame
-      if system.get_time() - core.frame_start > max_time then
-        coroutine.yield()
-      end
+        if not ran_any_threads then coroutine.yield() end
     end
-
-    if not ran_any_threads then coroutine.yield() end
-  end
 end)
 
 
 function core.run()
-  while true do
-    core.frame_start = system.get_time()
-    local did_redraw = core.step()
-    run_threads()
-    if not did_redraw and not system.window_has_focus() then
-      system.wait_event(0.25)
-    end
-    local elapsed = system.get_time() - core.frame_start
-    system.sleep(math.max(0, 1 / config.fps - elapsed))
-  end
-end
+    while true do
+        core.frame_start = system.get_time()
+        local did_redraw = core.step()
+        run_threads()
+        --     if not did_redraw and not system.window_has_focus() then
+        --       system.wait_event(0.25)
+        --     end
+        local elapsed = system.get_time() - core.frame_start
+        local frame = 1 / config.fps
+        local delta = 0
+        if frame > elapsed then
+            system.sleep(frame - elapsed)
+            delta = frame
+        else
+            delta = elapsed
+        end
 
+        core.fps = math.min(60, 1 / delta);
+    end
+end
 
 function core.on_error(err)
-  -- write error to file
-  local fp = io.open(EXEDIR .. "/error.txt", "wb")
-  fp:write("Error: " .. tostring(err) .. "\n")
-  fp:write(debug.traceback(nil, 4))
-  fp:close()
-  -- save copy of all unsaved documents
-  for _, doc in ipairs(core.docs) do
-    if doc:is_dirty() and doc.filename then
-      doc:save(doc.filename .. "~")
+    -- write error to file
+    local fp = io.open(EXEDIR .. "/error.txt", "wb")
+    fp:write("Error: " .. tostring(err) .. "\n")
+    fp:write(debug.traceback(nil, 4))
+    fp:close()
+    -- save copy of all unsaved documents
+    for _, doc in ipairs(core.docs) do
+        if doc:is_dirty() and doc.filename then
+            doc:save(doc.filename .. "~")
+        end
     end
-  end
 end
-
 
 return core

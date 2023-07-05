@@ -109,6 +109,12 @@ function StatusView:get_items()
             self.separator,
             string.format("%d%%", line / #dv.doc.lines * 100),
         }, {
+            -- FPS
+            style.font, "FPS",
+            style.font, style.dim, self.separator2, style.text,
+            style.font, tostring(core.fps):sub(1, 3),
+            self.separator,
+
             -- Language
             style.icon_font, "p",
             style.font, style.dim, self.separator2, style.text,
@@ -132,6 +138,13 @@ function StatusView:get_items()
         style.font, style.dim, self.separator2,
         style.font, core.project_dir_name
     }, {
+        -- FPS
+        style.font, "FPS",
+        style.font, style.dim, self.separator2, style.text,
+        style.font, tostring(core.fps):sub(1, 3),
+        self.separator,
+
+        -- Files
         style.icon_font, "g",
         style.font, style.dim, self.separator2,
         #core.docs, style.text, " / ",
