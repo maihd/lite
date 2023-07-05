@@ -1,6 +1,7 @@
 local syntax = require "core.syntax"
 
 syntax.add {
+    name = "License",
   files = { "%LICENSE$", "%LICENSE.txt$", "%LICENSE.md$" },
   patterns = {
 --     { pattern = "\\.",                    type = "normal"   },

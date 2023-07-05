@@ -1,17 +1,16 @@
-#ifndef RENCACHE_H
-#define RENCACHE_H
+#pragma once
 
+#include "lite_meta.h"
 #include "renderer.h"
-#include <stdbool.h>
 
-void rencache_show_debug(bool enable);
-void rencache_free_font(RenFont* font);
-void rencache_set_clip_rect(RenRect rect);
-void rencache_draw_rect(RenRect rect, RenColor color);
-int  rencache_draw_text(RenFont* font, const char* text, int x, int y,
-                        RenColor color);
-void rencache_invalidate(void);
-void rencache_begin_frame(void);
-void rencache_end_frame(void);
+void    lite_rencache_show_debug(bool enable);
+void    lite_rencache_free_font(LiteFont* font);
+void    lite_rencache_set_clip_rect(LiteRect rect);
+void    lite_rencache_draw_rect(LiteRect rect, LiteColor color);
+int32_t lite_rencache_draw_text(LiteFont* font, const char* text,
+                                int32_t x, int32_t y,
+                                LiteColor color);
+void    lite_rencache_invalidate(void);
+void    lite_rencache_begin_frame(void);
+void    lite_rencache_end_frame(void);
 
-#endif

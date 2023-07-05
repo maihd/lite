@@ -66,7 +66,7 @@ static int f_poll_event(lua_State* L)
             }
             else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
             {
-                rencache_invalidate();
+                lite_rencache_invalidate();
                 lua_pushstring(L, "exposed");
                 return 1;
             }

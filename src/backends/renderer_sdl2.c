@@ -1,4 +1,3 @@
-#include "meta.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -9,33 +8,34 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+#include "lite_meta.h"
 #include "renderer.h"
 
 #define MAX_GLYPHSET 256
 
-struct RenImage
+struct LiteImage
 {
-    RenColor* pixels;
-    int32_t   width, height;
+    LiteColor*  pixels;
+    int32_t     width, height;
 };
 
 typedef struct
 {
-    RenImage*       image;
-    stbtt_bakedchar glyphs[256];
+    LiteImage*          image;
+    stbtt_bakedchar     glyphs[256];
 } GlyphSet;
 
-struct RenFont
+struct LiteFont
 {
-    void*          data;
-    stbtt_fontinfo stbfont;
-    GlyphSet*      sets[MAX_GLYPHSET];
-    float          size;
-    int32_t        height;
+    void*               data;
+    stbtt_fontinfo      stbfont;
+    GlyphSet*           sets[MAX_GLYPHSET];
+    float               size;
+    int32_t             height;
 };
 
-static SDL_Window* window;
-static RenImage g_surface;
+static SDL_Window*  window;
+static LiteImage    g_surface;
 
 static struct
 {
@@ -51,7 +51,7 @@ static void* check_alloc(void* ptr)
         fprintf(stderr, "Fatal error: memory allocation failed\n");
         exit(-1);
     }
-    
+
     return ptr;
 }
 
@@ -60,30 +60,33 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
     uint32_t res, n;
     switch (*p & 0xf0)
     {
-        case 0xf0:
+    case 0xf0:
         res = *p & 0x07;
         n   = 3;
         break;
-        case 0xe0:
+
+    case 0xe0:
         res = *p & 0x0f;
         n   = 2;
         break;
-        case 0xd0:
-        case 0xc0:
+
+    case 0xd0:
+    case 0xc0:
         res = *p & 0x1f;
         n   = 1;
         break;
-        default:
+
+    default:
         res = *p;
         n   = 0;
         break;
     }
-    
+
     while (n--)
     {
         res = (res << 6) | (*(++p) & 0x3f);
     }
-    
+
     *dst = res;
     return p + 1;
 }
@@ -91,16 +94,16 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
 void lite_renderer_init(void* win_handle)
 {
     assert(win_handle);
-    
+
     window            = (SDL_Window*)win_handle;
     SDL_Surface* surf = SDL_GetWindowSurface(window);
-    g_surface = (RenImage){
+    g_surface = (LiteImage){
         .width = (int32_t)surf->w,
         .height = (int32_t)surf->h,
-        .pixels = (RenColor*)surf->pixels
+        .pixels = (LiteColor*)surf->pixels
     };
-    
-    lite_renderer_set_clip_rect((RenRect){
+
+    lite_renderer_set_clip_rect((LiteRect){
                                     .x = 0,
                                     .y = 0,
                                     .width = (int32_t)surf->w,
@@ -135,41 +138,41 @@ struct SDL_Window
     SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
     SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
     SDL_DisplayID last_displayID;
-    
+
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
-    
+
     /* Whether or not the intial position was defined */
     SDL_bool undefined_x;
     SDL_bool undefined_y;
-    
+
     SDL_DisplayMode requested_fullscreen_mode;
     SDL_DisplayMode current_fullscreen_mode;
-    
+
     float opacity;
-    
+
     SDL_Surface *surface;
     SDL_bool surface_valid;
-    
+
     SDL_bool is_hiding;
     SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
     SDL_bool is_destroying;
     SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
-    
+
     SDL_Rect mouse_rect;
-    
+
     SDL_WindowShaper *shaper;
-    
+
     SDL_HitTest hit_test;
     void *hit_test_data;
-    
+
     SDL_WindowUserData *data;
-    
+
     SDL_WindowData *driverdata;
-    
+
     SDL_Window *prev;
     SDL_Window *next;
-    
+
     SDL_Window *parent;
     SDL_Window *first_child;
     SDL_Window *prev_sibling;
@@ -214,14 +217,14 @@ struct SDL_WindowData
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-    
+
     /* Whether we retain the content of the window when changing state */
     UINT copybits_flag;
 #endif
 };
 #endif
 
-void lite_renderer_update_rects(RenRect* rects, int32_t count)
+void lite_renderer_update_rects(LiteRect* rects, int32_t count)
 {
     // @note(maihd): this algorithm from SDL2 src
     //struct SDL_WindowData* data = window->driverdata;
@@ -231,7 +234,7 @@ void lite_renderer_update_rects(RenRect* rects, int32_t count)
     //data->mdc, rects[i].x, rects[i].y, SRCCOPY);
     //}
     SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, count);
-    
+
     static bool initial_frame = true;
     if (initial_frame)
     {
@@ -240,7 +243,7 @@ void lite_renderer_update_rects(RenRect* rects, int32_t count)
     }
 }
 
-void lite_renderer_set_clip_rect(RenRect rect)
+void lite_renderer_set_clip_rect(LiteRect rect)
 {
     clip.left   = rect.x;
     clip.top    = rect.y;
@@ -252,19 +255,19 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 {
     assert(x);
     assert(y);
-    
+
     SDL_Surface* surf = SDL_GetWindowSurface(window);
     *x                = (int32_t)surf->w;
     *y                = (int32_t)surf->h;
 }
 
-RenImage* lite_new_image(int32_t width, int32_t height)
+LiteImage* lite_new_image(int32_t width, int32_t height)
 {
     assert(width > 0 && height > 0);
-    
+
     // @todo(maihd): use Arena instead of malloc
-    RenImage* image =
-        malloc(sizeof(RenImage) + width * height * sizeof(RenColor));
+    LiteImage* image =
+        malloc(sizeof(LiteImage) + width * height * sizeof(LiteColor));
     check_alloc(image);
     image->pixels = (void*)(image + 1);
     image->width  = width;
@@ -272,30 +275,30 @@ RenImage* lite_new_image(int32_t width, int32_t height)
     return image;
 }
 
-void lite_free_image(RenImage* image)
+void lite_free_image(LiteImage* image)
 {
     free(image);
 }
 
-static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
+static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 {
     GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
-    
+
     /* init image */
     int32_t width  = 1024;
     int32_t height = 1024;
-    
+
     for (;;)
     {
         set->image = lite_new_image(width, height);
-        
+
         /* load glyphs */
         float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
             stbtt_ScaleForPixelHeight(&font->stbfont, 1);
         int32_t res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
                                            (void*)set->image->pixels, width,
                                            height, idx * 256, 256, set->glyphs);
-        
+
         /* retry with a larger image buffer if the buffer wasn't large enough */
         if (res < 0)
         {
@@ -304,10 +307,10 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
             lite_free_image(set->image);
             continue;
         }
-        
+
         break;
     }
-    
+
     /* adjust glyph yoffsets and xadvance */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
@@ -318,7 +321,7 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
         set->glyphs[i].yoff += scaled_ascent;
         set->glyphs[i].xadvance = floor(set->glyphs[i].xadvance);
     }
-    
+
     // convert 8bit data to 32bit
     // @todo: why must be pre-convert?
     // @todo: why must be in reverted-order loop?
@@ -326,32 +329,32 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
     {
         uint8_t n = ((uint8_t*)set->image->pixels)[i];
         set->image->pixels[i] =
-        (RenColor){.r = 255, .g = 255, .b = 255, .a = n};
+            (LiteColor){.r = 255, .g = 255, .b = 255, .a = n};
     }
-    
+
     return set;
 }
 
-static GlyphSet* get_glyphset(RenFont* font, int32_t codepoint)
+static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 {
     int32_t idx = (codepoint >> 8) % MAX_GLYPHSET;
     if (font->sets[idx] == NULL)
     {
         font->sets[idx] = load_glyphset(font, idx);
     }
-    
+
     return font->sets[idx];
 }
 
-RenFont* lite_load_font(const char* filename, float size)
+LiteFont* lite_load_font(const char* filename, float size)
 {
-    RenFont* font = nullptr;
+    LiteFont* font = nullptr;
     FILE*    fp   = nullptr;
-    
+
     /* init font */
-    font       = check_alloc(calloc(1, sizeof(RenFont)));
+    font       = check_alloc(calloc(1, sizeof(LiteFont)));
     font->size = size;
-    
+
     /* load font into buffer */
     fp = fopen(filename, "rb");
     if (!fp)
@@ -368,7 +371,7 @@ RenFont* lite_load_font(const char* filename, float size)
     (void)_;
     fclose(fp);
     fp = nullptr;
-    
+
     /* init stbfont */
     int32_t ok = stbtt_InitFont(&font->stbfont, font->data, 0);
     if (!ok)
@@ -376,22 +379,22 @@ RenFont* lite_load_font(const char* filename, float size)
         free(font->data);
         return nullptr;
     }
-    
+
     /* get height and scale */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
     font->height = (ascent - descent + linegap) * scale + 0.5;
-    
+
     /* make tab and newline glyphs invisible */
     stbtt_bakedchar* g = get_glyphset(font, '\n')->glyphs;
     g['\t'].x1         = g['\t'].x0;
     g['\n'].x1         = g['\n'].x0;
-    
+
     return font;
 }
 
-void lite_free_font(RenFont* font)
+void lite_free_font(LiteFont* font)
 {
     for (int32_t i = 0; i < MAX_GLYPHSET; i++)
     {
@@ -406,19 +409,19 @@ void lite_free_font(RenFont* font)
     free(font);
 }
 
-void lite_set_font_tab_width(RenFont* font, int32_t n)
+void lite_set_font_tab_width(LiteFont* font, int32_t n)
 {
     GlyphSet* set              = get_glyphset(font, '\t');
     set->glyphs['\t'].xadvance = n;
 }
 
-int32_t lite_get_font_tab_width(RenFont* font)
+int32_t lite_get_font_tab_width(LiteFont* font)
 {
     GlyphSet* set = get_glyphset(font, '\t');
     return set->glyphs['\t'].xadvance;
 }
 
-int32_t lite_get_font_width(RenFont* font, const char* text)
+int32_t lite_get_font_width(LiteFont* font, const char* text)
 {
     int32_t     x = 0;
     const char* p = text;
@@ -433,12 +436,12 @@ int32_t lite_get_font_width(RenFont* font, const char* text)
     return x;
 }
 
-int32_t lite_get_font_height(RenFont* font)
+int32_t lite_get_font_height(LiteFont* font)
 {
     return font->height;
 }
 
-static inline RenColor blend_pixel(RenColor dst, RenColor src)
+static inline LiteColor blend_pixel(LiteColor dst, LiteColor src)
 {
     int32_t ia = 0xff - src.a;
     dst.r      = ((src.r * src.a) + (dst.r * ia)) >> 8;
@@ -447,10 +450,10 @@ static inline RenColor blend_pixel(RenColor dst, RenColor src)
     return dst;
 }
 
-static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color)
+static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor color)
 {
     src.a      = (src.a * color.a) >> 8;
-    int32_t ia = 0xff - src.a;
+    uint8_t ia = 0xff - src.a;
     dst.r      = ((src.r * color.r * src.a) >> 16) + ((dst.r * ia) >> 8);
     dst.g      = ((src.g * color.g * src.a) >> 16) + ((dst.g * ia) >> 8);
     dst.b      = ((src.b * color.b * src.a) >> 16) + ((dst.b * ia) >> 8);
@@ -458,42 +461,42 @@ static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color)
 }
 
 #define rect_draw_loop(expr)                                                   \
-for (int32_t j = y1; j < y2; j++)                                          \
-{                                                                          \
-for (int32_t i = x1; i < x2; i++)                                      \
-{                                                                      \
-*d = expr;                                                         \
-d++;                                                               \
-}                                                                      \
-d += dr;                                                               \
-}
+    for (int32_t j = y1; j < y2; j++)                                          \
+    {                                                                          \
+        for (int32_t i = x1; i < x2; i++)                                      \
+        {                                                                      \
+            *d = expr;                                                         \
+            d++;                                                               \
+        }                                                                      \
+        d += dr;                                                               \
+    }
 
-void lite_draw_rect(RenRect rect, RenColor color)
+void lite_draw_rect(LiteRect rect, LiteColor color)
 {
     if (color.a == 0)
     {
         return;
     }
-    
+
     int32_t x1 = rect.x < clip.left ? clip.left : rect.x;
     int32_t y1 = rect.y < clip.top ? clip.top : rect.y;
     int32_t x2 = rect.x + rect.width;
     int32_t y2 = rect.y + rect.height;
     x2         = x2 > clip.right ? clip.right : x2;
     y2         = y2 > clip.bottom ? clip.bottom : y2;
-    
+
     // @note(maihd): trick, need to handle resize event instead
     SDL_Surface* surface = SDL_GetWindowSurface(window);
-    g_surface = (RenImage){
+    g_surface = (LiteImage){
         .width = (uint32_t)surface->w,
         .height = (uint32_t)surface->h,
-        .pixels = (RenColor*)surface->pixels,
+        .pixels = (LiteColor*)surface->pixels,
     };
 
-    RenColor* d = g_surface.pixels;
+    LiteColor* d = g_surface.pixels;
     d += x1 + y1 * g_surface.width;
     int32_t dr = g_surface.width - (x2 - x1);
-    
+
     if (color.a == 0xff)
     {
         rect_draw_loop(color);
@@ -504,13 +507,13 @@ void lite_draw_rect(RenRect rect, RenColor color)
     }
 }
 
-void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenColor color)
+void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, LiteColor color)
 {
     if (color.a == 0)
     {
         return;
     }
-    
+
     /* clip */
     int32_t n;
     if ((n = clip.left - x) > 0)
@@ -533,7 +536,7 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     {
         sub->height -= n;
     }
-    
+
     if (sub->width <= 0 || sub->height <= 0)
     {
         return;
@@ -541,20 +544,20 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
 
     // @note(maihd): trick, need to handle resize event instead
     SDL_Surface* surface = SDL_GetWindowSurface(window);
-    g_surface = (RenImage){
+    g_surface = (LiteImage){
         .width = (uint32_t)surface->w,
         .height = (uint32_t)surface->h,
-        .pixels = (RenColor*)surface->pixels,
+        .pixels = (LiteColor*)surface->pixels,
     };
-    
+
     /* draw */
-    RenColor*    s    = image->pixels;
-    RenColor*    d    = g_surface.pixels;
+    LiteColor*    s    = image->pixels;
+    LiteColor*    d    = g_surface.pixels;
     s += sub->x + sub->y * image->width;
     d += x + y * g_surface.width;
     int32_t sr = image->width - sub->width;
     int32_t dr = g_surface.width - sub->width;
-    
+
     for (int32_t j = 0; j < sub->height; j++)
     {
         for (int32_t i = 0; i < sub->width; i++)
@@ -568,9 +571,9 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     }
 }
 
-int32_t lite_draw_text(RenFont* font, const char* text, int32_t x, int32_t y, RenColor color)
+int32_t lite_draw_text(LiteFont* font, const char* text, int32_t x, int32_t y, LiteColor color)
 {
-    RenRect     rect;
+    LiteRect rect;
     const char* p = text;
     uint32_t    codepoint;
     while (*p)

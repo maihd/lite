@@ -15,7 +15,7 @@
 
 struct RenImage
 {
-    RenColor* pixels;
+    LiteColor* pixels;
     int32_t   width, height;
 };
 
@@ -25,7 +25,7 @@ typedef struct
     stbtt_bakedchar glyphs[256];
 } GlyphSet;
 
-struct RenFont
+struct LiteFont
 {
     void*          data;
     stbtt_fontinfo stbfont;
@@ -97,10 +97,10 @@ void lite_renderer_init(void* win_handle)
     g_surface = (RenImage){
         .width = (int32_t)surf->w,
         .height = (int32_t)surf->h,
-        .pixels = (RenColor*)surf->pixels
+        .pixels = (LiteColor*)surf->pixels
     };
     
-    lite_renderer_set_clip_rect((RenRect){
+    lite_renderer_set_clip_rect((LiteRect){
                                     .x = 0,
                                     .y = 0,
                                     .width = (int32_t)surf->w,
@@ -221,7 +221,7 @@ struct SDL_WindowData
 };
 #endif
 
-void lite_renderer_update_rects(RenRect* rects, int32_t count)
+void lite_renderer_update_rects(LiteRect* rects, int32_t count)
 {
     // @note(maihd): this algorithm from SDL2 src
     //struct SDL_WindowData* data = window->driverdata;
@@ -240,7 +240,7 @@ void lite_renderer_update_rects(RenRect* rects, int32_t count)
     }
 }
 
-void lite_renderer_set_clip_rect(RenRect rect)
+void lite_renderer_set_clip_rect(LiteRect rect)
 {
     clip.left   = rect.x;
     clip.top    = rect.y;
@@ -264,7 +264,7 @@ RenImage* lite_new_image(int32_t width, int32_t height)
     
     // @todo(maihd): use Arena instead of malloc
     RenImage* image =
-        malloc(sizeof(RenImage) + width * height * sizeof(RenColor));
+        malloc(sizeof(RenImage) + width * height * sizeof(LiteColor));
     check_alloc(image);
     image->pixels = (void*)(image + 1);
     image->width  = width;
@@ -277,7 +277,7 @@ void lite_free_image(RenImage* image)
     free(image);
 }
 
-static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
+static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 {
     GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
     
@@ -326,13 +326,13 @@ static GlyphSet* load_glyphset(RenFont* font, int32_t idx)
     {
         uint8_t n = ((uint8_t*)set->image->pixels)[i];
         set->image->pixels[i] =
-        (RenColor){.r = 255, .g = 255, .b = 255, .a = n};
+        (LiteColor){.r = 255, .g = 255, .b = 255, .a = n};
     }
     
     return set;
 }
 
-static GlyphSet* get_glyphset(RenFont* font, int32_t codepoint)
+static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 {
     int32_t idx = (codepoint >> 8) % MAX_GLYPHSET;
     if (font->sets[idx] == NULL)
@@ -343,13 +343,13 @@ static GlyphSet* get_glyphset(RenFont* font, int32_t codepoint)
     return font->sets[idx];
 }
 
-RenFont* lite_load_font(const char* filename, float size)
+LiteFont* lite_load_font(const char* filename, float size)
 {
-    RenFont* font = nullptr;
+    LiteFont* font = nullptr;
     FILE*    fp   = nullptr;
     
     /* init font */
-    font       = check_alloc(calloc(1, sizeof(RenFont)));
+    font       = check_alloc(calloc(1, sizeof(LiteFont)));
     font->size = size;
     
     /* load font into buffer */
@@ -391,7 +391,7 @@ RenFont* lite_load_font(const char* filename, float size)
     return font;
 }
 
-void lite_free_font(RenFont* font)
+void lite_free_font(LiteFont* font)
 {
     for (int32_t i = 0; i < MAX_GLYPHSET; i++)
     {
@@ -406,19 +406,19 @@ void lite_free_font(RenFont* font)
     free(font);
 }
 
-void lite_set_font_tab_width(RenFont* font, int32_t n)
+void lite_set_font_tab_width(LiteFont* font, int32_t n)
 {
     GlyphSet* set              = get_glyphset(font, '\t');
     set->glyphs['\t'].xadvance = n;
 }
 
-int32_t lite_get_font_tab_width(RenFont* font)
+int32_t lite_get_font_tab_width(LiteFont* font)
 {
     GlyphSet* set = get_glyphset(font, '\t');
     return set->glyphs['\t'].xadvance;
 }
 
-int32_t lite_get_font_width(RenFont* font, const char* text)
+int32_t lite_get_font_width(LiteFont* font, const char* text)
 {
     int32_t     x = 0;
     const char* p = text;
@@ -433,12 +433,12 @@ int32_t lite_get_font_width(RenFont* font, const char* text)
     return x;
 }
 
-int32_t lite_get_font_height(RenFont* font)
+int32_t lite_get_font_height(LiteFont* font)
 {
     return font->height;
 }
 
-static inline RenColor blend_pixel(RenColor dst, RenColor src)
+static inline LiteColor blend_pixel(LiteColor dst, LiteColor src)
 {
     int32_t ia = 0xff - src.a;
     dst.r      = ((src.r * src.a) + (dst.r * ia)) >> 8;
@@ -447,7 +447,7 @@ static inline RenColor blend_pixel(RenColor dst, RenColor src)
     return dst;
 }
 
-static inline RenColor blend_pixel2(RenColor dst, RenColor src, RenColor color)
+static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor color)
 {
     src.a      = (src.a * color.a) >> 8;
     int32_t ia = 0xff - src.a;
@@ -468,7 +468,7 @@ d++;                                                               \
 d += dr;                                                               \
 }
 
-void lite_draw_rect(RenRect rect, RenColor color)
+void lite_draw_rect(LiteRect rect, LiteColor color)
 {
     if (color.a == 0)
     {
@@ -482,7 +482,7 @@ void lite_draw_rect(RenRect rect, RenColor color)
     x2         = x2 > clip.right ? clip.right : x2;
     y2         = y2 > clip.bottom ? clip.bottom : y2;
     
-    RenColor* d = g_surface.pixels;
+    LiteColor* d = g_surface.pixels;
     d += x1 + y1 * g_surface.width;
     int32_t dr = g_surface.width - (x2 - x1);
     
@@ -496,7 +496,7 @@ void lite_draw_rect(RenRect rect, RenColor color)
     }
 }
 
-void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenColor color)
+void lite_draw_image(RenImage* image, LiteRect* sub, int32_t x, int32_t y, LiteColor color)
 {
     if (color.a == 0)
     {
@@ -532,8 +532,8 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     }
     
     /* draw */
-    RenColor*    s    = image->pixels;
-    RenColor*    d    = g_surface.pixels;
+    LiteColor*    s    = image->pixels;
+    LiteColor*    d    = g_surface.pixels;
     s += sub->x + sub->y * image->width;
     d += x + y * g_surface.width;
     int32_t sr = image->width - sub->width;
@@ -552,9 +552,9 @@ void lite_draw_image(RenImage* image, RenRect* sub, int32_t x, int32_t y, RenCol
     }
 }
 
-int32_t lite_draw_text(RenFont* font, const char* text, int32_t x, int32_t y, RenColor color)
+int32_t lite_draw_text(LiteFont* font, const char* text, int32_t x, int32_t y, LiteColor color)
 {
-    RenRect     rect;
+    LiteRect     rect;
     const char* p = text;
     uint32_t    codepoint;
     while (*p)

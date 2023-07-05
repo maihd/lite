@@ -24,30 +24,34 @@ enum
 
 typedef struct
 {
-    int      type, size;
-    RenRect  rect;
-    RenColor color;
-    RenFont* font;
-    int      tab_width;
-    char     text[0];
+    uint32_t    type;
+    int32_t     size;
+    LiteRect    rect;
+    LiteColor   color;
+    LiteFont*   font;
+    int32_t     tab_width;
+    char        text[0];
 } Command;
 
-static unsigned  cells_buf1[CELLS_X * CELLS_Y];
-static unsigned  cells_buf2[CELLS_X * CELLS_Y];
-static unsigned* cells_prev = cells_buf1;
-static unsigned* cells      = cells_buf2;
-static RenRect   rect_buf[CELLS_X * CELLS_Y / 2];
-static char      command_buf[COMMAND_BUF_SIZE];
-static int       command_buf_idx;
-static RenRect   screen_rect;
-static bool      show_debug;
+static uint32_t     cells_buf1[CELLS_X * CELLS_Y];
+static uint32_t     cells_buf2[CELLS_X * CELLS_Y];
+static uint32_t*    cells_prev = cells_buf1;
+static uint32_t*    cells      = cells_buf2;
+
+static LiteRect     rect_buf[CELLS_X * CELLS_Y / 2];
+static uint8_t      command_buf[COMMAND_BUF_SIZE];
+static uint32_t     command_buf_idx;
+
+static LiteRect     screen_rect;
+static bool         show_debug;
 
 #ifndef _WIN32
-static inline int min(int a, int b)
+static inline int32_t min(int32_t a, int32_t b)
 {
     return a < b ? a : b;
 }
-static inline int max(int a, int b)
+
+static inline int32_t max(int32_t a, int32_t b)
 {
     return a > b ? a : b;
 }
@@ -56,53 +60,64 @@ static inline int max(int a, int b)
 /* 32bit fnv-1a hash */
 #define HASH_INITIAL 2166136261
 
-static void hash(unsigned* h, const void* data, int size)
+static void hash(uint32_t* h, const void* data, int32_t size)
 {
-    const unsigned char* p = data;
+    const uint8_t* p = data;
     while (size--)
     {
         *h = (*h ^ *p++) * 16777619;
     }
 }
 
-static inline int cell_idx(int x, int y)
+static inline int32_t cell_idx(int32_t x, int32_t y)
 {
     return x + y * CELLS_X;
 }
 
-static inline bool rects_overlap(RenRect a, RenRect b)
+static inline bool rects_overlap(LiteRect a, LiteRect b)
 {
-    return b.x + b.width >= a.x && b.x <= a.x + a.width &&
-        b.y + b.height >= a.y && b.y <= a.y + a.height;
+    return b.x + b.width >= a.x && b.x <= a.x + a.width
+        && b.y + b.height >= a.y && b.y <= a.y + a.height;
 }
 
-static RenRect intersect_rects(RenRect a, RenRect b)
+static LiteRect intersect_rects(LiteRect a, LiteRect b)
 {
-    int x1 = max(a.x, b.x);
-    int y1 = max(a.y, b.y);
-    int x2 = min(a.x + a.width, b.x + b.width);
-    int y2 = min(a.y + a.height, b.y + b.height);
-    return (RenRect){x1, y1, max(0, x2 - x1), max(0, y2 - y1)};
+    int32_t x1 = max(a.x, b.x);
+    int32_t y1 = max(a.y, b.y);
+    int32_t x2 = min(a.x + a.width, b.x + b.width);
+    int32_t y2 = min(a.y + a.height, b.y + b.height);
+    return (LiteRect){
+        .x = x1,
+        .y = y1,
+        .width = max(0, x2 - x1),
+        .height = max(0, y2 - y1)
+    };
 }
 
-static RenRect merge_rects(RenRect a, RenRect b)
+static LiteRect merge_rects(LiteRect a, LiteRect b)
 {
-    int x1 = min(a.x, b.x);
-    int y1 = min(a.y, b.y);
-    int x2 = max(a.x + a.width, b.x + b.width);
-    int y2 = max(a.y + a.height, b.y + b.height);
-    return (RenRect){x1, y1, x2 - x1, y2 - y1};
+    int32_t x1 = min(a.x, b.x);
+    int32_t y1 = min(a.y, b.y);
+    int32_t x2 = max(a.x + a.width, b.x + b.width);
+    int32_t y2 = max(a.y + a.height, b.y + b.height);
+    return (LiteRect){
+        .x = x1,
+        .y = y1,
+        .width = x2 - x1,
+        .height = y2 - y1
+    };
 }
 
-static Command* push_command(int type, int size)
+static Command* push_command(int32_t type, int32_t size)
 {
     Command* cmd = (Command*)(command_buf + command_buf_idx);
-    int      n   = command_buf_idx + size;
+    int32_t  n   = command_buf_idx + size;
     if (n > COMMAND_BUF_SIZE)
     {
         fprintf(stderr, "Warning: (" __FILE__ "): exhausted command buffer\n");
         return NULL;
     }
+
     command_buf_idx = n;
     memset(cmd, 0, sizeof(Command));
     cmd->type = type;
@@ -118,17 +133,17 @@ static bool next_command(Command** prev)
     }
     else
     {
-        *prev = (Command*)(((char*)*prev) + (*prev)->size);
+        *prev = (Command*)(((uint8_t*)*prev) + (*prev)->size);
     }
     return *prev != ((Command*)(command_buf + command_buf_idx));
 }
 
-void rencache_show_debug(bool enable)
+void lite_rencache_show_debug(bool enable)
 {
     show_debug = enable;
 }
 
-void rencache_free_font(RenFont* font)
+void lite_rencache_free_font(LiteFont* font)
 {
     Command* cmd = push_command(FREE_FONT, sizeof(Command));
     if (cmd)
@@ -137,7 +152,7 @@ void rencache_free_font(RenFont* font)
     }
 }
 
-void rencache_set_clip_rect(RenRect rect)
+void lite_rencache_set_clip_rect(LiteRect rect)
 {
     Command* cmd = push_command(SET_CLIP, sizeof(Command));
     if (cmd)
@@ -146,12 +161,13 @@ void rencache_set_clip_rect(RenRect rect)
     }
 }
 
-void rencache_draw_rect(RenRect rect, RenColor color)
+void lite_rencache_draw_rect(LiteRect rect, LiteColor color)
 {
     if (!rects_overlap(screen_rect, rect))
     {
         return;
     }
+
     Command* cmd = push_command(DRAW_RECT, sizeof(Command));
     if (cmd)
     {
@@ -160,15 +176,16 @@ void rencache_draw_rect(RenRect rect, RenColor color)
     }
 }
 
-int rencache_draw_text(RenFont* font, const char* text, int x, int y,
-                       RenColor color)
+int32_t lite_rencache_draw_text(LiteFont* font, const char* text,
+                                int32_t x, int32_t y,
+                                LiteColor color)
 {
-    RenRect rect;
+    LiteRect rect;
     rect.x      = x;
     rect.y      = y;
     rect.width  = lite_get_font_width(font, text);
     rect.height = lite_get_font_height(font);
-    
+
     if (rects_overlap(screen_rect, rect))
     {
         int      sz  = strlen(text) + 1;
@@ -182,152 +199,162 @@ int rencache_draw_text(RenFont* font, const char* text, int x, int y,
             cmd->tab_width = lite_get_font_tab_width(font);
         }
     }
-    
+
     return x + rect.width;
 }
 
-void rencache_invalidate(void)
+void lite_rencache_invalidate(void)
 {
     memset(cells_prev, 0xff, sizeof(cells_buf1));
 }
 
-void rencache_begin_frame(void)
+void lite_rencache_begin_frame(void)
 {
     /* reset all cells if the screen width/height has changed */
-    int w, h;
+    int32_t w, h;
     lite_renderer_get_size(&w, &h);
     if (screen_rect.width != w || h != screen_rect.height)
     {
         screen_rect.width  = w;
         screen_rect.height = h;
-        rencache_invalidate();
+        lite_rencache_invalidate();
     }
 }
 
-static void update_overlapping_cells(RenRect r, unsigned h)
+static void update_overlapping_cells(LiteRect r, uint32_t h)
 {
-    int x1 = r.x / CELL_SIZE;
-    int y1 = r.y / CELL_SIZE;
-    int x2 = (r.x + r.width) / CELL_SIZE;
-    int y2 = (r.y + r.height) / CELL_SIZE;
-    
-    for (int y = y1; y <= y2; y++)
+    int32_t x1 = r.x / CELL_SIZE;
+    int32_t y1 = r.y / CELL_SIZE;
+    int32_t x2 = (r.x + r.width) / CELL_SIZE;
+    int32_t y2 = (r.y + r.height) / CELL_SIZE;
+
+    for (int32_t y = y1; y <= y2; y++)
     {
-        for (int x = x1; x <= x2; x++)
+        for (int32_t x = x1; x <= x2; x++)
         {
-            int idx = cell_idx(x, y);
+            int32_t idx = cell_idx(x, y);
             hash(&cells[idx], &h, sizeof(h));
         }
     }
 }
 
-static void push_rect(RenRect r, int* count)
+static void push_rect(LiteRect r, int32_t* count)
 {
     /* try to merge with existing rectangle */
     for (int i = *count - 1; i >= 0; i--)
     {
-        RenRect* rp = &rect_buf[i];
+        LiteRect* rp = &rect_buf[i];
         if (rects_overlap(*rp, r))
         {
             *rp = merge_rects(*rp, r);
             return;
         }
     }
+
     /* couldn't merge with previous rectangle: push */
     rect_buf[(*count)++] = r;
 }
 
-void rencache_end_frame(void)
+void lite_rencache_end_frame(void)
 {
     /* update cells from commands */
-    Command* cmd = NULL;
-    RenRect  cr  = screen_rect;
+    Command*  cmd = nullptr;
+    LiteRect  cr  = screen_rect;
     while (next_command(&cmd))
     {
         if (cmd->type == SET_CLIP)
         {
             cr = cmd->rect;
         }
-        RenRect r = intersect_rects(cmd->rect, cr);
+
+        LiteRect r = intersect_rects(cmd->rect, cr);
         if (r.width == 0 || r.height == 0)
         {
             continue;
         }
-        unsigned h = HASH_INITIAL;
+
+        uint32_t h = HASH_INITIAL;
         hash(&h, cmd, cmd->size);
         update_overlapping_cells(r, h);
     }
-    
+
     /* push rects for all cells changed from last frame, reset cells */
-    int rect_count = 0;
-    int max_x      = screen_rect.width / CELL_SIZE + 1;
-    int max_y      = screen_rect.height / CELL_SIZE + 1;
-    for (int y = 0; y < max_y; y++)
+    int32_t rect_count = 0;
+    int32_t max_x      = screen_rect.width / CELL_SIZE + 1;
+    int32_t max_y      = screen_rect.height / CELL_SIZE + 1;
+    for (int32_t y = 0; y < max_y; y++)
     {
-        for (int x = 0; x < max_x; x++)
+        for (int32_t x = 0; x < max_x; x++)
         {
             /* compare previous and current cell for change */
-            int idx = cell_idx(x, y);
+            int32_t idx = cell_idx(x, y);
             if (cells[idx] != cells_prev[idx])
             {
-                push_rect((RenRect){x, y, 1, 1}, &rect_count);
+                push_rect((LiteRect){x, y, 1, 1}, &rect_count);
             }
             cells_prev[idx] = HASH_INITIAL;
         }
     }
-    
+
     /* expand rects from cells to pixels */
-    for (int i = 0; i < rect_count; i++)
+    for (int32_t i = 0; i < rect_count; i++)
     {
-        RenRect* r = &rect_buf[i];
+        LiteRect* r = &rect_buf[i];
         r->x *= CELL_SIZE;
         r->y *= CELL_SIZE;
         r->width *= CELL_SIZE;
         r->height *= CELL_SIZE;
         *r = intersect_rects(*r, screen_rect);
     }
-    
+
     /* redraw updated regions */
     bool has_free_commands = false;
-    for (int i = 0; i < rect_count; i++)
+    for (int32_t i = 0; i < rect_count; i++)
     {
         /* draw */
-        RenRect r = rect_buf[i];
+        LiteRect r = rect_buf[i];
         lite_renderer_set_clip_rect(r);
-        
+
         cmd = NULL;
         while (next_command(&cmd))
         {
             switch (cmd->type)
             {
-                case FREE_FONT: has_free_commands = true; break;
-                case SET_CLIP:
+            case FREE_FONT:
+                has_free_commands = true;
+                break;
+
+            case SET_CLIP:
                 lite_renderer_set_clip_rect(intersect_rects(cmd->rect, r));
                 break;
-                case DRAW_RECT: lite_draw_rect(cmd->rect, cmd->color); break;
-                case DRAW_TEXT:
+
+            case DRAW_RECT:
+                lite_draw_rect(cmd->rect, cmd->color);
+                break;
+
+            case DRAW_TEXT:
                 lite_set_font_tab_width(cmd->font, cmd->tab_width);
-                lite_draw_text(cmd->font, 
-                               cmd->text, 
+                lite_draw_text(cmd->font,
+                               cmd->text,
                                cmd->rect.x, cmd->rect.y,
                                cmd->color);
                 break;
             }
         }
-        
+
         if (show_debug)
         {
-            RenColor color = {rand(), rand(), rand(), 50};
+            LiteColor color = { .r = rand(), .g = rand(), .b = rand(), .a = 50 };
             lite_draw_rect(r, color);
         }
     }
-    
+
     /* update dirty rects */
     if (rect_count > 0)
     {
         lite_renderer_update_rects(rect_buf, rect_count);
     }
-    
+
     /* free fonts */
     if (has_free_commands)
     {
@@ -340,9 +367,9 @@ void rencache_end_frame(void)
             }
         }
     }
-    
+
     /* swap cell buffer and reset */
-    unsigned* tmp   = cells;
+    uint32_t* tmp   = cells;
     cells           = cells_prev;
     cells_prev      = tmp;
     command_buf_idx = 0;
