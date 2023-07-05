@@ -15,9 +15,9 @@
 #include <unistd.h>
 #endif
 
-#include "api.h"
-#include "rencache.h"
+#include "lite_api.h"
 #include "lite_file.h"
+#include "lite_rencache.h"
 
 extern SDL_Window* window;
 

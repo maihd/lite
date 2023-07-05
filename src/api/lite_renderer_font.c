@@ -1,6 +1,6 @@
-#include "api.h"
-#include "rencache.h"
-#include "renderer.h"
+#include "lite_api.h"
+#include "lite_rencache.h"
+#include "lite_renderer.h"
 
 static int f_load(lua_State* L)
 {

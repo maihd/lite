@@ -9,7 +9,7 @@
 #include <Windows.h>
 
 #include "lite_meta.h"
-#include "renderer.h"
+#include "lite_renderer.h"
 
 #define MAX_GLYPHSET 256
 

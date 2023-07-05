@@ -1,6 +1,6 @@
-#include "renderer.h"
 #include "lite_window.h"
 #include "lite_startup.h"
+#include "lite_renderer.h"
 
 #ifdef _WIN32
 #ifdef NDEBUG

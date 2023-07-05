@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "meta.h"
+#include "lite_meta.h"
 
 /// StringView
 /// Data structure contain string characters and it length

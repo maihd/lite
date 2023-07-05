@@ -1,7 +1,7 @@
 #pragma once
 
 #include "lite_meta.h"
-#include "renderer.h"
+#include "lite_renderer.h"
 
 void    lite_rencache_show_debug(bool enable);
 void    lite_rencache_free_font(LiteFont* font);

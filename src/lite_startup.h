@@ -1,6 +1,6 @@
 #pragma once
 
-#include "meta.h"
+#include "lite_meta.h"
 
 typedef uint32_t LiteStartupFlags;
 enum LiteStartupFlags

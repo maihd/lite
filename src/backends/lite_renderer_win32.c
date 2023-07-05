@@ -1,4 +1,4 @@
-#include "meta.h"
+#include "lite_meta.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -9,7 +9,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-#include "renderer.h"
+#include "lite_renderer.h"
 
 #define MAX_GLYPHSET 256
 

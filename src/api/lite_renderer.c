@@ -1,6 +1,6 @@
-#include "renderer.h"
-#include "api.h"
-#include "rencache.h"
+#include "lite_api.h"
+#include "lite_rencache.h"
+#include "lite_renderer.h"
 
 static LiteColor checkcolor(lua_State* L, int idx, int def)
 {

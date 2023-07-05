@@ -1,4 +1,4 @@
-#include "rencache.h"
+#include "lite_rencache.h"
 
 #include <stdio.h>
 #include <stdlib.h>

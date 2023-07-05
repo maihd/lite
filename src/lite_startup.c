@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <SDL2/SDL.h>
 
-#include "api/api.h"
+#include "api/lite_api.h"
 #include "lite_startup.h"
 
 static double lite_get_scale(void)
