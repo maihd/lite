@@ -41,6 +41,7 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Make app more robust.
 - Line wrapping.
 - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+- Fix bug: some time single mouse click cause select token, line
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
 - Make typing work with UniKey (Vietnamese typing method).
 - Open binary file in preview-mode.
