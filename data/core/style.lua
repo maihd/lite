@@ -18,6 +18,7 @@ style.background2 = { common.color "#252529" }
 style.background3 = { common.color "#252529" }
 style.text = { common.color "#97979c" }
 style.caret = { common.color "#93DDFA" }
+style.caret2 = { common.color "#ceeffd" }
 style.accent = { common.color "#e1e1e6" }
 style.dim = { common.color "#525257" }
 style.divider = { common.color "#202024" }

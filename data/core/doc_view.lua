@@ -58,6 +58,11 @@ function DocView:new(doc)
     self.font = "code_font"
     self.last_x_offset = {}
     self.blink_timer = 0
+
+    self.caret_x = 0
+    self.caret_y = 0
+    self.shadow_caret_x = 0
+    self.shadow_caret_y = 0
 end
 
 function DocView:try_close(do_close)
@@ -269,6 +274,16 @@ function DocView:update()
         end
     end
 
+    -- Moving the caret
+    local lh = self:get_line_height()
+    local ox, oy = self:get_line_screen_position(line)
+    local caret_x = ox + self:get_col_x_offset(line, col)
+    local caret_y = oy
+    self:move_towards(self, "caret_x", caret_x, 0.75)
+    self:move_towards(self, "caret_y", caret_y, 0.75)
+    self:move_towards(self, "shadow_caret_x", caret_x, 0.35)
+    self:move_towards(self, "shadow_caret_y", caret_y, 0.35)
+
     DocView.super.update(self)
 end
 
@@ -306,22 +321,16 @@ function DocView:draw_line_body(idx, x, y)
     end
 
     -- draw line highlight if caret is on this line
-    if config.highlight_current_line and not self.doc:has_selection()
-        and line == idx and core.active_view == self then
+    if config.highlight_current_line
+        and not self.doc:has_selection()
+        and line == idx
+        and core.active_view == self
+    then
         self:draw_line_highlight(x + self.scroll.x, y)
     end
 
     -- draw line's text
     self:draw_line_text(idx, x, y)
-
-    -- draw caret if it overlaps this line
-    if line == idx and core.active_view == self
-        and self.blink_timer < blink_period / 2
-        and system.window_has_focus() then
-        local lh = self:get_line_height()
-        local x1 = x + self:get_col_x_offset(line, col)
-        renderer.draw_rect(x1, y, style.caret_width, lh, style.caret)
-    end
 end
 
 function DocView:draw_line_gutter(idx, x, y)
@@ -332,7 +341,7 @@ function DocView:draw_line_gutter(idx, x, y)
     end
     local yoffset = self:get_line_text_y_offset()
     local font = self:get_font()
-    x = x + style.padding.x + font:get_width(#self.doc.lines) - font:get_width(idx) 
+    x = x + style.padding.x + font:get_width(#self.doc.lines) - font:get_width(idx)
     renderer.draw_text(font, idx, x, y + yoffset, color)
 end
 
@@ -356,9 +365,29 @@ function DocView:draw()
     local gw = self:get_gutter_width()
     local pos = self.position
     core.push_clip_rect(pos.x + gw, pos.y, self.size.x, self.size.y)
-    for i = minline, maxline do
-        self:draw_line_body(i, x, y)
-        y = y + lh
+    do
+        for i = minline, maxline do
+            self:draw_line_body(i, x, y)
+            y = y + lh
+        end
+
+        -- draw caret if it overlaps this line
+        local line = self.doc:get_selection()
+        if line >= minline and line <= maxline
+            and core.active_view == self
+            and self.blink_timer < blink_period / 2
+            and system.window_has_focus()
+        then
+            local lh = self:get_line_height()
+
+            local x1 = self.shadow_caret_x
+            local y1 = self.shadow_caret_y
+            renderer.draw_rect(x1, y1, style.caret_width, lh, style.caret2)
+
+            local x2 = self.caret_x
+            local y2 = self.caret_y
+            renderer.draw_rect(x2, y2, style.caret_width, lh, style.caret)
+        end
     end
     core.pop_clip_rect()
 
