@@ -54,7 +54,7 @@
 /// @note(maihd): simple define, no need to include <stdalign.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus)
-#define alignas _Alignas
+#define alignas(x) __declspec(align(x))
 #endif
 
 /// alignof operator
@@ -78,9 +78,10 @@
 /// __count_of operator
 /// @note(maihd):
 #ifndef __count_of
-#define __count_of(array)                               \
-    (static_assert(sizeof(array) >= sizeof(array[0])),  \
-     (sizeof(array) / sizeof(array[0])))
+// #define __count_of(array)                               \
+//     (static_assert(sizeof(array) >= sizeof(array[0]), "__count_of only work on C Array"),  \
+//      (sizeof(array) / sizeof(array[0])))
+#define __count_of(array) (sizeof(array) / sizeof((array)[0]))
 #endif
 
 /// Theses primitive types should be use as language-level, not standard-level

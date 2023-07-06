@@ -9,6 +9,7 @@
 #include <Windows.h>
 
 #include "lite_meta.h"
+#include "lite_memory.h"
 #include "lite_renderer.h"
 
 #define MAX_GLYPHSET 256
@@ -36,6 +37,8 @@ struct LiteFont
 
 static SDL_Window*  window;
 static LiteImage    g_surface;
+
+static LiteArena*   g_arena;
 
 static struct
 {
@@ -109,130 +112,23 @@ void lite_renderer_init(void* win_handle)
                                     .width = (int32_t)surf->w,
                                     .height = (int32_t)surf->h
                                 });
+
+    g_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024);
 }
 
 void lite_renderer_deinit(void)
 {
     if (window != nullptr)
     {
-        // @todo: delete surface here
+        lite_arena_destroy(g_arena);
+        g_arena = nullptr;
     }
+
+    assert(g_arena && "Leak arena in renderer");
 }
-
-#if 0
-// @note(maihd): copy from SDL2 src
-struct SDL_Window
-{
-    const void *magic;
-    SDL_WindowID id;
-    char *title;
-    SDL_Surface *icon;
-    int x, y;
-    int w, h;
-    int min_w, min_h;
-    int max_w, max_h;
-    int last_pixel_w, last_pixel_h;
-    Uint32 flags;
-    Uint32 pending_flags;
-    float display_scale;
-    SDL_bool fullscreen_exclusive;  /* The window is currently fullscreen exclusive */
-    SDL_DisplayID last_fullscreen_exclusive_display;  /* The last fullscreen_exclusive display */
-    SDL_DisplayID last_displayID;
-
-    /* Stored position and size for windowed mode */
-    SDL_Rect windowed;
-
-    /* Whether or not the intial position was defined */
-    SDL_bool undefined_x;
-    SDL_bool undefined_y;
-
-    SDL_DisplayMode requested_fullscreen_mode;
-    SDL_DisplayMode current_fullscreen_mode;
-
-    float opacity;
-
-    SDL_Surface *surface;
-    SDL_bool surface_valid;
-
-    SDL_bool is_hiding;
-    SDL_bool restore_on_show; /* Child was hidden recursively by the parent, restore when shown. */
-    SDL_bool is_destroying;
-    SDL_bool is_dropping; /* drag/drop in progress, expecting SDL_SendDropComplete(). */
-
-    SDL_Rect mouse_rect;
-
-    SDL_WindowShaper *shaper;
-
-    SDL_HitTest hit_test;
-    void *hit_test_data;
-
-    SDL_WindowUserData *data;
-
-    SDL_WindowData *driverdata;
-
-    SDL_Window *prev;
-    SDL_Window *next;
-
-    SDL_Window *parent;
-    SDL_Window *first_child;
-    SDL_Window *prev_sibling;
-    SDL_Window *next_sibling;
-};
-
-// @note(maihd): copy from SDL2 src
-struct SDL_WindowData
-{
-    SDL_Window *window;
-    HWND hwnd;
-    HWND parent;
-    HDC hdc;
-    HDC mdc;
-#if 0
-    HINSTANCE hinstance;
-    HBITMAP hbm;
-    WNDPROC wndproc;
-    HHOOK keyboard_hook;
-    SDL_bool created;
-    WPARAM mouse_button_flags;
-    LPARAM last_pointer_update;
-    WCHAR high_surrogate;
-    SDL_bool initializing;
-    SDL_bool expected_resize;
-    SDL_bool in_border_change;
-    SDL_bool in_title_click;
-    Uint8 focus_click_pending;
-    SDL_bool skip_update_clipcursor;
-    Uint64 last_updated_clipcursor;
-    SDL_bool mouse_relative_mode_center;
-    SDL_bool windowed_mode_was_maximized;
-    SDL_bool in_window_deactivation;
-    RECT cursor_clipped_rect;
-    SDL_Point last_raw_mouse_position;
-    SDL_bool mouse_tracked;
-    SDL_bool destroy_parent_with_window;
-    SDL_DisplayID last_displayID;
-    WCHAR *ICMFileName;
-    SDL_Window *keyboard_focus;
-    struct SDL_VideoData *videodata;
-#ifdef SDL_VIDEO_OPENGL_EGL
-    EGLSurface egl_surface;
-#endif
-
-    /* Whether we retain the content of the window when changing state */
-    UINT copybits_flag;
-#endif
-};
-#endif
 
 void lite_renderer_update_rects(LiteRect* rects, int32_t count)
 {
-    // @note(maihd): this algorithm from SDL2 src
-    //struct SDL_WindowData* data = window->driverdata;
-    //for (int32_t i = 0; i < count; ++i)
-    //{
-    //BitBlt(data->hdc, rects[i].x, rects[i].y, rects[i].width, rects[i].height,
-    //data->mdc, rects[i].x, rects[i].y, SRCCOPY);
-    //}
     SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, count);
 
     static bool initial_frame = true;
@@ -267,9 +163,9 @@ LiteImage* lite_new_image(int32_t width, int32_t height)
 
     // @todo(maihd): use Arena instead of malloc
     LiteImage* image =
-        malloc(sizeof(LiteImage) + width * height * sizeof(LiteColor));
+        (LiteImage*)lite_arena_acquire(g_arena, sizeof(LiteImage) + width * height * sizeof(LiteColor), alignof(LiteColor));
     check_alloc(image);
-    image->pixels = (void*)(image + 1);
+    image->pixels = (LiteArena*)(image + 1);
     image->width  = width;
     image->height = height;
     return image;
@@ -277,7 +173,7 @@ LiteImage* lite_new_image(int32_t width, int32_t height)
 
 void lite_free_image(LiteImage* image)
 {
-    free(image);
+//     free(image);
 }
 
 static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
@@ -293,8 +189,7 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
         set->image = lite_new_image(width, height);
 
         /* load glyphs */
-        float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) /
-            stbtt_ScaleForPixelHeight(&font->stbfont, 1);
+        float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) / stbtt_ScaleForPixelHeight(&font->stbfont, 1);
         int32_t res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
                                            (void*)set->image->pixels, width,
                                            height, idx * 256, 256, set->glyphs);
@@ -304,6 +199,8 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
         {
             width *= 2;
             height *= 2;
+
+            // @todo(maihd): do temp allocation instead of actually free memory
             lite_free_image(set->image);
             continue;
         }

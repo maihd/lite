@@ -1,4 +1,5 @@
 #include "lite_api.h"
+#include "lite_meta.h"
 
 int luaopen_system(lua_State* L);
 int luaopen_renderer(lua_State* L);

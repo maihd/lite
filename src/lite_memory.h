@@ -4,7 +4,6 @@
 
 typedef struct LiteArena LiteArena;
 
-alignas(64)
 struct LiteArena
 {
     LiteArena*  prev;
@@ -15,11 +14,15 @@ struct LiteArena
 
     size_t      position;
     size_t      committed;
+
+    size_t      _reserved0;
+    size_t      _reserved1;
 };
 
 constexpr size_t LITE_ARENA_DEFAULT_COMMIT      =    1 * 1024 * 1024;
 constexpr size_t LITE_ARENA_DEFAULT_REVERSED    = 1024 * 1024 * 1024;
 
+LiteArena*  lite_arena_create_default(void);
 LiteArena*  lite_arena_create(size_t commit, size_t reserved);
 void        lite_arena_destroy(LiteArena* arena);
 
