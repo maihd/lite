@@ -2,14 +2,14 @@ Windows Registry Editor Version 5.00
 
 [HKEY_CLASSES_ROOT\*\Shell\Lite]
 @="Edit with Lite"
-"Icon"="\"D:\\Projects\\lite\\lite.exe\""
+"Icon"="\"I:\\Projects\\lite\\lite.exe\""
 
 [HKEY_CLASSES_ROOT\*\Shell\Lite\command]
-@="\"D:\\Projects\\lite\\lite.exe\" \"%1\""
+@="\"I:\\Projects\\lite\\lite.exe\" \"%1\""
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\Lite]
 @="Edit with Lite"
-"Icon"="\"D:\\Projects\\lite\\lite.exe\""
+"Icon"="\"I:\\Projects\\lite\\lite.exe\""
 
 [HKEY_CLASSES_ROOT\Directory\Background\shell\Lite\command]
-@="\"D:\\Projects\\lite\\lite.exe\" \"%V\""
+@="\"I:\\Projects\\lite\\lite.exe\" \"%V\""
