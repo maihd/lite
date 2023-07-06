@@ -38,10 +38,10 @@
 #if defined(__cplusplus)
 #define __comptime constexpr
 #else
-#define __comptime                                                             \
-static_assert(                                                             \
-0,                                                                     \
-"Only C++14 and above support comptime function"); // @note(maihd): add
+#define __comptime                                                          \
+    static_assert(                                                          \
+    0,                                                                      \
+    "Only C++14 and above support comptime function"); // @note(maihd): add
 // ';' here because
 // we donot know is
 // static_assert a
@@ -73,6 +73,14 @@ static_assert(                                                             \
 #else
 #define __forceinline inline
 #endif
+#endif
+
+/// __count_of operator
+/// @note(maihd):
+#ifndef __count_of
+#define __count_of(array)                               \
+    (static_assert(sizeof(array) >= sizeof(array[0])),  \
+     (sizeof(array) / sizeof(array[0])))
 #endif
 
 /// Theses primitive types should be use as language-level, not standard-level

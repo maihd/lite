@@ -1,10 +1,5 @@
 #include "lite_api.h"
 
-#define __static_assert(cond) ((void)(int[(cond) ? 1 : -1]){0})
-#define __count_of(array)                                                      \
-    (__static_assert(sizeof(array) >= sizeof(array[0])),                       \
-     (sizeof(array) / sizeof(array[0])))
-
 int luaopen_system(lua_State* L);
 int luaopen_renderer(lua_State* L);
 

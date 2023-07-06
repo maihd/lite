@@ -22,9 +22,7 @@ syntax.add {
     symbols = {
         -- Basic keywords
         ["if"]       = "keyword",
-        ["then"]     = "keyword",
         ["else"]     = "keyword",
-        ["elseif"]   = "keyword",
         ["do"]       = "keyword",
         ["while"]    = "keyword",
         ["for"]      = "keyword",
@@ -45,6 +43,7 @@ syntax.add {
         ["default"]  = "keyword",
         ["auto"]     = "keyword",
         ["const"]    = "keyword",
+        ["sizeof"]   = "keyword",
 
         -- C11 keywords
         ["alignas"] = "keyword",
