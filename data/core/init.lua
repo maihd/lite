@@ -493,6 +493,7 @@ end)
 
 
 function core.run()
+    local time = 0
     while true do
         core.frame_start = system.get_time()
         local did_redraw = core.step()
@@ -502,15 +503,35 @@ function core.run()
         --     end
         local elapsed = system.get_time() - core.frame_start
         local frame = 1 / config.fps
+        
+        -- We have time to do GC
+        if frame > elapsed then
+            -- Do GC every seconds
+            if time - math.floor(time) <= frame then
+                -- core.log("Cleaning up memory...")
+                collectgarbage("collect")
+            end
+
+            elapsed = system.get_time() - core.frame_start
+        end
+
         local delta = 0
         if frame > elapsed then
             system.sleep(frame - elapsed)
             delta = frame
         else
             delta = elapsed
+
+            -- Do GC every seconds
+            -- @note(maihd): call here to avoid missing GC call
+            if time - math.floor(time) <= frame then
+                -- core.log("Cleaning up memory...")
+                collectgarbage("collect")
+            end
         end
 
-        core.fps = math.min(60, 1 / delta);
+        time = time + delta
+        core.fps = math.min(60, 1 / delta)
     end
 end
 
