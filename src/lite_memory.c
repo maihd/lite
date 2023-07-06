@@ -58,7 +58,7 @@ uint8_t* lite_arena_acquire(LiteArena* arena, size_t size, size_t align)
     size_t aligned_size = size;
     if (size % align != 0)
     {
-        aligned_size += size + size % align;
+        aligned_size += size - size % align;
     }
 
     if (current->position + aligned_size > current->capacity)

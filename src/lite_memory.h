@@ -6,17 +6,18 @@ typedef struct LiteArena LiteArena;
 
 struct LiteArena
 {
-    LiteArena*  prev;
-    LiteArena*  current;
+    LiteArena*  prev;       // For delete
+    LiteArena*  next;       // For fast remove one arena and its children only
 
-    size_t      commit;     // Cache pre-commit to create new arena when out of capacity
-    size_t      capacity;
+    LiteArena*  current;    // Current arena have free memory
 
-    size_t      position;
-    size_t      committed;
+    size_t      commit;     // Store pre-commit to create new arena when out of capacity
+    size_t      capacity;   // Reversed capacity of virtual memory this arena have register
 
-    size_t      _reserved0;
-    size_t      _reserved1;
+    size_t      position;   // Current use of memory cursor
+    size_t      committed;  // Number of bytes memory that committed (<= capacity)
+
+    size_t      alignment;  // Alignment of memory block that arena use (and affect memory block that are acquired by user)
 };
 
 constexpr size_t LITE_ARENA_DEFAULT_COMMIT      =    1 * 1024 * 1024;
