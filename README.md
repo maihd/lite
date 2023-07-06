@@ -37,6 +37,7 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Align line numbers near code.
 
 ## TODOs
+- Draw intent guide line. (may be need more mechanic for syntax highlight)
 - Display icon to show log type.
 - Make app more robust.
 - Line wrapping.

@@ -127,16 +127,16 @@ end
 
 
 function TreeView:update()
-  -- update width
-  local dest = self.visible and config.treeview_size or 0
-  if self.init_size then
-    self.size.x = dest
-    self.init_size = false
-  else
-    self:move_towards(self.size, "x", dest)
-  end
+    TreeView.super.update(self)
 
-  TreeView.super.update(self)
+    -- update width
+    local dest = self.visible and config.treeview_size or 0
+    if self.init_size then
+        self.size.x = dest
+        self.init_size = false
+    else
+        self:move_towards(self.size, "x", dest)
+    end
 end
 
 
