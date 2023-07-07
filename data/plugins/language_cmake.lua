@@ -10,8 +10,10 @@ syntax.add {
         { pattern = "[%a_][%w_]*",            type = "symbol"   },
     },
     symbols = {
-        ["OR"] = "keyword",
+        ["OR"]  = "keyword",
         ["AND"] = "keyword",
         ["NOT"] = "keyword",
+        ["ON"]  = "keyword",
+        ["OFF"] = "keyword",
     },
 }
