@@ -68,12 +68,12 @@ local function project_scan_thread()
 
     while true do
         -- get project directory write time, replace previous if the directory is written
-        local t = system.file_time(core.project_dir)
-        if t > core.project_dir_time then
-            local project_files = get_files(".")
-            core.project_files = project_files
-            core.project_dir_time = t
-        else
+--         local t = system.file_time(core.project_dir)
+--         if t > core.project_dir_time then
+--             local project_files = get_files(".")
+--             core.project_files = project_files
+--             core.project_dir_time = t
+--         else
             -- get project files and replace previous table if the new table is
             -- different
             local t = get_files(".")
@@ -81,7 +81,7 @@ local function project_scan_thread()
                 core.project_files = t
                 core.redraw = true
             end
-        end
+--         end
 
         -- wait for next scan
         coroutine.yield(config.project_scan_rate)
@@ -503,7 +503,7 @@ function core.run()
         --     end
         local elapsed = system.get_time() - core.frame_start
         local frame = 1 / config.fps
-        
+
         -- We have time to do GC
         if frame > elapsed then
             -- Do GC every seconds
