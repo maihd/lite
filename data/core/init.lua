@@ -301,13 +301,13 @@ end
 
 local function log(icon, icon_color, fmt, ...)
     local text = string.format(fmt, ...)
-    if icon then
+    if icon and core.status_view then
         core.status_view:show_message(icon, icon_color, text)
     end
 
     local info = debug.getinfo(2, "Sl")
     local at = string.format("%s:%d", info.short_src, info.currentline)
-    local item = { text = text, time = os.time(), at = at }
+    local item = { icon = icon, icon_color = icon_color, text = text, time = os.time(), at = at }
     table.insert(core.log_items, item)
     if #core.log_items > config.max_log_items then
         table.remove(core.log_items, 1)

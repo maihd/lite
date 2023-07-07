@@ -36,7 +36,7 @@ local function draw_text_multiline(font, text, x, y, color)
     local resx, resy = x, y
     for line in text:gmatch("[^\n]+") do
         resy = y
-        resx = renderer.draw_text(style.font, line, x, y, color)
+        resx = renderer.draw_text(font, line, x, y, color)
         y = y + th
     end
     return resx, resy
@@ -57,7 +57,7 @@ end
 
 function LogView:on_mouse_pressed(button, mx, my, clicks)
     LogView.super.on_mouse_pressed(self, button, mx, my, clicks)
-    
+
     if button == "left" and clicks >= 2 and self.selected_idx > 0 then
         local item = core.log_items[self.selected_idx]
         if not item then
@@ -92,7 +92,7 @@ end
 
 function LogView:on_mouse_moved(mx, my, ...)
     LogView.super.on_mouse_moved(self, mx, my, ...)
-    
+
     self.selected_idx = 0
 
     local ox, oy = self:get_content_offset()
@@ -111,7 +111,7 @@ function LogView:on_mouse_moved(mx, my, ...)
         local item = core.log_items[i]
         x, y = move_text_multiline(style.font, item.text, x, y, style.text)
         y = y + th
-        
+
         if item.info then
             x, y = move_text_multiline(style.font, item.info, x, y, style.dim)
             y = y + th
@@ -149,6 +149,9 @@ function LogView:draw()
         local time = os.date(nil, item.time)
         x = renderer.draw_text(style.font, time, x, y, style.dim)
         x = x + style.padding.x
+
+        -- Draw icon
+        x, y = draw_text_multiline(style.icon_font, (item.icon or " ") .. " ", x, y, item.icon_color)
 
         -- Draw log content
         x, y = draw_text_multiline(style.font, item.text, x, y, color)

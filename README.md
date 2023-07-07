@@ -35,19 +35,19 @@ The *simple* will be keep in the interfaces, *implementation* will be seperated 
 - Double click to log line to open file.
 - Refactor C source.
 - Align line numbers near code.
+- Display icon to show log type.
 
 ## TODOs
 - Draw intent guide line. (may be need more mechanic for syntax highlight)
-- Display icon to show log type.
+- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+- Convert to use native API instead of large library like SDL.
 - Make app more robust.
 - Line wrapping.
-- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Fix bug: some time single mouse click cause select token, line
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
 - Make typing work with UniKey (Vietnamese typing method).
 - Open binary file in preview-mode.
 - Use fast string algorithms (code editting are working on string heavily)
-- Convert to use native API instead of large library like SDL.
 - Bootstrap version for debugging and development.
 - Display launching messagebox with style and helper.
 - Add more render backends: OpenGL, Vulkan, Dear ImGui.
