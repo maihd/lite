@@ -1,15 +1,15 @@
 #include <assert.h>
+
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "lib/stb/stb_truetype.h"
-#include <SDL2/SDL.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
 #include "lite_meta.h"
 #include "lite_memory.h"
+#include "lite_window.h"
 #include "lite_renderer.h"
 
 #define MAX_GLYPHSET 256
@@ -35,9 +35,7 @@ struct LiteFont
     GlyphSet*           sets[MAX_GLYPHSET];
 };
 
-static SDL_Window*  window;
 static LiteImage    g_surface;
-
 static LiteArena*   g_img_arena;
 static LiteArena*   g_font_arena;
 
@@ -95,23 +93,17 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
     return p + 1;
 }
 
-void lite_renderer_init(void* win_handle)
+void lite_renderer_init(void)
 {
-    assert(win_handle);
-
-    window            = (SDL_Window*)win_handle;
-    SDL_Surface* surf = SDL_GetWindowSurface(window);
-    g_surface = (LiteImage){
-        .width = (int32_t)surf->w,
-        .height = (int32_t)surf->h,
-        .pixels = (LiteColor*)surf->pixels
-    };
+    g_surface.pixels  = (LiteColor*)lite_window_surface(
+        &g_surface.width, &g_surface.height
+    );
 
     lite_renderer_set_clip_rect((LiteRect){
                                     .x = 0,
                                     .y = 0,
-                                    .width = (int32_t)surf->w,
-                                    .height = (int32_t)surf->h
+                                    .width = g_surface.width,
+                                    .height = g_surface.height
                                 });
 
     g_img_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteColor));
@@ -120,13 +112,10 @@ void lite_renderer_init(void* win_handle)
 
 void lite_renderer_deinit(void)
 {
-    if (window != nullptr)
-    {
-        lite_arena_destroy(g_font_arena);
-        lite_arena_destroy(g_img_arena);
-        g_font_arena = nullptr;
-        g_img_arena = nullptr;
-    }
+    lite_arena_destroy(g_font_arena);
+    lite_arena_destroy(g_img_arena);
+    g_font_arena = nullptr;
+    g_img_arena = nullptr;
 
     assert(g_img_arena && "Leak arena in renderer");
     assert(g_font_arena && "Leak arena in renderer");
@@ -134,12 +123,12 @@ void lite_renderer_deinit(void)
 
 void lite_renderer_update_rects(LiteRect* rects, int32_t count)
 {
-    SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, count);
+    lite_window_update_rects(rects, (uint32_t)count);
 
     static bool initial_frame = true;
     if (initial_frame)
     {
-        SDL_ShowWindow(window);
+        lite_window_show();
         initial_frame = false;
     }
 }
@@ -157,9 +146,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
     assert(x);
     assert(y);
 
-    SDL_Surface* surf = SDL_GetWindowSurface(window);
-    *x                = (int32_t)surf->w;
-    *y                = (int32_t)surf->h;
+    lite_window_surface(x, y);
 }
 
 LiteImage* lite_new_image(int32_t width, int32_t height)
@@ -266,7 +253,7 @@ LiteFont* lite_load_font(const char* filename, float size)
     {
         return nullptr;
     }
-    
+
     /* get size */
     fseek(fp, 0, SEEK_END);
     int32_t buf_size = ftell(fp);
@@ -393,12 +380,9 @@ void lite_draw_rect(LiteRect rect, LiteColor color)
     y2         = y2 > clip.bottom ? clip.bottom : y2;
 
     // @note(maihd): trick, need to handle resize event instead
-    SDL_Surface* surface = SDL_GetWindowSurface(window);
-    g_surface = (LiteImage){
-        .width = (uint32_t)surface->w,
-        .height = (uint32_t)surface->h,
-        .pixels = (LiteColor*)surface->pixels,
-    };
+    g_surface.pixels  = (LiteColor*)lite_window_surface(
+        &g_surface.width, &g_surface.height
+    );
 
     LiteColor* d = g_surface.pixels;
     d += x1 + y1 * g_surface.width;
@@ -450,12 +434,9 @@ void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, Lite
     }
 
     // @note(maihd): trick, need to handle resize event instead
-    SDL_Surface* surface = SDL_GetWindowSurface(window);
-    g_surface = (LiteImage){
-        .width = (uint32_t)surface->w,
-        .height = (uint32_t)surface->h,
-        .pixels = (LiteColor*)surface->pixels,
-    };
+    g_surface.pixels  = (LiteColor*)lite_window_surface(
+        &g_surface.width, &g_surface.height
+    );
 
     /* draw */
     LiteColor*    s    = image->pixels;

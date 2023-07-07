@@ -1,3 +1,5 @@
+#if defined(LITE_SYSTEM_SDL2)
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -612,3 +614,7 @@ int luaopen_system(lua_State* L)
     luaL_newlib(L, lib);
     return 1;
 }
+
+#endif
+
+//! EOF

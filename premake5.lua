@@ -8,7 +8,7 @@ do
     language "C"
     location (PROJECT_DIR)
 
-    configurations { "Debug", "Release" }
+    configurations { "Debug", "Release", "DebugSDL2", "ReleaseSDL2" }
     platforms { "x86", "x64" }
 
     filter {}
@@ -38,23 +38,20 @@ do
 
     links {
         "lua51_static",
-        "SDL2",
-        "SDL2main",
     }
 
     defines {
         -- "LUA_BUILD_AS_DLL",
-        "_CRT_SECURE_NO_WARNINGS"
+        "LITE_SYSTEM_SDL2",
     }
 
     includedirs {
         path.join(ROOT_DIR, "src/"),
         path.join(ROOT_DIR, "src/api"),
         path.join(LIBS_DIR, "luajit_2.1.0-beta3/include"),
-        path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/include"),
     }
 
-    filter { "configurations:Debug" }
+    filter { "configurations:Debug*" }
     do
         debugargs { "../data" }
 
@@ -67,7 +64,7 @@ do
         filter {}
     end
 
-    filter { "configurations:Release" }
+    filter { "configurations:Release*" }
     do
         debugargs { "../data" }
 
@@ -90,12 +87,10 @@ do
     do
         libdirs {
             path.join(LIBS_DIR, "luajit_2.1.0-beta3/prebuilt/x86"),
-            path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86"),
         }
 
         postbuildcommands {
             "xcopy \"" .. path.join(LIBS_DIR, "luajit_2.1.0-beta3/prebuilt/x86/lua51.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
-            "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
         }
 
         filter {}
@@ -105,15 +100,51 @@ do
     do
         libdirs {
             path.join(LIBS_DIR, "luajit_2.1.0-beta3/prebuilt/x64"),
-            path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64"),
         }
 
         postbuildcommands {
             "xcopy \"" .. path.join(LIBS_DIR, "luajit_2.1.0-beta3/prebuilt/x64/lua51.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
-            "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
         }
 
         filter {}
+    end
+
+    filter { "configurations:*SDL2" }
+    do
+        links {
+            "SDL2",
+            "SDL2main",
+        }
+    
+        defines {
+            "LITE_SYSTEM_SDL2"
+        }
+    
+        includedirs {
+            path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/include"),
+        }
+    
+        filter { "platforms:x86" }
+        do
+            libdirs {
+                path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86"),
+            }
+    
+            postbuildcommands {
+                "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
+            }
+        end
+    
+        filter { "platforms:x64" }
+        do
+            libdirs {
+                path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64"),
+            }
+    
+            postbuildcommands {
+                "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
+            }
+        end
     end
 
     filter {}

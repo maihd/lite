@@ -1,1 +1,4 @@
-#include "backends/lite_renderer_sdl2.c"
+#include "backends/lite_renderer_soft.c"
+
+//! EOF
+

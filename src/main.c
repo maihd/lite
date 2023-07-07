@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 #endif
     
     lite_window_open();
-    lite_renderer_init(lite_window_handle());
+    lite_renderer_init();
     lite_rencache_init();
     
     const LiteStartupParams startup_params = {

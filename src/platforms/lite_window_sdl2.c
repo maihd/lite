@@ -61,32 +61,32 @@ void lite_window_open(void)
         SetProcessDPIAware();
     }
 #endif
-    
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
     SDL_EnableScreenSaver();
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     atexit(SDL_Quit);
-    
+
 #ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR /* Available since 2.0.8 */
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 #endif
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 #endif
-    
+
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
-    
-    window = SDL_CreateWindow("", 
+
+    window = SDL_CreateWindow("",
                               SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8), (int)(dm.h * 0.8),
-                              SDL_WINDOW_RESIZABLE 
-                              | SDL_WINDOW_ALLOW_HIGHDPI 
+                              SDL_WINDOW_RESIZABLE
+                              | SDL_WINDOW_ALLOW_HIGHDPI
                               | SDL_WINDOW_HIDDEN);
     if (window)
     {
         // @todo(maihd): handle error
     }
-    
+
     lite_window_load_icon();
 }
 
@@ -99,6 +99,41 @@ void lite_window_close(void)
 void* lite_window_handle(void)
 {
     return window;
+}
+
+void lite_window_show(void)
+{
+    SDL_ShowWindow(window);
+}
+
+void lite_window_hide(void)
+{
+    SDL_HideWindow(window);
+}
+
+float lite_window_dpi(void)
+{
+    float dpi;
+    SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
+    return dpi;
+}
+
+void* lite_window_surface(int32_t* width, int32_t* height)
+{
+    SDL_Surface* surface = SDL_GetWindowSurface(window);
+    if (width)  *width   = (int32_t)surface->w;
+    if (height) *height  = (int32_t)surface->h;
+    return surface->pixels;
+}
+
+void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
+{
+    SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, (int)count);
+}
+
+void lite_window_message_box(const char* title, const char* message)
+{
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, window);
 }
 
 //! EOF

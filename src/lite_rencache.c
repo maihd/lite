@@ -155,7 +155,7 @@ static bool next_command(Command** prev)
 
 void lite_rencache_init(void)
 {
-    if (command_buf == NULL)
+    if (command_buf == nullptr)
     {
         command_buf = lite_arena_create(512 * 1024, 10 * 1024 * 1024, alignof(Command));
     }

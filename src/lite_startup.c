@@ -1,16 +1,16 @@
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <SDL2/SDL.h>
+#endif
 
 #include "api/lite_api.h"
 #include "lite_startup.h"
+#include "lite_window.h"
 
 static double lite_get_scale(void)
 {
-    float dpi;
-    SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
 #if _WIN32
-    return dpi / 96.0;
+    return (double)lite_window_dpi() / 96.0;
 #else
     return 1.0;
 #endif
@@ -54,7 +54,7 @@ void lite_startup(const LiteStartupParams params)
     lua_pushstring(L, "1.11");
     lua_setglobal(L, "VERSION");
     
-    lua_pushstring(L, SDL_GetPlatform());
+    lua_pushstring(L, "Windows");
     lua_setglobal(L, "PLATFORM");
     
     lua_pushnumber(L, lite_get_scale());
@@ -99,7 +99,7 @@ void lite_startup(const LiteStartupParams params)
         {
             errmsg = "Unknown error!";
         }
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, errmsg, (SDL_Window*)params.window_handle);
+        lite_window_message_box(title, errmsg);
     }
     
     lua_close(L);

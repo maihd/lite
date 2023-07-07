@@ -2,13 +2,137 @@
 
 #include "lite_meta.h"
 
-void lite_console_open(void);
-void lite_console_close(void);
+struct LiteRect;
 
-void lite_window_open(void);
-void lite_window_close(void);
+typedef enum LiteCursor
+{
+    LiteCursor_None,
+    LiteCursor_Hand,
+    LiteCursor_Arrow,
+    LiteCursor_Ibeam,
+    LiteCursor_SizeH,
+    LiteCursor_SizeV,
+} LiteCursor;
 
-void* lite_window_handle(void);
+typedef enum LiteWindowMode
+{
+    LiteWindowMode_Normal,
+    LiteWindowMode_Maximized,
+    LiteWindowMode_FullScreen,
+} LiteWindowMode;
+
+typedef enum LiteWindowEventType
+{
+    LiteWindowEventType_None,
+    LiteWindowEventType_Quit,
+    
+    LiteWindowEventType_Resized,
+    LiteWindowEventType_Exposed,
+    LiteWindowEventType_DropFile,
+
+    LiteWindowEventType_KeyUp,
+    LiteWindowEventType_KeyDown,
+    LiteWindowEventType_TextInput,
+
+    LiteWindowEventType_MouseUp,
+    LiteWindowEventType_MouseDown,
+    LiteWindowEventType_MouseMove,
+    LiteWindowEventType_MouseWheel,
+} LiteWindowEventType;
+
+typedef struct LiteWindowEvent
+{
+    LiteWindowEventType type;
+    union
+    {
+        struct
+        {
+            int32_t     width;
+            int32_t     height;
+        } resized;
+
+        struct
+        {
+            int32_t     width;
+            int32_t     exposed;
+        } exposed;
+
+        struct
+        {
+            const char* file_path;
+            int32_t     x;
+            int32_t     y;
+        } drop_file;
+
+        struct
+        {
+            const char* key_name;
+        } key_up, key_down;
+
+        struct
+        {
+            const char* text;
+        } text_input;
+
+        struct
+        {
+            const char* button_name;
+            int32_t     x;
+            int32_t     y;
+            int32_t     clicks;
+        } mouse_up, mouse_down;
+
+        struct
+        {
+            int32_t     x;
+            int32_t     y;
+            int32_t     dx;
+            int32_t     dy;
+        } mouse_move;
+
+        struct
+        {
+            int32_t     x;
+            int32_t     y;
+        } mouse_wheel;
+    };
+} LiteWindowEvent;
+
+void                lite_sleep(uint64_t ms);
+void                lite_usleep(uint64_t us);
+
+uint64_t            lite_cpu_ticks(void);
+uint64_t            lite_cpu_frequency(void);
+
+void                lite_console_open(void);
+void                lite_console_close(void);
+
+void                lite_window_open(void);
+void                lite_window_close(void);
+
+void*               lite_window_handle(void);
+void*               lite_window_surface(int32_t* width, int32_t* height);
+
+void                lite_window_show(void);
+void                lite_window_hide(void);
+
+void                lite_window_set_mode(LiteWindowMode mode);
+void                lite_window_set_title(const char* title);
+void                lite_window_set_cursor(LiteCursor cursor);
+
+void                lite_window_set_title(const char* title);
+void                lite_window_set_cursor(LiteCursor cursor);
+
+float               lite_window_dpi(void);
+bool                lite_window_has_focus(void);
+
+void                lite_window_update_rects(struct LiteRect* rects, uint32_t count);
+
+void                lite_window_message_box(const char* title, const char* message);
+void                lite_window_confirm_dialog(const char* title, const char* message);
+
+LiteWindowEvent     lite_window_poll_event(void);
+void                lite_window_wait_event(int64_t time_us);
 
 //! EOF
 

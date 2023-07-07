@@ -19,7 +19,7 @@ struct LiteRect
     int32_t x, y, width, height;
 };
 
-void lite_renderer_init(void* win_handle);
+void lite_renderer_init(void);
 void lite_renderer_deinit(void);
 
 void lite_renderer_update_rects(LiteRect* rects, int32_t count);
