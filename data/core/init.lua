@@ -278,7 +278,7 @@ function core.open_doc(filename)
         -- @note(maihd): if open binary file, memory may leak
         local is_binary = system.is_binary_file(abs_filename)
         if is_binary then
-            core.log_quiet("Open doc failed: " .. filename .. " is a binary file, skip opening!")
+            core.log("Open doc failed: " .. filename .. " is a binary file, skip opening!")
             return nil
         end
     end
