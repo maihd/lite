@@ -30,15 +30,16 @@ struct LiteFont
 {
     void*               data;
     stbtt_fontinfo      stbfont;
-    GlyphSet*           sets[MAX_GLYPHSET];
     float               size;
     int32_t             height;
+    GlyphSet*           sets[MAX_GLYPHSET];
 };
 
 static SDL_Window*  window;
 static LiteImage    g_surface;
 
-static LiteArena*   g_arena;
+static LiteArena*   g_img_arena;
+static LiteArena*   g_font_arena;
 
 static struct
 {
@@ -113,18 +114,22 @@ void lite_renderer_init(void* win_handle)
                                     .height = (int32_t)surf->h
                                 });
 
-    g_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024);
+    g_img_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteColor));
+    g_font_arena = lite_arena_create(1 * 1024 * 1024, 100 * 1024 * 1024, alignof(GlyphSet));
 }
 
 void lite_renderer_deinit(void)
 {
     if (window != nullptr)
     {
-        lite_arena_destroy(g_arena);
-        g_arena = nullptr;
+        lite_arena_destroy(g_font_arena);
+        lite_arena_destroy(g_img_arena);
+        g_font_arena = nullptr;
+        g_img_arena = nullptr;
     }
 
-    assert(g_arena && "Leak arena in renderer");
+    assert(g_img_arena && "Leak arena in renderer");
+    assert(g_font_arena && "Leak arena in renderer");
 }
 
 void lite_renderer_update_rects(LiteRect* rects, int32_t count)
@@ -163,9 +168,9 @@ LiteImage* lite_new_image(int32_t width, int32_t height)
 
     // @todo(maihd): use Arena instead of malloc
     LiteImage* image =
-        (LiteImage*)lite_arena_acquire(g_arena, sizeof(LiteImage) + width * height * sizeof(LiteColor), alignof(LiteColor));
+        (LiteImage*)lite_arena_acquire(g_img_arena, sizeof(LiteImage) + width * height * sizeof(LiteColor));
     check_alloc(image);
-    image->pixels = (LiteArena*)(image + 1);
+    image->pixels = (LiteColor*)(image + 1);
     image->width  = width;
     image->height = height;
     return image;
@@ -181,11 +186,12 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
     GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
 
     /* init image */
-    int32_t width  = 1024;
-    int32_t height = 1024;
+    int32_t width  = 128;
+    int32_t height = 128;
 
     for (;;)
     {
+        LiteArenaTemp temp = lite_arena_begin_temp(g_img_arena);
         set->image = lite_new_image(width, height);
 
         /* load glyphs */
@@ -200,8 +206,7 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
             width *= 2;
             height *= 2;
 
-            // @todo(maihd): do temp allocation instead of actually free memory
-            lite_free_image(set->image);
+            lite_arena_end_temp(temp);
             continue;
         }
 
@@ -245,11 +250,14 @@ static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 
 LiteFont* lite_load_font(const char* filename, float size)
 {
+    LiteArenaTemp arena_temp = lite_arena_begin_temp(g_font_arena);
+
     LiteFont* font = nullptr;
     FILE*    fp   = nullptr;
 
     /* init font */
-    font       = check_alloc(calloc(1, sizeof(LiteFont)));
+    font       = check_alloc(lite_arena_acquire(g_font_arena, sizeof(LiteFont)));
+    memset(font, 0, sizeof(*font));
     font->size = size;
 
     /* load font into buffer */
@@ -258,12 +266,14 @@ LiteFont* lite_load_font(const char* filename, float size)
     {
         return nullptr;
     }
+    
     /* get size */
     fseek(fp, 0, SEEK_END);
     int32_t buf_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
+
     /* load */
-    font->data = check_alloc(malloc(buf_size));
+    font->data = check_alloc(lite_arena_acquire(g_font_arena, buf_size));
     int32_t _  = fread(font->data, 1, buf_size, fp);
     (void)_;
     fclose(fp);
@@ -273,7 +283,7 @@ LiteFont* lite_load_font(const char* filename, float size)
     int32_t ok = stbtt_InitFont(&font->stbfont, font->data, 0);
     if (!ok)
     {
-        free(font->data);
+        lite_arena_end_temp(arena_temp);
         return nullptr;
     }
 

@@ -54,14 +54,22 @@
 /// @note(maihd): simple define, no need to include <stdalign.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus)
+#if defined(_MSC_VER)
 #define alignas(x) __declspec(align(x))
+#else
+#define alignas(x) _Alignas
+#endif
 #endif
 
 /// alignof operator
 /// @note(maihd): simple define, no need to include <stdalign.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus)
-#define alignof _Alignof
+#if defined(_MSC_VER)
+#define alignof(x) __alignof(x)
+#else
+#define alignof(x) _Alignof
+#endif
 #endif
 
 /// __forceinline attribute

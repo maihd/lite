@@ -6,10 +6,10 @@
 
 LiteArena* lite_arena_create_default(void)
 {
-    return lite_arena_create(LITE_ARENA_DEFAULT_COMMIT, LITE_ARENA_DEFAULT_COMMIT);
+    return lite_arena_create(LITE_ARENA_DEFAULT_COMMIT, LITE_ARENA_DEFAULT_COMMIT, LITE_ARENA_DEFAULT_ALIGNMENT);
 }
 
-LiteArena* lite_arena_create(size_t commit, size_t reserved)
+LiteArena* lite_arena_create(size_t commit, size_t reserved, size_t alignment)
 {
     void* memory = VirtualAlloc(nullptr, reserved, MEM_RESERVE, PAGE_READWRITE);
     assert(memory);
@@ -27,10 +27,18 @@ LiteArena* lite_arena_create(size_t commit, size_t reserved)
 
         .position = sizeof(LiteArena),
         .committed = commit,
-    };
 
-    uint8_t* block = ((uint8_t*)block + sizeof(LiteArena)); (void)block;
-    // @todo(maihd): add debug mark to memory
+        .alignment = alignment,
+    };
+    
+    // Calculate position based on alignment
+    uintptr_t block = (uintptr_t)arena + arena->position;
+    if (block % alignment != 0)
+    {
+        block += alignment - (block % alignment);
+    }
+    assert(block % alignment == 0);
+    arena->position = (size_t)block - (uintptr_t)arena;
 
     return arena;
 }
@@ -48,24 +56,21 @@ void lite_arena_destroy(LiteArena* arena)
     }
 }
 
-uint8_t* lite_arena_acquire(LiteArena* arena, size_t size, size_t align)
+uint8_t* lite_arena_acquire(LiteArena* arena, size_t size)
 {
     assert(arena && arena->current);
-    assert((align & (align - 1)) == 0);
+    //assert((align & (align - 1)) == 0);
 
     LiteArena* current = arena->current;
 
-    size_t aligned_size = size;
-    if (size % align != 0)
-    {
-        aligned_size += size - size % align;
-    }
+    size_t aligned_size = size + ((size % arena->alignment) > 0) * arena->alignment;
+    assert(aligned_size % arena->alignment == 0);
 
     if (current->position + aligned_size > current->capacity)
     {
         assert(aligned_size <= current->capacity);
 
-        LiteArena* new_arena = lite_arena_create(current->commit, current->capacity);
+        LiteArena* new_arena = lite_arena_create(current->commit, current->capacity, current->alignment);
         assert(new_arena);
 
         new_arena->prev = current;
@@ -85,12 +90,12 @@ uint8_t* lite_arena_acquire(LiteArena* arena, size_t size, size_t align)
     uintptr_t address = (uintptr_t)current + current->position;
     current->position += aligned_size;
 
-    if (address % align != 0)
-    {
-        address += address - address % align;
-    }
+    //if (address % align != 0)
+    //{
+    //    address += address - address % align;
+    //}
 
-    assert(address % align == 0);
+    assert(address % current->alignment == 0);
     return (uint8_t*)address;
 }
 
