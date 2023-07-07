@@ -63,7 +63,7 @@ uint8_t* lite_arena_acquire(LiteArena* arena, size_t size)
 
     LiteArena* current = arena->current;
 
-    size_t aligned_size = size + ((size % arena->alignment) > 0) * arena->alignment;
+    size_t aligned_size = size + (arena->alignment - (size % arena->alignment));
     assert(aligned_size % arena->alignment == 0);
 
     if (current->position + aligned_size > current->capacity)

@@ -1,3 +1,4 @@
+#include "lite_memory.h"
 #include "lite_rencache.h"
 
 #include <stdio.h>
@@ -12,7 +13,6 @@
 #define CELLS_X          80
 #define CELLS_Y          50
 #define CELL_SIZE        96
-#define COMMAND_BUF_SIZE (1024 * 512)
 
 enum
 {
@@ -22,16 +22,21 @@ enum
     DRAW_RECT
 };
 
-typedef struct
+typedef struct Command Command;
+
+alignas(16)
+struct Command
 {
-    uint32_t    type;
+    Command*    next;
+
     int32_t     size;
+    int32_t     type;
     LiteRect    rect;
     LiteColor   color;
     LiteFont*   font;
     int32_t     tab_width;
     char        text[0];
-} Command;
+};
 
 static uint32_t     cells_buf1[CELLS_X * CELLS_Y];
 static uint32_t     cells_buf2[CELLS_X * CELLS_Y];
@@ -39,8 +44,12 @@ static uint32_t*    cells_prev = cells_buf1;
 static uint32_t*    cells      = cells_buf2;
 
 static LiteRect     rect_buf[CELLS_X * CELLS_Y / 2];
-static uint8_t      command_buf[COMMAND_BUF_SIZE];
-static uint32_t     command_buf_idx;
+
+static LiteArena*    command_buf;
+static LiteArenaTemp command_buf_temp;
+
+static Command*      first_command;
+static Command*      last_command;
 
 static LiteRect     screen_rect;
 static bool         show_debug;
@@ -110,32 +119,52 @@ static LiteRect merge_rects(LiteRect a, LiteRect b)
 
 static Command* push_command(int32_t type, int32_t size)
 {
-    Command* cmd = (Command*)(command_buf + command_buf_idx);
-    int32_t  n   = command_buf_idx + size;
-    if (n > COMMAND_BUF_SIZE)
-    {
-        fprintf(stderr, "Warning: (" __FILE__ "): exhausted command buffer\n");
-        return NULL;
-    }
-
-    command_buf_idx = n;
+    Command* cmd = (Command*)lite_arena_acquire(command_buf, size);
     memset(cmd, 0, sizeof(Command));
     cmd->type = type;
     cmd->size = size;
+    cmd->next = nullptr;
+
+    if (first_command == NULL)
+    {
+        first_command = cmd;
+        last_command = cmd;
+    }
+    else
+    {
+        last_command->next = cmd;
+        last_command = cmd;
+    }
+
     return cmd;
 }
 
 static bool next_command(Command** prev)
 {
-    if (*prev == NULL)
+    if (*prev == nullptr)
     {
-        *prev = (Command*)command_buf;
+        *prev = first_command;
     }
     else
     {
-        *prev = (Command*)(((uint8_t*)*prev) + (*prev)->size);
+        *prev = (*prev)->next;
     }
-    return *prev != ((Command*)(command_buf + command_buf_idx));
+
+    return *prev != nullptr;
+}
+
+void lite_rencache_init(void)
+{
+    if (command_buf == NULL)
+    {
+        command_buf = lite_arena_create(512 * 1024, 10 * 1024 * 1024, alignof(Command));
+    }
+}
+
+void lite_rencache_deinit(void)
+{
+    lite_arena_destroy(command_buf);
+    command_buf = nullptr;
 }
 
 void lite_rencache_show_debug(bool enable)
@@ -210,6 +239,8 @@ void lite_rencache_invalidate(void)
 
 void lite_rencache_begin_frame(void)
 {
+    command_buf_temp = lite_arena_begin_temp(command_buf);
+
     /* reset all cells if the screen width/height has changed */
     int32_t w, h;
     lite_renderer_get_size(&w, &h);
@@ -372,7 +403,8 @@ void lite_rencache_end_frame(void)
     uint32_t* tmp   = cells;
     cells           = cells_prev;
     cells_prev      = tmp;
-    command_buf_idx = 0;
+    first_command   = nullptr;
+    lite_arena_end_temp(command_buf_temp);
 }
 
 //! EOF

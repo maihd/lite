@@ -1,6 +1,7 @@
 #include "lite_window.h"
 #include "lite_startup.h"
 #include "lite_renderer.h"
+#include "lite_rencache.h"
 
 #ifdef _WIN32
 #ifdef NDEBUG
@@ -36,6 +37,7 @@ int main(int argc, char** argv)
     
     lite_window_open();
     lite_renderer_init(lite_window_handle());
+    lite_rencache_init();
     
     const LiteStartupParams startup_params = {
         .argc = (uint32_t)argc, 
@@ -48,6 +50,7 @@ int main(int argc, char** argv)
     };
     lite_startup(startup_params);
     
+    lite_rencache_deinit();
     lite_renderer_deinit();
     lite_window_close();
     

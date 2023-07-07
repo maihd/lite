@@ -115,7 +115,7 @@ void lite_renderer_init(void* win_handle)
                                 });
 
     g_img_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteColor));
-    g_font_arena = lite_arena_create(1 * 1024 * 1024, 100 * 1024 * 1024, alignof(GlyphSet));
+    g_font_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(GlyphSet));
 }
 
 void lite_renderer_deinit(void)
