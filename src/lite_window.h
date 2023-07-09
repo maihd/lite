@@ -48,47 +48,47 @@ typedef struct LiteWindowEvent
     {
         struct
         {
-            int32_t     width;
-            int32_t     height;
+            int32_t         width;
+            int32_t         height;
         } resized;
 
         struct
         {
-            const char* file_path;
-            int32_t     x;
-            int32_t     y;
+            LiteStringView  file_path;
+            int32_t         x;
+            int32_t         y;
         } drop_file;
 
         struct
         {
-            const char* key_name;
+            LiteStringView  key_name;
         } key_up, key_down;
 
         struct
         {
-            const char* text;
+            LiteStringView  text;
         } text_input;
 
         struct
         {
-            const char* button_name;
-            int32_t     x;
-            int32_t     y;
-            int32_t     clicks;
+            LiteStringView  button_name;
+            int32_t         x;
+            int32_t         y;
+            int32_t         clicks;
         } mouse_up, mouse_down;
 
         struct
         {
-            int32_t     x;
-            int32_t     y;
-            int32_t     dx;
-            int32_t     dy;
+            int32_t         x;
+            int32_t         y;
+            int32_t         dx;
+            int32_t         dy;
         } mouse_move;
 
         struct
         {
-            int32_t     x;
-            int32_t     y;
+            int32_t         x;
+            int32_t         y;
         } mouse_wheel;
     };
 } LiteWindowEvent;

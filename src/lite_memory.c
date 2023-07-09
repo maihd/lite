@@ -99,5 +99,34 @@ uint8_t* lite_arena_acquire(LiteArena* arena, size_t size)
     return (uint8_t*)address;
 }
 
+static LiteArena*       g_frame_arena;
+static LiteArenaTemp    g_frame_arena_temp;
+
+LiteArena* lite_frame_arena_get(void)
+{
+    return g_frame_arena;
+}
+
+void lite_frame_arena_begin(void)
+{
+    assert(g_frame_arena_temp.arena == nullptr);
+
+    if (g_frame_arena == nullptr)
+    {
+        g_frame_arena = lite_arena_create_default();
+    }
+
+    g_frame_arena_temp = lite_arena_begin_temp(g_frame_arena);
+}
+
+void lite_frame_arena_end(void)
+{
+    assert(g_frame_arena != nullptr);
+    assert(g_frame_arena_temp.arena != nullptr);
+
+    lite_arena_end_temp(g_frame_arena_temp);
+    g_frame_arena_temp = (LiteArenaTemp){ 0 };
+}
+
 //! EOF
 

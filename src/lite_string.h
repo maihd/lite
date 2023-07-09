@@ -31,6 +31,9 @@ typedef struct LiteStringBuffer
     char     data[];
 } LiteStringBuffer;
 
+/// Create string view, memory from frame buffer
+LiteStringView lite_string_temp(const char* string);
+
 /// Calculate string length (utf8 support)
 uint32_t lite_string_count(const char* string);
 
@@ -43,5 +46,14 @@ static __forceinline LiteStringView lite_string_view(const char* string, uint32_
     string_view.buffer = string;
     return string_view;
 }
+
+/// Create string view, calculate length
+static __forceinline LiteStringView lite_string_view_cstr(const char* string)
+{
+    return lite_string_view(string, lite_string_count(string), 0);
+}
+
+/// Create StringView from string literal
+#define lite_string_lit(string) lite_string_view(string, sizeof(string) - 1, 0)
 
 //! new empty line, required by GCC

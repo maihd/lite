@@ -493,8 +493,13 @@ end)
 
 
 function core.run()
+    local system_begin_frame = system.begin_frame
+    local system_end_frame = system.end_frame
+
     local time = 0
     while true do
+        system_begin_frame()
+
         core.frame_start = system.get_time()
         local did_redraw = core.step()
         run_threads()
@@ -532,6 +537,8 @@ function core.run()
 
         time = time + delta
         core.fps = math.min(60, 1 / delta)
+
+        system_end_frame()
     end
 end
 

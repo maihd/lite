@@ -16,6 +16,7 @@
 
 #include "lite_api.h"
 #include "lite_file.h"
+#include "lite_memory.h"
 #include "lite_window.h"
 #include "lite_rencache.h"
 
@@ -25,61 +26,62 @@ static int f_poll_event(lua_State* L)
     switch (event.type)
     {
     case LiteWindowEventType_Quit:
-        lua_pushstring(L, "quit");
+        lua_pushstringview(L, lite_string_lit("quit"));
         return 1;
 
     case LiteWindowEventType_Resized:
-        lua_pushstring(L, "resized");
+        lua_pushstringview(L, lite_string_lit("resized"));
         lua_pushnumber(L, (lua_Number)event.resized.width);
         lua_pushnumber(L, (lua_Number)event.resized.height);
         return 3;
 
     case LiteWindowEventType_Exposed:
         lite_rencache_invalidate();
-        lua_pushstring(L, "exposed");
+        lua_pushstringview(L, lite_string_lit("exposed"));
         return 1;
 
     case LiteWindowEventType_DropFile:
-        lua_pushstring(L, "filedropped");
-        lua_pushstring(L, event.drop_file.file_path);
+        lua_pushstringview(L, lite_string_lit("filedropped"));
+        lua_pushstringview(L, event.drop_file.file_path);
         lua_pushnumber(L, (lua_Number)event.drop_file.x);
         lua_pushnumber(L, (lua_Number)event.drop_file.y);
         //free((void*)event.drop_file.file_path);
         return 4;
 
     case LiteWindowEventType_KeyDown:
-        lua_pushstring(L, "keypressed");
-        lua_pushstring(L, event.key_down.key_name);
+        lua_pushstringview(L, lite_string_lit("keypressed"));
+        lua_pushstringview(L, event.key_down.key_name);
         return 2;
 
     case LiteWindowEventType_KeyUp:
-        lua_pushstring(L, "keyreleased");
-        lua_pushstring(L, event.key_up.key_name);
+        lua_pushstringview(L, lite_string_lit("keyreleased"));        
+        lua_pushstringview(L, event.key_up.key_name);
         return 2;
 
     case LiteWindowEventType_TextInput:
-        lua_pushstring(L, "textinput");
-        lua_pushstring(L, event.text_input.text);
+        lua_pushstringview(L, lite_string_lit("textinput"));
+        lua_pushstringview(L, event.text_input.text);
         return 2;
 
     case LiteWindowEventType_MouseDown:
-        lua_pushstring(L, "mousepressed");
-        lua_pushstring(L, event.mouse_down.button_name);
+        lua_pushstringview(L, lite_string_lit("mousepressed"));
+        lua_pushstringview(L, event.mouse_down.button_name);
+
         lua_pushnumber(L, (lua_Number)event.mouse_down.x);
         lua_pushnumber(L, (lua_Number)event.mouse_down.y);
         lua_pushnumber(L, (lua_Number)event.mouse_down.clicks);
         return 5;
 
     case LiteWindowEventType_MouseUp:
-        lua_pushstring(L, "mousereleased");
-        lua_pushstring(L, event.mouse_up.button_name);
+        lua_pushstringview(L, lite_string_lit("mousereleased"));
+        lua_pushstringview(L, event.mouse_up.button_name);
         lua_pushnumber(L, (lua_Number)event.mouse_up.x);
         lua_pushnumber(L, (lua_Number)event.mouse_up.y);
         lua_pushnumber(L, (lua_Number)event.mouse_up.clicks);
         return 5;
 
     case LiteWindowEventType_MouseMove:
-        lua_pushstring(L, "mousemoved");
+        lua_pushstringview(L, lite_string_lit("mousemoved"));
         lua_pushnumber(L, (lua_Number)event.mouse_move.x);
         lua_pushnumber(L, (lua_Number)event.mouse_move.y);
         lua_pushnumber(L, (lua_Number)event.mouse_move.dx);
@@ -87,7 +89,7 @@ static int f_poll_event(lua_State* L)
         return 5;
 
     case LiteWindowEventType_MouseWheel:
-        lua_pushstring(L, "mousewheel");
+        lua_pushstringview(L, lite_string_lit("mousewheel"));
         lua_pushnumber(L, (lua_Number)event.mouse_wheel.y);
         return 2;
 
@@ -409,7 +411,7 @@ static int f_get_clipboard(lua_State* L)
         return 0;
     }
 
-    lua_pushlstring(L, text.buffer, text.length);
+    lua_pushstringview(L, text);
     return 1;
 }
 
@@ -497,6 +499,18 @@ static int f_fuzzy_match(lua_State* L)
     return 1;
 }
 
+static int f_begin_frame(lua_State* L)
+{
+    lite_frame_arena_begin();
+    return 0;
+}
+
+static int f_end_frame(lua_State* L)
+{
+    lite_frame_arena_end();
+    return 0;
+}
+
 static const luaL_Reg lib[] = {
     {"poll_event",          f_poll_event         },
     {"wait_event",          f_wait_event         },
@@ -519,6 +533,8 @@ static const luaL_Reg lib[] = {
     {"sleep",               f_sleep              },
     {"exec",                f_exec               },
     {"fuzzy_match",         f_fuzzy_match        },
+    {"begin_frame",         f_begin_frame        },
+    {"end_frame",           f_end_frame          },
     {NULL,                  NULL                 }
 };
 

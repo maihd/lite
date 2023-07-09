@@ -56,17 +56,15 @@ uint64_t lite_cpu_frequency(void)
 
 LiteStringView lite_clipboard_get(void)
 {
-    static char buffer[1024];
-    const char* text = SDL_GetClipboardText();
-    strcpy(buffer, text);
-    SDL_free(text);
-    
-    return lite_string_view(buffer, lite_string_count(buffer), 0);
+    char* sdl_text = SDL_GetClipboardText();
+    LiteStringView text = lite_string_temp(sdl_text);
+    SDL_free(sdl_text);
+    return text;
 }
 
 bool lite_clipboard_set(LiteStringView text)
 {
-    SDL_SetClipboardText(text.buffer);
+    return SDL_SetClipboardText(text.buffer) == 0;
 }
 
 void lite_console_open(void)
@@ -240,36 +238,39 @@ bool lite_window_confirm_dialog(const char* title, const char* message)
     return buttonid == 1;
 }
 
-static const char* lite_button_name(int button)
+static LiteStringView lite_button_name(Uint8 button)
 {
     switch (button)
     {
-        case 1: return "left";
-        case 2: return "middle";
-        case 3: return "right";
-        default: return "?";
+        case SDL_BUTTON_LEFT: 
+            return lite_string_lit("left");
+
+        case SDL_BUTTON_MIDDLE: 
+            return lite_string_lit("middle");
+
+        case SDL_BUTTON_RIGHT: 
+            return lite_string_lit("right");
+
+        default: 
+            return lite_string_lit("?");
     }
 }
 
-static char* lite_key_name(char* dst, int sym)
+static LiteStringView lite_key_name(SDL_Keycode sym)
 {
-    strcpy(dst, SDL_GetKeyName(sym));
-    char* p = dst;
+    LiteStringView key_name = lite_string_temp(SDL_GetKeyName(sym));
+    char* p = (char*)key_name.buffer;
     while (*p)
     {
         *p = tolower(*p);
         p++;
     }
-    return dst;
+    return key_name;
 }
 
 LiteWindowEvent lite_window_poll_event(void)
 {
-    // @todo(maihd): convert to frame arena memory
-    static char      buf[16];
-    int       mx, my, wx, wy;
     SDL_Event e;
-
     while (SDL_PollEvent(&e))
     {
         switch (e.type)
@@ -308,23 +309,27 @@ LiteWindowEvent lite_window_poll_event(void)
             break;
 
         case SDL_DROPFILE:
+        {
+            int mx, my, wx, wy;
             SDL_GetGlobalMouseState(&mx, &my);
             SDL_GetWindowPosition(window, &wx, &wy);
+            LiteStringView text = lite_string_temp(e.drop.file);
+            SDL_free(e.drop.file);
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_DropFile,
                 .drop_file = {
-                    .file_path = e.drop.file, // @note(maihd): may leak,
+                    .file_path = text, // @note(maihd): may leak,
                     .x = mx - wx,
                     .y = my - wy
                 }
             };
-//             SDL_free(e.drop.file);
+        }
 
         case SDL_KEYDOWN:
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_KeyDown,
                 .key_down = {
-                    .key_name = lite_key_name(buf, e.key.keysym.sym)
+                    .key_name = lite_key_name(e.key.keysym.sym)
                 }
             };
 
@@ -332,7 +337,7 @@ LiteWindowEvent lite_window_poll_event(void)
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_KeyUp,
                 .key_up = {
-                    .key_name = lite_key_name(buf, e.key.keysym.sym)
+                    .key_name = lite_key_name(e.key.keysym.sym)
                 }
             };
 
@@ -340,7 +345,7 @@ LiteWindowEvent lite_window_poll_event(void)
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_TextInput,
                 .text_input = {
-                    .text = e.text.text
+                    .text = lite_string_temp(e.text.text)
                 }
             };
 

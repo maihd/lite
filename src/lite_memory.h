@@ -37,6 +37,11 @@ void        lite_arena_destroy(LiteArena* arena);
 uint8_t*    lite_arena_acquire(LiteArena* lite_arena, size_t size);
 //void        lite_arena_collect()
 
+LiteArena*  lite_frame_arena_get(void);
+
+void        lite_frame_arena_begin(void);
+void        lite_frame_arena_end(void);
+
 static __forceinline LiteArenaTemp lite_arena_begin_temp(LiteArena* arena)
 {
     LiteArenaTemp temp;
@@ -49,6 +54,7 @@ static __forceinline void lite_arena_end_temp(LiteArenaTemp temp)
 {
     temp.arena->current->position = temp.mark_position;
 }
+
 
 //! EOF
 
