@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -51,6 +52,21 @@ uint64_t lite_cpu_ticks(void)
 uint64_t lite_cpu_frequency(void)
 {
     return SDL_GetPerformanceFrequency();
+}
+
+LiteStringView lite_clipboard_get(void)
+{
+    static char buffer[1024];
+    const char* text = SDL_GetClipboardText();
+    strcpy(buffer, text);
+    SDL_free(text);
+    
+    return lite_string_view(buffer, lite_string_count(buffer), 0);
+}
+
+bool lite_clipboard_set(LiteStringView text)
+{
+    SDL_SetClipboardText(text.buffer);
 }
 
 void lite_console_open(void)
@@ -141,17 +157,47 @@ void lite_window_hide(void)
 
 void lite_window_set_mode(LiteWindowMode mode)
 {
+    SDL_SetWindowFullscreen(window, 
+        mode == LiteWindowMode_FullScreen 
+        ? SDL_WINDOW_FULLSCREEN_DESKTOP 
+        : 0);
 
+    if (mode == LiteWindowMode_Normal)
+    {
+        SDL_RestoreWindow(window);
+    }
+
+    if (mode == LiteWindowMode_Maximized)
+    {
+        SDL_MaximizeWindow(window);
+    }
 }
 
 void lite_window_set_title(const char* title)
 {
-
+    SDL_SetWindowTitle(window, title);
 }
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
+    static SDL_Cursor* sdl_cursor_cache[16];
+    static const int sdl_cursor_enums[] = {
+        0,
+        SDL_SYSTEM_CURSOR_HAND,
+        SDL_SYSTEM_CURSOR_ARROW, 
+        SDL_SYSTEM_CURSOR_IBEAM, 
+        SDL_SYSTEM_CURSOR_SIZEWE,
+        SDL_SYSTEM_CURSOR_SIZENS, 
+    };
 
+    int         n = sdl_cursor_enums[(uint32_t)cursor];
+    SDL_Cursor* sdl_cursor = sdl_cursor_cache[n];
+    if (!sdl_cursor)
+    {
+        sdl_cursor = SDL_CreateSystemCursor(n);
+        sdl_cursor_cache[n] = sdl_cursor;
+    }
+    SDL_SetCursor(sdl_cursor);
 }
 
 float lite_window_dpi(void)
@@ -163,7 +209,8 @@ float lite_window_dpi(void)
 
 bool lite_window_has_focus(void)
 {
-    return false;
+    Uint32 flags = SDL_GetWindowFlags(window);
+    return flags & SDL_WINDOW_INPUT_FOCUS;
 }
 
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
@@ -178,7 +225,19 @@ void lite_window_message_box(const char* title, const char* message)
 
 bool lite_window_confirm_dialog(const char* title, const char* message)
 {
-    return false;
+    SDL_MessageBoxButtonData buttons[] = {
+        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
+        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
+    };
+    SDL_MessageBoxData data = {
+        .title = title,
+        .message = message,
+        .numbuttons = 2,
+        .buttons = buttons,
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&data, &buttonid);
+    return buttonid == 1;
 }
 
 static const char* lite_button_name(int button)

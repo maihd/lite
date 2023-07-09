@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lite_meta.h"
+#include "lite_string.h"
 
 struct LiteRect;
 
@@ -97,6 +98,9 @@ void                lite_usleep(uint64_t us);
 
 uint64_t            lite_cpu_ticks(void);
 uint64_t            lite_cpu_frequency(void);
+
+LiteStringView      lite_clipboard_get(void);
+bool                lite_clipboard_set(LiteStringView text);
 
 void                lite_console_open(void);
 void                lite_console_close(void);

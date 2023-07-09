@@ -1,12 +1,9 @@
-#if defined(LITE_SYSTEM_SDL2)
-
 #include <ctype.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <SDL2/SDL.h>
 #include <sys/stat.h>
 
 #ifdef _WIN32
@@ -21,8 +18,6 @@
 #include "lite_file.h"
 #include "lite_window.h"
 #include "lite_rencache.h"
-
-extern SDL_Window* window;
 
 static int f_poll_event(lua_State* L)
 {
@@ -127,67 +122,48 @@ static int f_is_binary_file(lua_State* L)
     return 1;
 }
 
-static SDL_Cursor* cursor_cache[SDL_SYSTEM_CURSOR_HAND + 1];
-
 static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
     "sizev", "hand",  NULL};
 
-static const int cursor_enums[] = {
-    SDL_SYSTEM_CURSOR_ARROW, SDL_SYSTEM_CURSOR_IBEAM, SDL_SYSTEM_CURSOR_SIZEWE,
-    SDL_SYSTEM_CURSOR_SIZENS, SDL_SYSTEM_CURSOR_HAND};
+static const LiteCursor cursor_enums[] = {
+    LiteCursor_Arrow,
+    LiteCursor_Ibeam,
+    LiteCursor_SizeH,
+    LiteCursor_SizeV,
+    LiteCursor_Hand
+};
 
 static int f_set_cursor(lua_State* L)
 {
-    int         opt    = luaL_checkoption(L, 1, "arrow", cursor_opts);
-    int         n      = cursor_enums[opt];
-    SDL_Cursor* cursor = cursor_cache[n];
-    if (!cursor)
-    {
-        cursor          = SDL_CreateSystemCursor(n);
-        cursor_cache[n] = cursor;
-    }
-    SDL_SetCursor(cursor);
+    int opt = luaL_checkoption(L, 1, "arrow", cursor_opts);
+    lite_window_set_cursor(cursor_enums[opt]);
     return 0;
 }
 
 static int f_set_window_title(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
-    SDL_SetWindowTitle(window, title);
+    lite_window_set_title(title);
     return 0;
 }
 
-static const char* window_opts[] = {"normal", "maximized", "fullscreen", 0};
-enum
-{
-    WIN_NORMAL,
-    WIN_MAXIMIZED,
-    WIN_FULLSCREEN
-};
 
 static int f_set_window_mode(lua_State* L)
 {
+    static const char* window_opts[] = {"normal", "maximized", "fullscreen", 0};
+    static LiteWindowMode window_modes[] = { LiteWindowMode_Normal, LiteWindowMode_Maximized, LiteWindowMode_FullScreen, 0};
     int n = luaL_checkoption(L, 1, "normal", window_opts);
-    SDL_SetWindowFullscreen(
-                            window, n == WIN_FULLSCREEN ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-    if (n == WIN_NORMAL)
-    {
-        SDL_RestoreWindow(window);
-    }
-    if (n == WIN_MAXIMIZED)
-    {
-        SDL_MaximizeWindow(window);
-    }
+    lite_window_set_mode(window_modes[n]);
     return 0;
 }
 
 static int f_window_has_focus(lua_State* L)
 {
-    unsigned flags = SDL_GetWindowFlags(window);
-    lua_pushboolean(L, flags & SDL_WINDOW_INPUT_FOCUS);
+    lua_pushboolean(L, lite_window_has_focus());
     return 1;
 }
 
+#if 0
 static int f_get_window_opacity(lua_State* L)
 {
     float opacity;
@@ -208,30 +184,19 @@ static int f_set_window_opacity(lua_State* L)
     SDL_SetWindowOpacity(window, opacity);
     return 0;
 }
+#endif
 
 static int f_show_confirm_dialog(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
     const char* msg   = luaL_checkstring(L, 2);
 
+    lua_pushboolean(L, lite_window_confirm_dialog(title, msg));
 #if _WIN32
-    int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
-    lua_pushboolean(L, id == IDYES);
-
+    //int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
+    //lua_pushboolean(L, id == IDYES);
 #else
-    SDL_MessageBoxButtonData buttons[] = {
-        {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
-        {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
-    };
-    SDL_MessageBoxData data = {
-        .title      = title,
-        .message    = msg,
-        .numbuttons = 2,
-        .buttons    = buttons,
-    };
-    int buttonid;
-    SDL_ShowMessageBox(&data, &buttonid);
-    lua_pushboolean(L, buttonid == 1);
+    
 #endif
     return 1;
 }
@@ -438,27 +403,27 @@ static int f_get_file_info(lua_State* L)
 
 static int f_get_clipboard(lua_State* L)
 {
-    char* text = SDL_GetClipboardText();
-    if (!text)
+    LiteStringView text = lite_clipboard_get();
+    if (!text.buffer)
     {
         return 0;
     }
-    lua_pushstring(L, text);
-    SDL_free(text);
+
+    lua_pushlstring(L, text.buffer, text.length);
     return 1;
 }
 
 static int f_set_clipboard(lua_State* L)
 {
-    const char* text = luaL_checkstring(L, 1);
-    SDL_SetClipboardText(text);
+    size_t length;
+    const char* text = luaL_checklstring(L, 1, &length);
+    lite_clipboard_set(lite_string_view(text, (size_t)length, 0));
     return 0;
 }
 
 static int f_get_time(lua_State* L)
 {
-    double n =
-        SDL_GetPerformanceCounter() / (double)SDL_GetPerformanceFrequency();
+    double n = (double)lite_cpu_ticks() / (double)lite_cpu_frequency();
     lua_pushnumber(L, n);
     return 1;
 }
@@ -466,7 +431,7 @@ static int f_get_time(lua_State* L)
 static int f_sleep(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
-    SDL_Delay((Uint32)(n * 1000));
+    lite_usleep((uint32_t)(n * 1000 * 1000));
     return 0;
 }
 
@@ -538,8 +503,8 @@ static const luaL_Reg lib[] = {
     {"set_cursor",          f_set_cursor         },
     {"set_window_title",    f_set_window_title   },
     {"set_window_mode",     f_set_window_mode    },
-    {"get_window_opacity",  f_get_window_opacity },
-    {"set_window_opacity",  f_set_window_opacity },
+    //{"get_window_opacity",  f_get_window_opacity },
+    //{"set_window_opacity",  f_set_window_opacity },
     {"window_has_focus",    f_window_has_focus   },
     {"show_confirm_dialog", f_show_confirm_dialog},
     {"chdir",               f_chdir              },
@@ -562,7 +527,5 @@ int luaopen_system(lua_State* L)
     luaL_newlib(L, lib);
     return 1;
 }
-
-#endif
 
 //! EOF

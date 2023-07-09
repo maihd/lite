@@ -32,7 +32,7 @@ typedef struct LiteStringBuffer
 } LiteStringBuffer;
 
 /// Calculate string length (utf8 support)
-const uint32_t lite_string_count(const char* string);
+uint32_t lite_string_count(const char* string);
 
 /// Create StringView
 static __forceinline LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t hash)
