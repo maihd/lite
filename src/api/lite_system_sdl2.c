@@ -19,137 +19,85 @@
 
 #include "lite_api.h"
 #include "lite_file.h"
+#include "lite_window.h"
 #include "lite_rencache.h"
 
 extern SDL_Window* window;
 
-static const char* button_name(int button)
-{
-    switch (button)
-    {
-        case 1: return "left";
-        case 2: return "middle";
-        case 3: return "right";
-        default: return "?";
-    }
-}
-
-static char* key_name(char* dst, int sym)
-{
-    strcpy(dst, SDL_GetKeyName(sym));
-    char* p = dst;
-    while (*p)
-    {
-        *p = tolower(*p);
-        p++;
-    }
-    return dst;
-}
-
 static int f_poll_event(lua_State* L)
 {
-    char      buf[16];
-    int       mx, my, wx, wy;
-    SDL_Event e;
-
-    while (SDL_PollEvent(&e))
+    LiteWindowEvent event = lite_window_poll_event();
+    switch (event.type)
     {
-        switch (e.type)
-        {
-        case SDL_QUIT:
-            lua_pushstring(L, "quit");
-            return 1;
+    case LiteWindowEventType_Quit:
+        lua_pushstring(L, "quit");
+        return 1;
 
-        case SDL_WINDOWEVENT:
-            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-            {
-                lua_pushstring(L, "resized");
-                lua_pushnumber(L, e.window.data1);
-                lua_pushnumber(L, e.window.data2);
-                return 3;
-            }
-            else if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
-            {
-                lite_rencache_invalidate();
-                lua_pushstring(L, "exposed");
-                return 1;
-            }
+    case LiteWindowEventType_Resized:
+        lua_pushstring(L, "resized");
+        lua_pushnumber(L, (lua_Number)event.resized.width);
+        lua_pushnumber(L, (lua_Number)event.resized.height);
+        return 3;
 
-            // on some systems, when alt-tabbing to the window SDL will queue up
-            // several KEYDOWN events for the `tab` key; we flush all keydown
-            // events on focus so these are discarded
-            if (e.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
-            {
-                SDL_FlushEvent(SDL_KEYDOWN);
-            }
-            break;
+    case LiteWindowEventType_Exposed:
+        lite_rencache_invalidate();
+        lua_pushstring(L, "exposed");
+        return 1;
 
-        case SDL_DROPFILE:
-            SDL_GetGlobalMouseState(&mx, &my);
-            SDL_GetWindowPosition(window, &wx, &wy);
-            lua_pushstring(L, "filedropped");
-            lua_pushstring(L, e.drop.file);
-            lua_pushnumber(L, (lua_Number)mx - (lua_Number)wx);
-            lua_pushnumber(L, (lua_Number)my - (lua_Number)wy);
-            SDL_free(e.drop.file);
-            return 4;
+    case LiteWindowEventType_DropFile:
+        lua_pushstring(L, "filedropped");
+        lua_pushstring(L, event.drop_file.file_path);
+        lua_pushnumber(L, (lua_Number)event.drop_file.x);
+        lua_pushnumber(L, (lua_Number)event.drop_file.y);
+        //free((void*)event.drop_file.file_path);
+        return 4;
 
-        case SDL_KEYDOWN:
-            lua_pushstring(L, "keypressed");
-            lua_pushstring(L, key_name(buf, e.key.keysym.sym));
-            return 2;
+    case LiteWindowEventType_KeyDown:
+        lua_pushstring(L, "keypressed");
+        lua_pushstring(L, event.key_down.key_name);
+        return 2;
 
-        case SDL_KEYUP:
-            lua_pushstring(L, "keyreleased");
-            lua_pushstring(L, key_name(buf, e.key.keysym.sym));
-            return 2;
+    case LiteWindowEventType_KeyUp:
+        lua_pushstring(L, "keyreleased");
+        lua_pushstring(L, event.key_up.key_name);
+        return 2;
 
-        case SDL_TEXTINPUT:
-            lua_pushstring(L, "textinput");
-            lua_pushstring(L, e.text.text);
-            return 2;
+    case LiteWindowEventType_TextInput:
+        lua_pushstring(L, "textinput");
+        lua_pushstring(L, event.text_input.text);
+        return 2;
 
-        case SDL_MOUSEBUTTONDOWN:
-            if (e.button.button == SDL_BUTTON_LEFT)
-            {
-                SDL_CaptureMouse(true);
-            }
-            lua_pushstring(L, "mousepressed");
-            lua_pushstring(L, button_name(e.button.button));
-            lua_pushnumber(L, e.button.x);
-            lua_pushnumber(L, e.button.y);
-            lua_pushnumber(L, e.button.clicks);
-            lua_pushnumber(L, (double)e.button.timestamp);
-            return 6;
+    case LiteWindowEventType_MouseDown:
+        lua_pushstring(L, "mousepressed");
+        lua_pushstring(L, event.mouse_down.button_name);
+        lua_pushnumber(L, (lua_Number)event.mouse_down.x);
+        lua_pushnumber(L, (lua_Number)event.mouse_down.y);
+        lua_pushnumber(L, (lua_Number)event.mouse_down.clicks);
+        return 5;
 
-        case SDL_MOUSEBUTTONUP:
-            if (e.button.button == 1)
-            {
-                SDL_CaptureMouse(false);
-            }
-            lua_pushstring(L, "mousereleased");
-            lua_pushstring(L, button_name(e.button.button));
-            lua_pushnumber(L, e.button.x);
-            lua_pushnumber(L, e.button.y);
-            lua_pushnumber(L, (double)e.button.timestamp);
-            return 5;
+    case LiteWindowEventType_MouseUp:
+        lua_pushstring(L, "mousereleased");
+        lua_pushstring(L, event.mouse_up.button_name);
+        lua_pushnumber(L, (lua_Number)event.mouse_up.x);
+        lua_pushnumber(L, (lua_Number)event.mouse_up.y);
+        lua_pushnumber(L, (lua_Number)event.mouse_up.clicks);
+        return 5;
 
-        case SDL_MOUSEMOTION:
-            lua_pushstring(L, "mousemoved");
-            lua_pushnumber(L, e.motion.x);
-            lua_pushnumber(L, e.motion.y);
-            lua_pushnumber(L, e.motion.xrel);
-            lua_pushnumber(L, e.motion.yrel);
-            lua_pushnumber(L, (double)e.motion.timestamp);
-            return 6;
+    case LiteWindowEventType_MouseMove:
+        lua_pushstring(L, "mousemoved");
+        lua_pushnumber(L, (lua_Number)event.mouse_move.x);
+        lua_pushnumber(L, (lua_Number)event.mouse_move.y);
+        lua_pushnumber(L, (lua_Number)event.mouse_move.dx);
+        lua_pushnumber(L, (lua_Number)event.mouse_move.dy);
+        return 5;
 
-        case SDL_MOUSEWHEEL:
-            lua_pushstring(L, "mousewheel");
-            lua_pushnumber(L, e.wheel.y);
-            return 2;
+    case LiteWindowEventType_MouseWheel:
+        lua_pushstring(L, "mousewheel");
+        lua_pushnumber(L, (lua_Number)event.mouse_wheel.y);
+        return 2;
 
-        default: break;
-        }
+    default:
+        break;
     }
 
     return 0;
@@ -158,7 +106,7 @@ static int f_poll_event(lua_State* L)
 static int f_wait_event(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
-    lua_pushboolean(L, SDL_WaitEventTimeout(NULL, (int)(n * 1000)));
+    lua_pushboolean(L, lite_window_wait_event((uint64_t)(n * 1000 * 1000)));
     return 1;
 }
 

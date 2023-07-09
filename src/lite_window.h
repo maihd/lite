@@ -25,7 +25,7 @@ typedef enum LiteWindowEventType
 {
     LiteWindowEventType_None,
     LiteWindowEventType_Quit,
-    
+
     LiteWindowEventType_Resized,
     LiteWindowEventType_Exposed,
     LiteWindowEventType_DropFile,
@@ -50,12 +50,6 @@ typedef struct LiteWindowEvent
             int32_t     width;
             int32_t     height;
         } resized;
-
-        struct
-        {
-            int32_t     width;
-            int32_t     exposed;
-        } exposed;
 
         struct
         {
@@ -120,19 +114,16 @@ void                lite_window_set_mode(LiteWindowMode mode);
 void                lite_window_set_title(const char* title);
 void                lite_window_set_cursor(LiteCursor cursor);
 
-void                lite_window_set_title(const char* title);
-void                lite_window_set_cursor(LiteCursor cursor);
-
 float               lite_window_dpi(void);
 bool                lite_window_has_focus(void);
 
 void                lite_window_update_rects(struct LiteRect* rects, uint32_t count);
 
 void                lite_window_message_box(const char* title, const char* message);
-void                lite_window_confirm_dialog(const char* title, const char* message);
+bool                lite_window_confirm_dialog(const char* title, const char* message);
 
 LiteWindowEvent     lite_window_poll_event(void);
-void                lite_window_wait_event(int64_t time_us);
+bool                lite_window_wait_event(uint64_t time_us);
 
 //! EOF
 
