@@ -30,7 +30,6 @@ function command.prettify_name(name)
   return name:gsub(":", ": "):gsub("-", " "):gsub("%S+", capitalize_first)
 end
 
-
 function command.get_all_valid()
   local res = {}
   for name, cmd in pairs(command.map) do

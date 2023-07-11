@@ -20,6 +20,7 @@ possible; easy to modify and extend, or to use without doing either.
 This fork is attempt to speed up the application, and adding features for personal use.
 And importantly, this fork use LuaJIT, some plugins must be port (table.unpack -> unpack), and not disable FFI, use at your risk.
 The *simple* will be keep in the interfaces, *implementation* will be seperated into two categories: *simple* and *optimized*.
+This editor don't and won't support C++ editting. For C++, I will use full IDE for the jobs.
 
 ## Changes
 - Use LuaJIT instead of Lua 5.2

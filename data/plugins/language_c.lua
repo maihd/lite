@@ -18,6 +18,7 @@ syntax.add {
         { pattern = "[%+%-=/%*%^%%<>!~|&]", type = "operator" },
         { pattern = "[%a_][%w_]*%f[(]",     type = "function" },
         { pattern = "[%a_][%w_]*",          type = "symbol"   },
+        -- @todo(maihd): add label highlight
     },
     symbols = {
         -- Basic keywords
