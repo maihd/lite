@@ -76,11 +76,11 @@ local function project_scan_thread()
 --         else
             -- get project files and replace previous table if the new table is
             -- different
-            local t = get_files(".")
-            if diff_files(core.project_files, t) then
-                core.project_files = t
-                core.redraw = true
-            end
+        local t = get_files(".")
+        if diff_files(core.project_files, t) then
+            core.project_files = t
+            core.redraw = true
+        end
 --         end
 
         -- wait for next scan

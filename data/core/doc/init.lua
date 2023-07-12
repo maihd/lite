@@ -9,30 +9,32 @@ local Doc = Object:extend()
 
 
 local function split_lines(text)
-  local res = {}
-  for line in (text .. "\n"):gmatch("(.-)\n") do
-    table.insert(res, line)
-  end
-  return res
+    local res = {}
+    for line in (text .. "\n"):gmatch("(.-)\n") do
+        table.insert(res, line)
+    end
+    return res
 end
 
 
 local function splice(t, at, remove, insert)
-  insert = insert or {}
-  local offset = #insert - remove
-  local old_len = #t
-  if offset < 0 then
-    for i = at - offset, old_len - offset do
-      t[i + offset] = t[i]
+    insert = insert or {}
+    local offset = #insert - remove
+    local old_len = #t
+
+    if offset < 0 then
+        for i = at - offset, old_len - offset do
+            t[i + offset] = t[i]
+        end
+    elseif offset > 0 then
+        for i = old_len, at, -1 do
+            t[i + offset] = t[i]
+        end
     end
-  elseif offset > 0 then
-    for i = old_len, at, -1 do
-      t[i + offset] = t[i]
+
+    for i, item in ipairs(insert) do
+        t[at + i - 1] = item
     end
-  end
-  for i, item in ipairs(insert) do
-    t[at + i - 1] = item
-  end
 end
 
 
@@ -92,6 +94,12 @@ function Doc:load(filename)
             line = line:sub(start, -2)
             self.crlf = true
         end
+
+        -- Convert tab to space
+        if config.tab_type == "soft" then
+            line = line:gsub("\t", string.rep(" ", config.indent_size))
+        end
+
         table.insert(self.lines, line .. "\n")
     end
     fp:close()

@@ -366,6 +366,7 @@ function DocView:draw()
     local pos = self.position
     core.push_clip_rect(pos.x + gw, pos.y, self.size.x, self.size.y)
     do
+        -- draw lines
         for i = minline, maxline do
             self:draw_line_body(i, x, y)
             y = y + lh
@@ -387,6 +388,30 @@ function DocView:draw()
             local x2 = self.caret_x
             local y2 = self.caret_y
             renderer.draw_rect(x2, y2, style.caret_width, lh, style.caret)
+        end
+
+        -- draw scope highlight
+        local indent = 0
+        for _, scope in pairs(self.doc.highlighter.scopes) do
+            if not (scope.end_line < minline or scope.begin_line > maxline) then
+                local sx, sy = self:get_line_screen_position(scope.begin_line)
+
+                local lh = self:get_line_height()
+                local indent = scope.nest * config.indent_size
+                local w = font:get_width(string.rep(" ", indent))
+
+                sx = sx + w
+                sy = sy + lh
+                for i = scope.begin_line + 1, scope.end_line - 1 do
+                    local line_text = self.doc.lines[i]
+                    local char = line_text:sub(indent, 1)
+                    if not char:match("[^%d%.]") or char:match("%s") then
+                        renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
+                    end
+
+                    sy = sy + lh
+                end
+            end
         end
     end
     core.pop_clip_rect()
