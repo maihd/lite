@@ -125,7 +125,7 @@ function CommandView:exit(submitted, inexplicit)
     end
     local cancel = self.state.cancel
     self.state = default_state
-      self.doc:reset()
+    self.doc:reset()
     self.suggestions = {}
     if not submitted then cancel(not inexplicit) end
 end

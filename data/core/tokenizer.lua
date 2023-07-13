@@ -84,6 +84,7 @@ function tokenizer.tokenize(syntax, text, state)
                 i = e + 1
                 matched = true
 
+                -- match scope
                 if type(syntax.scope_begin) == "table" and type(syntax.scope_end) == "table" then
                     for _, x in pairs(syntax.scope_begin) do
                         if x == t then
@@ -106,8 +107,26 @@ function tokenizer.tokenize(syntax, text, state)
 
         -- consume character if we didn't match
         if not matched then
-            push_token(res, "normal", text:sub(i, i))
+            local t = text:sub(i, i)
+            push_token(res, "normal", t)
             i = i + 1
+
+            -- match scope
+            if type(syntax.scope_begin) == "table" and type(syntax.scope_end) == "table" then
+                for _, x in pairs(syntax.scope_begin) do
+                    if x == t then
+                        begin_scope = true
+                        break
+                    end
+                end
+
+                for _, x in pairs(syntax.scope_end) do
+                    if x == t then
+                        end_scope = true
+                        break
+                    end
+                end
+            end
         end
     end
 

@@ -6,10 +6,10 @@ syntax.add {
     headers = "^#!.*[ /]lua",
     comment = "--",
     scope_begin = {
-        "do", "then", "repeat", "function", "{",
+        "do", "if", "repeat", "function", "{",
     },
     scope_end = {
-        "end", "elseif", "until", "}"
+        "end", "until", "}"
     },
     patterns = {
         { pattern = { '"', '"', '\\' },       type = "string"   },

@@ -404,7 +404,7 @@ function DocView:draw()
                 sy = sy + lh
                 for i = scope.begin_line + 1, scope.end_line - 1 do
                     local line_text = self.doc.lines[i]
-                    local char = line_text:sub(indent, 1)
+                    local char = line_text:sub(indent + 1, indent + 2)
                     if not char:match("[^%d%.]") or char:match("%s") then
                         renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
                     end
