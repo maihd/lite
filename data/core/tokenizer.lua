@@ -78,7 +78,7 @@ function tokenizer.tokenize(syntax, text, state)
             if s then
                 -- matched pattern; make and add token
                 local t = text:sub(s, e)
-                push_token(res, syntax.symbols[t] or p.type, t)
+                push_token(res, syntax.symbols[trim(t)] or p.type, t)
 
                 -- update state if this was a start|end pattern pair
                 if type(p.pattern) == "table" then
