@@ -16,7 +16,7 @@ config.line_height = 1.2
 config.indent_size = 4
 config.tab_type = "soft"
 config.line_limit = 80
-config.draw_space_dot = true -- for testing
-config.scope_highlight = false
+config.draw_space_dot = false -- for testing
+config.scope_highlight = true
 
 return config

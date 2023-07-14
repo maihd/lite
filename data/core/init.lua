@@ -56,7 +56,6 @@ local function project_scan_thread()
         for _, f in ipairs(files) do
             table.insert(t, f)
         end
-
         return t
     end
 

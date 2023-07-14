@@ -347,6 +347,7 @@ function Doc:insert(line, col, text)
     self.redo_stack = { idx = 1 }
     line, col = self:sanitize_position(line, col)
     self:raw_insert(line, col, text, self.undo_stack, system.get_time())
+    self.highlighter:reset()
 end
 
 
@@ -356,16 +357,19 @@ function Doc:remove(line1, col1, line2, col2)
     line2, col2 = self:sanitize_position(line2, col2)
     line1, col1, line2, col2 = sort_positions(line1, col1, line2, col2)
     self:raw_remove(line1, col1, line2, col2, self.undo_stack, system.get_time())
+    self.highlighter:reset()
 end
 
 
 function Doc:undo()
     pop_undo(self, self.undo_stack, self.redo_stack)
+    self.highlighter:reset()
 end
 
 
 function Doc:redo()
     pop_undo(self, self.redo_stack, self.undo_stack)
+    self.highlighter:reset()
 end
 
 

@@ -395,18 +395,19 @@ function DocView:draw()
             local indent = 0
             for _, scope in pairs(self.doc.highlighter.scopes) do
                 if not (scope.end_line < minline or scope.begin_line > maxline) then
-                    local sx, sy = self:get_line_screen_position(scope.begin_line)
+                    local begin_draw_line = math.max(minline, scope.begin_line + 1)
+                    local end_draw_line = math.min(maxline, scope.end_line - 1)
+                    local sx, sy = self:get_line_screen_position(begin_draw_line)
 
                     local lh = self:get_line_height()
                     local indent = scope.nest * config.indent_size
                     local w = font:get_width(string.rep(" ", indent))
 
                     sx = sx + w
-                    sy = sy + lh
-                    for i = scope.begin_line + 1, scope.end_line - 1 do
+--                     renderer.draw_rect(sx, sy, 1, lh * (end_draw_line - begin_draw_line + 1), style.scope_line)
+                    for i = begin_draw_line, end_draw_line do
                         local line_text = self.doc.lines[i]
-                        local char = line_text:sub(indent + 1, indent + 2)
-                        if not char:match("[^%d%.]") or char:match("%s") then
+                        if indent >= #line_text or line_text:sub(indent + 1, indent + 2) ~= " " then
                             renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
                         end
 

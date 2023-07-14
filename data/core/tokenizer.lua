@@ -1,6 +1,11 @@
 local tokenizer = {}
 
 
+local function trim(s)
+    return s:gsub("^%s*(.-)%s*$", "%1")
+end
+
+
 local function push_token(t, type, text)
     local prev_type = t[#t-1]
     local prev_text = t[#t]
@@ -41,11 +46,11 @@ end
 
 function tokenizer.tokenize(syntax, text, state)
     local res = {}
-    local begin_scope, end_scope = false
+    local begin_scopes, end_scopes = 0, 0
     local i = 1
 
     if #syntax.patterns == 0 then
-        return { "normal", text }
+        return { "normal", text }, nil, begin_scopes, end_scopes
     end
 
     while i <= #text do
@@ -85,17 +90,18 @@ function tokenizer.tokenize(syntax, text, state)
                 matched = true
 
                 -- match scope
+                t = trim(t)
                 if type(syntax.scope_begin) == "table" and type(syntax.scope_end) == "table" then
                     for _, x in pairs(syntax.scope_begin) do
                         if x == t then
-                            begin_scope = true
+                            begin_scopes = begin_scopes + 1
                             break
                         end
                     end
 
                     for _, x in pairs(syntax.scope_end) do
                         if x == t then
-                            end_scope = true
+                            end_scopes = end_scopes + 1
                             break
                         end
                     end
@@ -115,14 +121,14 @@ function tokenizer.tokenize(syntax, text, state)
             if type(syntax.scope_begin) == "table" and type(syntax.scope_end) == "table" then
                 for _, x in pairs(syntax.scope_begin) do
                     if x == t then
-                        begin_scope = true
+                        begin_scopes = begin_scopes + 1
                         break
                     end
                 end
 
                 for _, x in pairs(syntax.scope_end) do
                     if x == t then
-                        end_scope = true
+                        end_scopes = end_scopes + 1
                         break
                     end
                 end
@@ -130,7 +136,7 @@ function tokenizer.tokenize(syntax, text, state)
         end
     end
 
-    return res, state, begin_scope, end_scope
+    return res, state, begin_scopes, end_scopes
 end
 
 

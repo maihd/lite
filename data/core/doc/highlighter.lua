@@ -15,20 +15,10 @@ function Highlighter:new(doc)
     core.add_thread(function()
         while true do
             if self.first_invalid_line > self.max_wanted_line then
-                self.max_wanted_line = 0
+--                 self.max_wanted_line = 0
                 coroutine.yield(1 / config.fps)
             else
-                local max = math.min(self.first_invalid_line + 40, self.max_wanted_line)
-
-                for i = self.first_invalid_line, max do
-                    local state = (i > 1) and self.lines[i - 1].state
-                    local line = self.lines[i]
-                    if not (line and line.init_state == state) then
-                        self.lines[i] = self:tokenize_line(i, state)
-                    end
-                end
-
-                self.first_invalid_line = max + 1
+                self:update()
                 core.redraw = true
                 coroutine.yield()
             end
@@ -40,7 +30,7 @@ end
 function Highlighter:reset()
     self.lines = {}
     self.first_invalid_line = 1
-    self.max_wanted_line = 0
+    self.max_wanted_line = #self.doc.lines
 
     self.scope_nest = 0
     self.scopes = {}
@@ -48,8 +38,26 @@ end
 
 
 function Highlighter:invalidate(idx)
-    self.first_invalid_line = math.min(self.first_invalid_line, idx)
-    self.max_wanted_line = math.min(self.max_wanted_line, #self.doc.lines)
+    self.first_invalid_line = 1
+--     math.min(self.first_invalid_line, idx)
+    self.max_wanted_line = #self.doc.lines
+--     math.min(self.max_wanted_line, #self.doc.lines)
+end
+
+
+function Highlighter:update()
+    local max = math.min(self.first_invalid_line + 40, self.max_wanted_line)
+--     local max = self.max_wanted_line
+
+    for i = self.first_invalid_line, max do
+        local state = (i > 1) and self.lines[i - 1].state
+        local line = self.lines[i]
+        if not (line and line.init_state == state) then
+            self.lines[i] = self:tokenize_line(i, state)
+        end
+    end
+
+    self.first_invalid_line = max + 1
 end
 
 
@@ -57,19 +65,18 @@ function Highlighter:tokenize_line(idx, state)
     local res = {}
     res.init_state = state
     res.text = self.doc.lines[idx]
-    res.tokens, res.state, res.begin_scope, res.end_scope = tokenizer.tokenize(self.doc.syntax, res.text, state)
+    res.tokens, res.state, res.begin_scopes, res.end_scopes = tokenizer.tokenize(self.doc.syntax, res.text, state)
 
-    if res.begin_scope and not res.end_scope then
-        res.scope_nest = self.scope_nest
+    if res.begin_scopes > 0 and res.begin_scopes > res.end_scopes then
+        table.insert(self.scopes, { begin_line = idx, end_line = idx, nest = self.scope_nest })
         self.scope_nest = self.scope_nest + 1
-    elseif res.end_scope and not res.begin_scope then
+    elseif res.end_scopes > 0 and res.end_scopes > res.begin_scopes then
         self.scope_nest = self.scope_nest - 1
-        res.scope_nest = self.scope_nest
 
-        for i = idx - 1, 1, -1 do
-            local line = self:get_line(i)
-            if line and line.scope_nest == res.scope_nest then
-                table.insert(self.scopes, { begin_line = i, end_line = idx, nest = res.scope_nest })
+        for i = #self.scopes, 1, -1 do
+            local scope = self.scopes[i]
+            if scope.nest == self.scope_nest then
+                scope.end_line = idx
                 break
             end
         end
@@ -92,6 +99,11 @@ end
 
 
 function Highlighter:each_token(idx)
+    local max_wanted_line = self.max_wanted_line
+    self.max_wanted_line = idx
+    self:update()
+    self.max_wanted_line = self.max_wanted_line
+
     return tokenizer.each_token(self:get_line(idx).tokens)
 end
 
