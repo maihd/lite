@@ -391,25 +391,27 @@ function DocView:draw()
         end
 
         -- draw scope highlight
-        local indent = 0
-        for _, scope in pairs(self.doc.highlighter.scopes) do
-            if not (scope.end_line < minline or scope.begin_line > maxline) then
-                local sx, sy = self:get_line_screen_position(scope.begin_line)
+        if config.scope_highlight then
+            local indent = 0
+            for _, scope in pairs(self.doc.highlighter.scopes) do
+                if not (scope.end_line < minline or scope.begin_line > maxline) then
+                    local sx, sy = self:get_line_screen_position(scope.begin_line)
 
-                local lh = self:get_line_height()
-                local indent = scope.nest * config.indent_size
-                local w = font:get_width(string.rep(" ", indent))
+                    local lh = self:get_line_height()
+                    local indent = scope.nest * config.indent_size
+                    local w = font:get_width(string.rep(" ", indent))
 
-                sx = sx + w
-                sy = sy + lh
-                for i = scope.begin_line + 1, scope.end_line - 1 do
-                    local line_text = self.doc.lines[i]
-                    local char = line_text:sub(indent + 1, indent + 2)
-                    if not char:match("[^%d%.]") or char:match("%s") then
-                        renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
-                    end
-
+                    sx = sx + w
                     sy = sy + lh
+                    for i = scope.begin_line + 1, scope.end_line - 1 do
+                        local line_text = self.doc.lines[i]
+                        local char = line_text:sub(indent + 1, indent + 2)
+                        if not char:match("[^%d%.]") or char:match("%s") then
+                            renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
+                        end
+
+                        sy = sy + lh
+                    end
                 end
             end
         end
