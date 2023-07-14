@@ -407,7 +407,10 @@ function DocView:draw()
 --                     renderer.draw_rect(sx, sy, 1, lh * (end_draw_line - begin_draw_line + 1), style.scope_line)
                     for i = begin_draw_line, end_draw_line do
                         local line_text = self.doc.lines[i]
-                        if indent >= #line_text or line_text:byte(indent + 1) == 32 then
+                        if indent >= #line_text
+                            or line_text:byte(indent + 1) == 32
+                            or line_text:byte(indent + 1) == 10
+                        then
                             renderer.draw_rect(sx, sy, 1, lh, style.scope_line)
                         end
 
