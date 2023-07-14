@@ -15,10 +15,11 @@ function Highlighter:new(doc)
     core.add_thread(function()
         while true do
             if self.first_invalid_line > self.max_wanted_line then
---                 self.max_wanted_line = 0
+                self.max_wanted_line = 0
                 coroutine.yield(1 / config.fps)
             else
                 self:update()
+
                 core.redraw = true
                 coroutine.yield()
             end
@@ -39,25 +40,30 @@ end
 
 function Highlighter:invalidate(idx)
     self.first_invalid_line = 1
---     math.min(self.first_invalid_line, idx)
     self.max_wanted_line = #self.doc.lines
---     math.min(self.max_wanted_line, #self.doc.lines)
 end
 
 
 function Highlighter:update()
     local max = math.min(self.first_invalid_line + 40, self.max_wanted_line)
---     local max = self.max_wanted_line
 
     for i = self.first_invalid_line, max do
-        local state = (i > 1) and self.lines[i - 1].state
         local line = self.lines[i]
-        if not (line and line.init_state == state) then
-            self.lines[i] = self:tokenize_line(i, state)
+        if not line then
+            self.lines[i] = self:tokenize_line(i)
         end
     end
 
     self.first_invalid_line = max + 1
+
+    while self.scope_nest > 0 and self.first_invalid_line <= self.max_wanted_line do
+        local line = self.lines[self.first_invalid_line]
+        if not line then
+            self.lines[self.first_invalid_line] = self:tokenize_line(self.first_invalid_line)
+        end
+
+        self.first_invalid_line = self.first_invalid_line + 1
+    end
 end
 
 
@@ -99,10 +105,7 @@ end
 
 
 function Highlighter:each_token(idx)
-    local max_wanted_line = self.max_wanted_line
-    self.max_wanted_line = idx
     self:update()
-    self.max_wanted_line = self.max_wanted_line
 
     return tokenizer.each_token(self:get_line(idx).tokens)
 end
