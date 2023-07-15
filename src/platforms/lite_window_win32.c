@@ -63,6 +63,9 @@ static LRESULT WINAPI lite_win32_window_proc(
         PostQuitMessage(0);
         break;
 
+    case WM_SETFOCUS:
+        break;
+
     default:
         break;
     }
@@ -77,21 +80,46 @@ void lite_sleep(uint64_t ms)
 
 void lite_usleep(uint64_t us)
 {
-    Sleep((DWORD)(us / 1000));
+    /* 'NTSTATUS NTAPI NtDelayExecution(BOOL Alerted, PLARGE_INTEGER time);' */
+    /* 'typedef LONG NTSTATUS;' =)) */
+    /* '#define NTAPI __stdcall' =)) */
+    typedef LONG(__stdcall* NtDelayExecutionFN)(BOOL, PLARGE_INTEGER);
+
+    static bool done_finding;
+    static NtDelayExecutionFN NtDelayExecution;
+
+    if (!NtDelayExecution && !done_finding)
+    {
+        done_finding = 1;
+        HMODULE module = GetModuleHandleA("ntdll.dll");
+        const char* func = "NtDelayExecution";
+        NtDelayExecution = (NtDelayExecutionFN)GetProcAddress(module, func);
+    }
+
+    if (NtDelayExecution)
+    {
+        LARGE_INTEGER times;
+        times.QuadPart = (LONGLONG)(-us * 10); // Timer is precise as 100 nanoseconds
+        (void)NtDelayExecution(FALSE, &times);
+    }
+    else
+    {
+        Sleep((DWORD)(us / 1000));
+    }
 }
 
 uint64_t lite_cpu_ticks(void)
 {
-    LARGE_INTEGER ulCounter;
-    QueryPerformanceCounter(&ulCounter);
-    return (uint64_t)ulCounter.QuadPart;
+    LARGE_INTEGER liCounter;
+    QueryPerformanceCounter(&liCounter);
+    return (uint64_t)liCounter.QuadPart;
 }
 
 uint64_t lite_cpu_frequency(void)
 {
-    LARGE_INTEGER ulFrequency;
-    QueryPerformanceFrequency(&ulFrequency);
-    return (uint64_t)ulFrequency.QuadPart;
+    LARGE_INTEGER liFrequency;
+    QueryPerformanceFrequency(&liFrequency);
+    return (uint64_t)liFrequency.QuadPart;
 }
 
 LiteStringView lite_clipboard_get(void)
@@ -317,16 +345,19 @@ float lite_window_dpi(void)
 
 bool lite_window_has_focus(void)
 {
-    return GetFocus() == window;
+    bool result = GetFocus() == window;
+    return result;
 }
 
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
 {
-    for (uint32_t i = 0; i < count; i++)
-    {
-        const LiteRect rect = rects[i];
-        BitBlt(hDC, rect.x, rect.y, rect.width, rect.height, hSurface, rect.x, rect.y, SRCCOPY);
-    }
+    //for (uint32_t i = 0; i < count; i++)
+    //{
+    //    const LiteRect rect = rects[i];
+    //    BitBlt(hDC, rect.x, rect.y, rect.width, rect.height, hSurface, rect.x, rect.y, SRCCOPY);
+    //}
+
+    BitBlt(hDC, 0, 0, surface_width, surface_height, hSurface, 0, 0, SRCCOPY);
 }
 
 void lite_window_message_box(const char* title, const char* message)
@@ -339,9 +370,59 @@ bool lite_window_confirm_dialog(const char* title, const char* message)
     return MessageBoxA(window, message, title, MB_YESNO) == IDYES;
 }
 
-static LiteStringView lite_get_key_name(WORD scanCode)
+static LiteStringView lite_get_key_name(WORD scanCode, WORD extended)
 {
-    return lite_string_lit("");
+    if (extended)
+    {
+        if (scanCode != 0x45)
+        {
+            scanCode |= 0xE000;
+        }
+    }
+    else
+    {
+        if (scanCode == 0x45)
+        {
+            scanCode = 0xE11D45;
+        }
+        else if (scanCode == 0x54)
+        {
+            scanCode = 0xE037;
+        }
+    }
+
+    LONG lParam = 0;
+    if (extended)
+    {
+        if (extended == 0xE11D00)
+        {
+            lParam = 0x45 << 16;
+        }
+        else
+        {
+            lParam = (0x100 | (scanCode & 0xff)) << 16;
+        }
+    }
+    else {
+
+        lParam = scanCode << 16;
+
+        if (scanCode == 0x45)
+        {
+            lParam |= (0x1 << 24);
+        }
+    }
+
+    LiteArena* frame_arena = lite_frame_arena_get();
+    const uint32_t length = 16;
+    char* text = lite_arena_acquire(frame_arena, length);
+    int text_length = GetKeyNameTextA(lParam, text, length);
+    for (int i = 0; i < text_length; i++)
+    {
+        text[i] = tolower(text[i]);
+    }
+
+    return lite_string_view(text, (uint32_t)text_length, 0);
 }
 
 LiteWindowEvent lite_window_poll_event(void)
@@ -354,7 +435,7 @@ LiteWindowEvent lite_window_poll_event(void)
     static int32_t prev_mouse_y = -1;
 
     MSG msg;
-    if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+    while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
     {
         TranslateMessage(&msg);
         DispatchMessageA(&msg);
@@ -363,13 +444,13 @@ LiteWindowEvent lite_window_poll_event(void)
         {
         case WM_QUIT:
             event.type = LiteWindowEventType_Quit;
-            break;
+            return event;
 
         case WM_SIZE:
             event.type = LiteWindowEventType_Resized;
             event.resized.width = (int32_t)LOWORD(msg.lParam);
             event.resized.height = (int32_t)HIWORD(msg.lParam);
-            break;
+            return event;
 
         //case WM_EXPOSED:
         case WM_DROPFILES:
@@ -377,22 +458,22 @@ LiteWindowEvent lite_window_poll_event(void)
 
         case WM_KEYUP:
         {
-            WORD keyFlags = HIWORD(msg.lParam);
-            WORD scanCode = LOBYTE(keyFlags);
+            WORD scanCode = (msg.lParam >> 16) & 0xff;
+            WORD extended = (msg.lParam >> 24) & 0x1;
 
             event.type = LiteWindowEventType_KeyUp;
-            event.key_up.key_name = lite_get_key_name(scanCode);
-            break;
+            event.key_up.key_name = lite_get_key_name(scanCode, extended);
+            return event;
         }
 
         case WM_KEYDOWN:
         {
-            WORD keyFlags = HIWORD(msg.lParam);
-            WORD scanCode = LOBYTE(keyFlags);
+            WORD scanCode = (msg.lParam >> 16) & 0xff;
+            WORD extended = (msg.lParam >> 24) & 0x1;
 
             event.type = LiteWindowEventType_KeyDown;
-            event.key_down.key_name = lite_get_key_name(scanCode);
-            break;
+            event.key_down.key_name = lite_get_key_name(scanCode, extended);
+            return event;
         }
 
         case WM_INPUT:
@@ -404,7 +485,7 @@ LiteWindowEvent lite_window_poll_event(void)
 
             event.type = LiteWindowEventType_TextInput;
             event.text_input.text = lite_string_view(text, (uint32_t)uTextLength, 0);
-            break;
+            return event;
         }
 
         case WM_LBUTTONUP:
@@ -416,7 +497,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_up.x = (int32_t)x;
             event.mouse_up.y = (int32_t)y;
             event.mouse_up.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_RBUTTONUP:
@@ -428,7 +509,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_up.x = (int32_t)x;
             event.mouse_up.y = (int32_t)y;
             event.mouse_up.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_MBUTTONUP:
@@ -440,7 +521,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_up.x = (int32_t)x;
             event.mouse_up.y = (int32_t)y;
             event.mouse_up.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_LBUTTONDOWN:
@@ -452,7 +533,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_down.x = (int32_t)x;
             event.mouse_down.y = (int32_t)y;
             event.mouse_down.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_RBUTTONDOWN:
@@ -464,7 +545,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_down.x = (int32_t)x;
             event.mouse_down.y = (int32_t)y;
             event.mouse_down.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_MBUTTONDOWN:
@@ -476,7 +557,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.mouse_down.x = (int32_t)x;
             event.mouse_down.y = (int32_t)y;
             event.mouse_down.clicks = 1;
-            break;
+            return event;
         }
 
         case WM_MOVE:
@@ -506,7 +587,7 @@ LiteWindowEvent lite_window_poll_event(void)
                 event.mouse_move.dx = event.mouse_move.y - prev_mouse_y;
                 prev_mouse_y = event.mouse_move.y;
             }
-            break;
+            return event;
         }
 
         case WM_MOUSEWHEEL:
@@ -516,7 +597,7 @@ LiteWindowEvent lite_window_poll_event(void)
             event.type = LiteWindowEventType_MouseWheel;
             event.mouse_wheel.x = (int32_t)x;
             event.mouse_wheel.y = (int32_t)y;
-            break;
+            return event;
         }
 
         default:
@@ -524,6 +605,7 @@ LiteWindowEvent lite_window_poll_event(void)
         }
     }
 
+    event.type = LiteWindowEventType_None;
     return event;
 }
 

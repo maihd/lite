@@ -45,7 +45,6 @@ static int f_poll_event(lua_State* L)
         lua_pushstringview(L, event.drop_file.file_path);
         lua_pushnumber(L, (lua_Number)event.drop_file.x);
         lua_pushnumber(L, (lua_Number)event.drop_file.y);
-        //free((void*)event.drop_file.file_path);
         return 4;
 
     case LiteWindowEventType_KeyDown:
