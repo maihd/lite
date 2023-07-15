@@ -42,7 +42,6 @@ do
 
     defines {
         -- "LUA_BUILD_AS_DLL",
-        "LITE_SYSTEM_SDL2",
     }
 
     includedirs {
@@ -115,32 +114,32 @@ do
             "SDL2",
             "SDL2main",
         }
-    
+
         defines {
             "LITE_SYSTEM_SDL2"
         }
-    
+
         includedirs {
             path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/include"),
         }
-    
+
         filter { "platforms:x86" }
         do
             libdirs {
                 path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86"),
             }
-    
+
             postbuildcommands {
                 "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
             }
         end
-    
+
         filter { "platforms:x64" }
         do
             libdirs {
                 path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64"),
             }
-    
+
             postbuildcommands {
                 "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
             }

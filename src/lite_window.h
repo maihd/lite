@@ -13,6 +13,7 @@ typedef enum LiteCursor
     LiteCursor_Ibeam,
     LiteCursor_SizeH,
     LiteCursor_SizeV,
+    LiteCursor_COUNT
 } LiteCursor;
 
 typedef enum LiteWindowMode
