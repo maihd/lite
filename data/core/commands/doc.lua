@@ -30,6 +30,15 @@ local function get_indent_string(cursor)
 end
 
 
+local function indent_line(doc, line)
+    local line_text = doc.lines[line]
+    local highlight_line = doc.highlighter.lines[line]
+
+    line_text = string.rep(" ", highlight_line.scope_nest * config.indent_size) .. common.trim(line_text) .. "\n"
+    doc.lines[line] = line_text
+end
+
+
 local function insert_at_start_of_selected_lines(text, skip_empty)
     local line1, col1, line2, col2, swap = doc():get_selection(true)
     for line = line1, line2 do
@@ -103,9 +112,15 @@ local commands = {
     ["doc:newline"] = function()
         local line, col = doc():get_selection()
         local indent = doc().lines[line]:match("^[\t ]*")
-        if col <= #indent then
-            indent = indent:sub(#indent + 2 - col)
+        local highlight_line = doc().highlighter.lines[line]
+        if highlight_line and highlight_line.begin_scope then
+            indent = indent .. string.rep(" ", config.indent_size)
         end
+
+--         if col <= #indent then
+--             indent = indent:sub(#indent + 2 - col)
+--         end
+
         doc():text_input("\n" .. indent)
     end,
 
@@ -181,14 +196,23 @@ local commands = {
     end,
 
     ["doc:indent"] = function()
-        if doc():has_selection() then
-            local text = get_indent_string()
-            insert_at_start_of_selected_lines(text)
-        else
-            local _, cursor = doc():get_selection(false)
-            local text = get_indent_string(cursor)
-            doc():text_input(text)
+--         if doc():has_selection() then
+--             local text = get_indent_string()
+--             insert_at_start_of_selected_lines(text)
+--         else
+--             local _, cursor = doc():get_selection(false)
+--             local text = get_indent_string(cursor)
+--             doc():text_input(text)
+--         end
+
+        -- @todo(maihd): make it work with multi cursor
+        -- for _, cursor in pair(doc().cursors) do
+        local line1, col1, line2, col2 = doc():get_selection(true)
+        for line = line1, line2 do
+            indent_line(doc(), line)
         end
+
+        doc().highlighter:reset()
     end,
 
     ["doc:unindent"] = function()

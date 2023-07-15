@@ -73,8 +73,8 @@ local function project_scan_thread()
 --             core.project_files = project_files
 --             core.project_dir_time = t
 --         else
-            -- get project files and replace previous table if the new table is
-            -- different
+        -- get project files and replace previous table if the new table is
+        -- different
         local t = get_files(".")
         if diff_files(core.project_files, t) then
             core.project_files = t

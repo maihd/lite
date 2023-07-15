@@ -11,6 +11,10 @@ syntax.add {
     scope_end = {
         "end", "until", "}"
     },
+    scope_align = {
+        ["else"] = -1,
+        ["elseif"] = -1
+    },
     patterns = {
         { pattern = { '"', '"', '\\' },       type = "string"   },
         { pattern = { "'", "'", '\\' },       type = "string"   },

@@ -13,6 +13,11 @@ function common.utf8_chars(text)
 end
 
 
+function common.trim(s)
+    return string.gsub(s, "^%s*(.-)%s*$", "%1")
+end
+
+
 function common.clamp(n, lo, hi)
     return math.max(math.min(n, hi), lo)
 end

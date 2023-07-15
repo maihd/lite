@@ -71,11 +71,17 @@ function Highlighter:tokenize_line(idx, state)
     local res = {}
     res.init_state = state
     res.text = self.doc.lines[idx]
-    res.tokens, res.state, res.begin_scopes, res.end_scopes = tokenizer.tokenize(self.doc.syntax, res.text, state)
+    res.tokens, res.state, res.begin_scopes, res.end_scopes, res.scope_align = tokenizer.tokenize(self.doc.syntax, res.text, state)
 
+    -- Handle scope
     if res.begin_scopes > 0 and res.begin_scopes > res.end_scopes then
         table.insert(self.scopes, { begin_line = idx, end_line = idx, nest = self.scope_nest })
+
+        res.scope_nest = self.scope_nest
         self.scope_nest = self.scope_nest + 1
+
+        res.begin_scope = true
+        res.end_scope = false
     elseif res.end_scopes > 0 and res.end_scopes > res.begin_scopes then
         self.scope_nest = self.scope_nest - 1
 
@@ -86,6 +92,14 @@ function Highlighter:tokenize_line(idx, state)
                 break
             end
         end
+
+        res.scope_nest = self.scope_nest
+        res.begin_scope = false
+        res.end_scope = true
+    else
+        res.scope_nest = self.scope_nest + res.scope_align
+        res.begin_scope = false
+        res.end_scope = false
     end
 
     return res

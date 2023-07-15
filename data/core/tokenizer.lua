@@ -2,7 +2,7 @@ local tokenizer = {}
 
 
 local function trim(s)
-    return s:gsub("^%s*(.-)%s*$", "%1")
+    return string.gsub(s, "^%s*(.-)%s*$", "%1")
 end
 
 
@@ -46,11 +46,11 @@ end
 
 function tokenizer.tokenize(syntax, text, state)
     local res = {}
-    local begin_scopes, end_scopes = 0, 0
+    local begin_scopes, end_scopes, scope_align = 0, 0, 0
     local i = 1
 
     if #syntax.patterns == 0 then
-        return { "normal", text }, nil, begin_scopes, end_scopes
+        return { "normal", text }, nil, begin_scopes, end_scopes, scope_align
     end
 
     while i <= #text do
@@ -107,6 +107,14 @@ function tokenizer.tokenize(syntax, text, state)
                     end
                 end
 
+                -- match scope align
+                if type(syntax.scope_align) == "table" then
+                    local align = syntax.scope_align[t]
+                    if align then
+                        scope_align = scope_align + align
+                    end
+                end
+
                 break
             end
         end
@@ -136,7 +144,7 @@ function tokenizer.tokenize(syntax, text, state)
         end
     end
 
-    return res, state, begin_scopes, end_scopes
+    return res, state, begin_scopes, end_scopes, scope_align
 end
 
 
