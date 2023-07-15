@@ -4,6 +4,8 @@ syntax.add {
     name = "C",
     files = { "%.c$", "%.h$", "%.inl$", "%.cpp$", "%.hpp$" },
     comment = "//",
+    scope_begin = { "{" },
+    scope_end = { "}" },
     patterns = {
         { pattern = "//.-\n",               type = "comment"  },
         { pattern = { "/%*", "%*/" },       type = "comment"  },
