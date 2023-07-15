@@ -37,12 +37,12 @@ This editor don't and won't support C++ editting. For C++, I will use full IDE f
 - Refactor C source.
 - Align line numbers near code.
 - Display icon to show log type.
+- Draw intent guide line. (may be need more mechanic for syntax highlight)
 
 ## TODOs
-- Draw intent guide line. (may be need more mechanic for syntax highlight)
-- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
-- Convert to use native API instead of large library like SDL.
 - Make app more robust.
+- Convert to use native API instead of large library like SDL.
+- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Line wrapping.
 - Fix bug: some time single mouse click cause select token, line
 - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
