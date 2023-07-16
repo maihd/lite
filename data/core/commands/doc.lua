@@ -122,6 +122,7 @@ local commands = {
 --         end
 
         doc():text_input("\n" .. indent)
+        indent_line(doc(), line)
     end,
 
     ["doc:newline-below"] = function()
