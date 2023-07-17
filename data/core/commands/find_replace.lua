@@ -68,7 +68,10 @@ end
 
 
 local function replace(kind, default, fn)
-    core.command_view:set_text(default, true)
+    local dv = core.active_view
+    local sel = { dv.doc:get_selection() }
+    local text = dv.doc:has_selection() and dv.doc:get_text(unpack(sel))
+    core.command_view:set_text(text or default, true)
 
     core.command_view:enter("Find To Replace " .. kind, function(old)
         core.command_view:set_text(old, true)
