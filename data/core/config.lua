@@ -18,5 +18,6 @@ config.tab_type = "soft"
 config.line_limit = 80
 config.draw_space_dot = false -- for testing
 config.scope_highlight = true
+config.auto_indent = false
 
 return config

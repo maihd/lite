@@ -197,23 +197,25 @@ local commands = {
     end,
 
     ["doc:indent"] = function()
---         if doc():has_selection() then
---             local text = get_indent_string()
---             insert_at_start_of_selected_lines(text)
---         else
---             local _, cursor = doc():get_selection(false)
---             local text = get_indent_string(cursor)
---             doc():text_input(text)
---         end
+        if not config.auto_indent then
+            if doc():has_selection() then
+                local text = get_indent_string()
+                insert_at_start_of_selected_lines(text)
+            else
+                local _, cursor = doc():get_selection(false)
+                local text = get_indent_string(cursor)
+                doc():text_input(text)
+            end
+        else
+            -- @todo(maihd): make it work with multi cursor
+            -- for _, cursor in pair(doc().cursors) do
+            local line1, col1, line2, col2 = doc():get_selection(true)
+            for line = line1, line2 do
+                indent_line(doc(), line)
+            end
 
-        -- @todo(maihd): make it work with multi cursor
-        -- for _, cursor in pair(doc().cursors) do
-        local line1, col1, line2, col2 = doc():get_selection(true)
-        for line = line1, line2 do
-            indent_line(doc(), line)
+            doc().highlighter:reset()
         end
-
-        doc().highlighter:reset()
     end,
 
     ["doc:unindent"] = function()
