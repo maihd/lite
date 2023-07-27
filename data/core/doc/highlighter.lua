@@ -48,18 +48,20 @@ function Highlighter:update()
     local max = math.min(self.first_invalid_line + 40, self.max_wanted_line)
 
     for i = self.first_invalid_line, max do
+        local state = (i > 1) and self.lines[i - 1].state
         local line = self.lines[i]
-        if not line then
-            self.lines[i] = self:tokenize_line(i)
+        if not (line and line.init_state == state) then
+            self.lines[i] = self:tokenize_line(i, state)
         end
     end
 
     self.first_invalid_line = max + 1
 
     while self.scope_nest > 0 and self.first_invalid_line <= self.max_wanted_line do
+        local state = (self.first_invalid_line > 1) and self.lines[self.first_invalid_line - 1].state
         local line = self.lines[self.first_invalid_line]
-        if not line then
-            self.lines[self.first_invalid_line] = self:tokenize_line(self.first_invalid_line)
+        if not (line and line.init_state == state) then
+            self.lines[self.first_invalid_line] = self:tokenize_line(self.first_invalid_line, state)
         end
 
         self.first_invalid_line = self.first_invalid_line + 1
