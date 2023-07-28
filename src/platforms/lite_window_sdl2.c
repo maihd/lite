@@ -17,6 +17,7 @@
 #include <mach-o/dyld.h>
 #endif
 
+#include "lite_log.h"
 #include "lite_window.h"
 
 SDL_Window* window;
@@ -121,6 +122,7 @@ void lite_window_open(void)
         // @todo(maihd): handle error
     }
 
+    
     lite_window_load_icon();
 }
 
@@ -326,6 +328,7 @@ LiteWindowEvent lite_window_poll_event(void)
         }
 
         case SDL_KEYDOWN:
+            lite_log_debug("SDL_KEYDOWN: %s\n", lite_key_name(e.key.keysym.sym).buffer);
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_KeyDown,
                 .key_down = {
@@ -334,6 +337,7 @@ LiteWindowEvent lite_window_poll_event(void)
             };
 
         case SDL_KEYUP:
+            lite_log_debug("SDL_KEYUP: %s\n", lite_key_name(e.key.keysym.sym).buffer);
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_KeyUp,
                 .key_up = {
@@ -342,6 +346,7 @@ LiteWindowEvent lite_window_poll_event(void)
             };
 
         case SDL_TEXTINPUT:
+            lite_log_debug("SDL_TextInput: %s\n", e.text.text);
             return (LiteWindowEvent){
                 .type = LiteWindowEventType_TextInput,
                 .text_input = {
