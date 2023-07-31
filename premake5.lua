@@ -8,7 +8,11 @@ do
     language "C"
     location (PROJECT_DIR)
 
-    configurations { "Debug", "Release", "DebugSDL2", "ReleaseSDL2" }
+    configurations {
+        "Debug", "Release",
+        "DebugSDL2", "ReleaseSDL2",
+        "DebugSDL2OpenGL", "ReleaseSDL2OpenGL",
+    }
     platforms { "x86", "x64" }
 
     filter {}
@@ -108,7 +112,7 @@ do
         filter {}
     end
 
-    filter { "configurations:*SDL2" }
+    filter { "configurations:*SDL2*" }
     do
         links {
             "SDL2",
@@ -144,6 +148,30 @@ do
                 "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
             }
         end
+
+        filter {}
+    end
+
+    filter { "configurations:*OpenGL" }
+    do
+        links {
+            "OpenGL32"
+        }
+
+        defines {
+            "LITE_RENDERER_OPENGL"
+        }
+
+        includedirs {
+            path.join("libs/glad")
+        }
+
+        files {
+            path.join("libs/glad/glad.h"),
+            path.join("libs/glad/glad.c"),
+        }
+
+        filter {}
     end
 
     filter {}

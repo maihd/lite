@@ -1,37 +1,14 @@
 #include <stdio.h>
 
-#include "renderer.h"
+#include "lite_renderer.h"
 
-// typedef struct RenImage RenImage;
-// typedef struct LiteFont  LiteFont;
+// Prefer low-battery GPU, so disable optimus!
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+__declspec(dllexport) DWORD  NvOptimusEnablement                    = 0; // https://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
+__declspec(dllexport) int    AmdPowerXpressRequestHighPerformance   = 0; // https://developer.amd.com/community/blog/2015/10/02/amd-enduro-system-for-developers/
+#endif
 
-// typedef struct LiteColor
-// {
-//     uint8_t b, g, r, a;
-// } LiteColor;
+//! EOF
 
-// typedef struct LiteRect
-// {
-//     int x, y, width, height;
-// } LiteRect;
-
-void ren_init(void* win_handle);
-void ren_update_rects(LiteRect* rects, int count);
-void ren_set_clip_rect(LiteRect rect);
-void ren_get_size(int* x, int* y);
-
-RenImage* ren_new_image(int width, int height);
-void      ren_free_image(RenImage* image);
-
-LiteFont* ren_load_font(const char* filename, float size);
-void     ren_free_font(LiteFont* font);
-void     ren_set_font_tab_width(LiteFont* font, int n);
-int      ren_get_font_tab_width(LiteFont* font);
-int      ren_get_font_width(LiteFont* font, const char* text);
-int      ren_get_font_height(LiteFont* font);
-
-void ren_draw_rect(LiteRect rect, LiteColor color);
-void ren_draw_image(RenImage* image, LiteRect* sub, int x, int y,
-                    LiteColor color);
-int  ren_draw_text(LiteFont* font, const char* text, int x, int y,
-                   LiteColor color);
