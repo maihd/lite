@@ -1,7 +1,6 @@
 local strict = {}
 strict.defined = {}
 
-
 -- used to define a global variable
 function global(t)
     for k, v in pairs(t) do
