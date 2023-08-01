@@ -112,14 +112,17 @@ local commands = {
     ["doc:newline"] = function()
         local line, col = doc():get_selection()
         local indent = doc().lines[line]:match("^[\t ]*")
-        local highlight_line = doc().highlighter.lines[line]
-        if highlight_line and highlight_line.begin_scope then
-            indent = indent .. string.rep(" ", config.indent_size)
-        end
 
---         if col <= #indent then
---             indent = indent:sub(#indent + 2 - col)
---         end
+        if config.indent_newline then
+            local highlight_line = doc().highlighter.lines[line]
+            if highlight_line and highlight_line.begin_scope then
+                indent = indent .. string.rep(" ", config.indent_size)
+            end
+        else
+            if col <= #indent then
+                indent = indent:sub(#indent + 2 - col)
+            end
+        end
 
         doc():text_input("\n" .. indent)
         indent_line(doc(), line)
