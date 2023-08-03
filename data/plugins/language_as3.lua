@@ -34,6 +34,7 @@ syntax.add {
         ["return"]      = "keyword",
         ["goto"]        = "keyword",
         ["class"]       = "keyword",
+        ["extends"]     = "keyword",
         ["static"]      = "keyword",
         ["switch"]      = "keyword",
         ["case"]        = "keyword",
@@ -41,10 +42,18 @@ syntax.add {
         ["const"]       = "keyword",
         ["public"]      = "keyword",
         ["private"]     = "keyword",
+        ["import"]      = "keyword",
         ["package"]     = "keyword",
         ["function"]    = "keyword",
+        ["as"]          = "keyword",
+        ["new"]         = "keyword",
+        ["var"]         = "keyword",
         ["get"]         = "keyword",
         ["set"]         = "keyword",
+
+        ["try"]         = "keyword",
+        ["catch"]       = "keyword",
+        ["finally"]     = "keyword",
 
         ["null"]        = "literal",
         ["true"]        = "literal",
@@ -59,6 +68,9 @@ syntax.add {
         ["String"]   = "keyword2",
         ["Number"]   = "keyword2",
         ["Boolean"]  = "keyword2",
+
+        ["Event"]    = "keyword2",
+        ["Error"]    = "keyword2",
 
         -- Size integer types
         ["int8_t"]   = "keyword2",
