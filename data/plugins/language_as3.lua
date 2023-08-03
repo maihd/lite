@@ -2,6 +2,7 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "ActionScript3",
+    version = "v0.0.3",
     files = { "%.as$" },
     comment = "//",
     scope_begin = { "{" },
