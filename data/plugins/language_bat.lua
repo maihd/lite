@@ -2,6 +2,7 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "Batch",
+    version = "v0.0.2",
     files = "%.bat$",
     headers = "^#!.*[ /]batch",
     comment = "::",
@@ -9,6 +10,7 @@ syntax.add {
         { pattern = { '"', '"', '\\'            },      type = "string"   },
         { pattern = { "'", "'", '\\'            },      type = "string"   },
         { pattern = { "::", "\n"               },       type = "comment"  },
+        { pattern = { ": ", "\n"               },       type = "comment"  },
         { pattern = { "@?[rR][eE][mM]", "\n"   },       type = "comment"  },
         { pattern = " -?0x%x+ ",                        type = "number"   }, -- @note(maihd): not work
         { pattern = " -?%d+[%d%.eE]* ",                 type = "number"   }, -- @note(maihd): not work
@@ -28,6 +30,8 @@ syntax.add {
         ["rmdir"]       = "keyword",
         ["rem"]         = "keyword",
         ["echo"]        = "keyword",
+        ["call"]        = "keyword",
+        ["goto"]        = "keyword",
     },
 }
 
