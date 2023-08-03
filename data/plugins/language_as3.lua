@@ -2,7 +2,7 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "ActionScript3",
-    version = "v0.0.3",
+    version = "v0.0.4",
     files = { "%.as$" },
     comment = "//",
     scope_begin = { "{" },
@@ -46,6 +46,8 @@ syntax.add {
         ["import"]      = "keyword",
         ["package"]     = "keyword",
         ["function"]    = "keyword",
+        ["super"]       = "keyword",
+        ["this"]        = "keyword",
         ["as"]          = "keyword",
         ["new"]         = "keyword",
         ["var"]         = "keyword",
@@ -72,18 +74,5 @@ syntax.add {
 
         ["Event"]    = "keyword2",
         ["Error"]    = "keyword2",
-
-        -- Size integer types
-        ["int8_t"]   = "keyword2",
-        ["int16_t"]  = "keyword2",
-        ["int32_t"]  = "keyword2",
-        ["int64_t"]  = "keyword2",
-        ["uint8_t"]  = "keyword2",
-        ["uint16_t"] = "keyword2",
-        ["uint32_t"] = "keyword2",
-        ["uint64_t"] = "keyword2",
-        ["size_t"]   = "keyword2",
-        ["intptr_t"] = "keyword2",
-        ["uintptr_t"] = "keyword2",
     },
 }
