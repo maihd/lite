@@ -32,9 +32,12 @@ end
 
 local function indent_line(doc, line)
     local line_text = doc.lines[line]
-    local highlight_line = doc.highlighter.lines[line]
 
-    line_text = string.rep(" ", highlight_line.scope_nest * config.indent_size) .. common.trim(line_text) .. "\n"
+    local highlight_line = doc.highlighter.lines[line]
+    if highlight_line then
+        line_text = string.rep(" ", highlight_line.scope_nest * config.indent_size) .. common.trim(line_text) .. "\n"
+    end
+
     doc.lines[line] = line_text
 end
 
