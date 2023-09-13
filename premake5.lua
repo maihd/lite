@@ -115,8 +115,17 @@ do
     filter { "configurations:*SDL2*" }
     do
         links {
-            "SDL2",
-            "SDL2main",
+            "SDL2-static",
+            "Gdi32", 
+            "Shell32", 
+            "Winmm", 
+            "Ole32", 
+            "Version", 
+            "CfgMgr32", 
+            "Imm32", 
+            "Setupapi", 
+            "Advapi32", 
+            "OleAut32"
         }
 
         defines {
@@ -124,28 +133,20 @@ do
         }
 
         includedirs {
-            path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/include"),
+            path.join(LIBS_DIR, "SDL2-2.28.3/include"),
         }
 
         filter { "platforms:x86" }
         do
             libdirs {
-                path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86"),
-            }
-
-            postbuildcommands {
-                "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x86/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
+                path.join(LIBS_DIR, "SDL2-2.28.3/lib/x86"),
             }
         end
 
         filter { "platforms:x64" }
         do
             libdirs {
-                path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64"),
-            }
-
-            postbuildcommands {
-                "xcopy \"" .. path.join(LIBS_DIR, "SDL2-devel-2.0.16-VC/lib/x64/SDL2.dll") .. "\" \"$(OutDir)\" /D /E /I /F /Y",
+                path.join(LIBS_DIR, "SDL2-2.28.3/lib/x64"),
             }
         end
 

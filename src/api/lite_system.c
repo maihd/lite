@@ -17,8 +17,8 @@
 #include "lite_api.h"
 #include "lite_file.h"
 #include "lite_memory.h"
-#include "lite_window.h"
 #include "lite_rencache.h"
+#include "lite_window.h"
 
 static int f_poll_event(lua_State* L)
 {
@@ -53,7 +53,7 @@ static int f_poll_event(lua_State* L)
         return 2;
 
     case LiteWindowEventType_KeyUp:
-        lua_pushstringview(L, lite_string_lit("keyreleased"));        
+        lua_pushstringview(L, lite_string_lit("keyreleased"));
         lua_pushstringview(L, event.key_up.key_name);
         return 2;
 
@@ -92,8 +92,7 @@ static int f_poll_event(lua_State* L)
         lua_pushnumber(L, (lua_Number)event.mouse_wheel.y);
         return 2;
 
-    default:
-        break;
+    default: break;
     }
 
     return 0;
@@ -108,11 +107,12 @@ static int f_wait_event(lua_State* L)
 
 static int f_is_binary_file(lua_State* L)
 {
-    size_t length;
+    size_t      length;
     const char* file_path = luaL_checklstring(L, 1, &length);
     if (file_path == NULL)
     {
-        const char errmsg[] = "is_binary_file: first parameter must be a string!";
+        const char errmsg[] =
+            "is_binary_file: first parameter must be a string!";
         lua_pushnil(L);
         lua_pushlstring(L, errmsg, sizeof(errmsg) - 1);
         return 2;
@@ -124,15 +124,11 @@ static int f_is_binary_file(lua_State* L)
 }
 
 static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
-    "sizev", "hand",  NULL};
+                                    "sizev", "hand",  NULL};
 
-static const LiteCursor cursor_enums[] = {
-    LiteCursor_Arrow,
-    LiteCursor_Ibeam,
-    LiteCursor_SizeH,
-    LiteCursor_SizeV,
-    LiteCursor_Hand
-};
+static const LiteCursor cursor_enums[] = {LiteCursor_Arrow, LiteCursor_Ibeam,
+                                          LiteCursor_SizeH, LiteCursor_SizeV,
+                                          LiteCursor_Hand};
 
 static int f_set_cursor(lua_State* L)
 {
@@ -148,12 +144,13 @@ static int f_set_window_title(lua_State* L)
     return 0;
 }
 
-
 static int f_set_window_mode(lua_State* L)
 {
     static const char* window_opts[] = {"normal", "maximized", "fullscreen", 0};
-    static LiteWindowMode window_modes[] = { LiteWindowMode_Normal, LiteWindowMode_Maximized, LiteWindowMode_FullScreen, 0};
-    int n = luaL_checkoption(L, 1, "normal", window_opts);
+    static LiteWindowMode window_modes[] = {LiteWindowMode_Normal,
+                                            LiteWindowMode_Maximized,
+                                            LiteWindowMode_FullScreen, 0};
+    int                   n = luaL_checkoption(L, 1, "normal", window_opts);
     lite_window_set_mode(window_modes[n]);
     return 0;
 }
@@ -194,10 +191,10 @@ static int f_show_confirm_dialog(lua_State* L)
 
     lua_pushboolean(L, lite_window_confirm_dialog(title, msg));
 #if _WIN32
-    //int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
-    //lua_pushboolean(L, id == IDYES);
+    // int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
+    // lua_pushboolean(L, id == IDYES);
 #else
-    
+
 #endif
     return 1;
 }
@@ -233,7 +230,8 @@ static int f_file_time(lua_State* L)
         return 2;
     }
 
-    uint64_t file_time = lite_file_write_time(lite_string_view(path, (uint32_t)len, 0u));
+    uint64_t file_time =
+        lite_file_write_time(lite_string_view(path, (uint32_t)len, 0u));
     lua_Number lua_file_time = (lua_Number)file_time;
     lua_pushnumber(L, lua_file_time);
     return 1;
@@ -263,10 +261,10 @@ static int f_list_dir(lua_State* L)
 
         char  lpMsgBuf[1024];
         DWORD nMsgBufLen = FormatMessageA(
-                                          FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                                          FORMAT_MESSAGE_IGNORE_INSERTS,
-                                          NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
-                                          sizeof(lpMsgBuf), NULL);
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), lpMsgBuf,
+            sizeof(lpMsgBuf), NULL);
 
         lua_pushnil(L);
         lua_pushlstring(L, lpMsgBuf, nMsgBufLen);
@@ -416,7 +414,7 @@ static int f_get_clipboard(lua_State* L)
 
 static int f_set_clipboard(lua_State* L)
 {
-    size_t length;
+    size_t      length;
     const char* text = luaL_checklstring(L, 1, &length);
     lite_clipboard_set(lite_string_view(text, (size_t)length, 0));
     return 0;
@@ -516,13 +514,13 @@ static const luaL_Reg lib[] = {
     {"set_cursor",          f_set_cursor         },
     {"set_window_title",    f_set_window_title   },
     {"set_window_mode",     f_set_window_mode    },
-    //{"get_window_opacity",  f_get_window_opacity },
-    //{"set_window_opacity",  f_set_window_opacity },
+ //{"get_window_opacity",  f_get_window_opacity },
+  //{"set_window_opacity",  f_set_window_opacity },
     {"window_has_focus",    f_window_has_focus   },
     {"show_confirm_dialog", f_show_confirm_dialog},
     {"chdir",               f_chdir              },
-    {"file_time", f_file_time },
-    {"is_binary_file", f_is_binary_file },
+    {"file_time",           f_file_time          },
+    {"is_binary_file",      f_is_binary_file     },
     {"list_dir",            f_list_dir           },
     {"absolute_path",       f_absolute_path      },
     {"get_file_info",       f_get_file_info      },

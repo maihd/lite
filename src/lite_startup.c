@@ -36,13 +36,13 @@ static void lite_get_exe_filename(char* buf, int sz)
 
 void lite_startup(const LiteStartupParams params)
 {
-    uint32_t argc = params.argc;
+    uint32_t     argc = params.argc;
     const char** argv = params.argv;
-    
+
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     api_load_libs(L);
-    
+
     lua_newtable(L);
     for (int i = 0; i < argc; i++)
     {
@@ -50,47 +50,48 @@ void lite_startup(const LiteStartupParams params)
         lua_rawseti(L, -2, i + 1);
     }
     lua_setglobal(L, "ARGS");
-    
+
     lua_pushstring(L, "1.11");
     lua_setglobal(L, "VERSION");
-    
+
     lua_pushstring(L, "Windows");
     lua_setglobal(L, "PLATFORM");
-    
+
     lua_pushnumber(L, lite_get_scale());
     lua_setglobal(L, "SCALE");
-    
+
     char exename[128];
     lite_get_exe_filename(exename, sizeof(exename));
-    
+
     lua_pushstring(L, exename);
     lua_setglobal(L, "EXEFILE");
-    
-    int errcode = luaL_dostring(L,
-                                "local core, err\n"
-                                "xpcall(function()\n"
-                                "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
-                                "  PATHSEP = package.config:sub(1, 1)\n"
-                                //"  PATHSEP = \"/\"\n"
-                                "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
-                                "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
-                                "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
-                                "  core = require('core')\n"
-                                "  core.init()\n"
-                                "  core.run()\n"
-                                "end, function(...)\n"
-                                "  err = ...\n"
-                                "  if core and core.on_error then\n"
-                                "    pcall(core.on_error, err)\n"
-                                "  end\n"
-                                //"  os.exit(1)\n"
-                                "end)\n"
-                                "print(\"Execute end checking error...\")\n"
-                                "if err then\n"
-                                "  print('Error: ' .. tostring(err))\n"
-                                "  print(debug.traceback(nil, 2))\n"
-                                "  error(err)\n"
-                                "end\n");
+
+    int errcode = luaL_dostring(
+        L,
+        "local core, err\n"
+        "xpcall(function()\n"
+        "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
+        "  PATHSEP = package.config:sub(1, 1)\n"
+        //"  PATHSEP = \"/\"\n"
+        "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
+        "  package.path = EXEDIR .. '/data/?.lua;' .. package.path\n"
+        "  package.path = EXEDIR .. '/data/?/init.lua;' .. package.path\n"
+        "  core = require('core')\n"
+        "  core.init()\n"
+        "  core.run()\n"
+        "end, function(...)\n"
+        "  err = ...\n"
+        "  if core and core.on_error then\n"
+        "    pcall(core.on_error, err)\n"
+        "  end\n"
+        //"  os.exit(1)\n"
+        "end)\n"
+        "print(\"Execute end checking error...\")\n"
+        "if err then\n"
+        "  print('Error: ' .. tostring(err))\n"
+        "  print(debug.traceback(nil, 2))\n"
+        "  error(err)\n"
+        "end\n");
     if (errcode != 0)
     {
         const char* title  = params.title;
@@ -101,7 +102,7 @@ void lite_startup(const LiteStartupParams params)
         }
         lite_window_message_box(title, errmsg);
     }
-    
+
     lua_close(L);
 }
 

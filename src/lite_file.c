@@ -7,13 +7,10 @@
 
 uint64_t lite_file_write_time(LiteStringView string)
 {
-    HANDLE hFile = CreateFileA(string.buffer,
-                               GENERIC_READ,
-                               FILE_SHARE_READ | FILE_SHARE_WRITE,
-                               nullptr,
-                               OPEN_EXISTING,
-                               FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS,
-                               nullptr);
+    HANDLE hFile = CreateFileA(
+        string.buffer, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+        nullptr, OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hFile == INVALID_HANDLE_VALUE)
     {
         // @todo(maihd): handle error
@@ -21,7 +18,7 @@ uint64_t lite_file_write_time(LiteStringView string)
     }
 
     FILETIME ftWriteTime;
-    BOOL bGetFileTime = GetFileTime(hFile, nullptr, nullptr, &ftWriteTime);
+    BOOL     bGetFileTime = GetFileTime(hFile, nullptr, nullptr, &ftWriteTime);
     CloseHandle(hFile);
     if (!bGetFileTime)
     {
@@ -29,10 +26,8 @@ uint64_t lite_file_write_time(LiteStringView string)
         return 0;
     }
 
-    ULARGE_INTEGER uiTime = {
-        .LowPart = ftWriteTime.dwLowDateTime,
-        .HighPart = ftWriteTime.dwHighDateTime
-    };
+    ULARGE_INTEGER uiTime = {.LowPart  = ftWriteTime.dwLowDateTime,
+                             .HighPart = ftWriteTime.dwHighDateTime};
 
     return (uint64_t)uiTime.QuadPart;
 }
@@ -46,13 +41,12 @@ bool lite_is_binary_file(LiteStringView path)
     }
 
     uint8_t first_4_bytes[128];
-    size_t bytes_read = fread(first_4_bytes, 1, sizeof(first_4_bytes), file);
+    size_t  bytes_read = fread(first_4_bytes, 1, sizeof(first_4_bytes), file);
     fclose(file);
 
     // Utf8 BOM
-    if (first_4_bytes[0] == 0xef
-        && first_4_bytes[1] == 0xbb
-        && first_4_bytes[2] == 0xbf)
+    if (first_4_bytes[0] == 0xef && first_4_bytes[1] == 0xbb &&
+        first_4_bytes[2] == 0xbf)
     {
         return false;
     }
@@ -64,8 +58,8 @@ bool lite_is_binary_file(LiteStringView path)
     }
 
     // Utf16 BOM
-    if ((first_4_bytes[0] == 0xfe && first_4_bytes[1] == 0xff)
-        || (first_4_bytes[0] == 0xff && first_4_bytes[1] == 0xfe))
+    if ((first_4_bytes[0] == 0xfe && first_4_bytes[1] == 0xff) ||
+        (first_4_bytes[0] == 0xff && first_4_bytes[1] == 0xfe))
     {
         return false;
     }
@@ -74,11 +68,8 @@ bool lite_is_binary_file(LiteStringView path)
     uint8_t* c = first_4_bytes;
     for (size_t i = 0; i < bytes_read; i++)
     {
-        if (c[i] < 0x20
-            && c[i] != '\n'
-            && c[i] != '\t'
-            && c[i] != '\r'
-            && c[i] != '\f')
+        if (c[i] < 0x20 && c[i] != '\n' && c[i] != '\t' && c[i] != '\r' &&
+            c[i] != '\f')
         {
             return true;
         }

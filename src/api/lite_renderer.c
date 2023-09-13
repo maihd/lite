@@ -1,6 +1,6 @@
+#include "lite_renderer.h"
 #include "lite_api.h"
 #include "lite_rencache.h"
-#include "lite_renderer.h"
 
 static LiteColor checkcolor(lua_State* L, int idx, int def)
 {
@@ -64,10 +64,10 @@ static int f_set_clip_rect(lua_State* L)
 static int f_draw_rect(lua_State* L)
 {
     LiteRect rect;
-    rect.x         = (int32_t)luaL_checknumber(L, 1);
-    rect.y         = (int32_t)luaL_checknumber(L, 2);
-    rect.width     = (int32_t)luaL_checknumber(L, 3);
-    rect.height    = (int32_t)luaL_checknumber(L, 4);
+    rect.x          = (int32_t)luaL_checknumber(L, 1);
+    rect.y          = (int32_t)luaL_checknumber(L, 2);
+    rect.width      = (int32_t)luaL_checknumber(L, 3);
+    rect.height     = (int32_t)luaL_checknumber(L, 4);
     LiteColor color = checkcolor(L, 5, 255);
     lite_rencache_draw_rect(rect, color);
     return 0;

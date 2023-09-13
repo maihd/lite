@@ -38,10 +38,11 @@ LiteStringView lite_string_temp(const char* string);
 uint32_t lite_string_count(const char* string);
 
 /// Create StringView
-static __forceinline LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t hash)
+static __forceinline LiteStringView
+lite_string_view(const char* string, uint32_t length, uint32_t hash)
 {
     LiteStringView string_view;
-    string_view.hash = hash;
+    string_view.hash   = hash;
     string_view.length = length;
     string_view.buffer = string;
     return string_view;

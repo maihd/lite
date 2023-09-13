@@ -1,5 +1,5 @@
-#include "lite_memory.h"
 #include "lite_rencache.h"
+#include "lite_memory.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,9 +10,9 @@
 ** of hash values, take the cells that have changed since the previous frame,
 ** merge them into dirty rectangles and redraw only those regions */
 
-#define CELLS_X          80
-#define CELLS_Y          50
-#define CELL_SIZE        96
+#define CELLS_X   80
+#define CELLS_Y   50
+#define CELL_SIZE 96
 
 enum
 {
@@ -24,35 +24,34 @@ enum
 
 typedef struct Command Command;
 
-alignas(16)
-struct Command
+alignas(16) struct Command
 {
-    Command*    next;
+    Command* next;
 
-    int32_t     size;
-    int32_t     type;
-    LiteRect    rect;
-    LiteColor   color;
-    LiteFont*   font;
-    int32_t     tab_width;
-    char        text[0];
+    int32_t   size;
+    int32_t   type;
+    LiteRect  rect;
+    LiteColor color;
+    LiteFont* font;
+    int32_t   tab_width;
+    char      text[0];
 };
 
-static uint32_t     cells_buf1[CELLS_X * CELLS_Y];
-static uint32_t     cells_buf2[CELLS_X * CELLS_Y];
-static uint32_t*    cells_prev = cells_buf1;
-static uint32_t*    cells      = cells_buf2;
+static uint32_t  cells_buf1[CELLS_X * CELLS_Y];
+static uint32_t  cells_buf2[CELLS_X * CELLS_Y];
+static uint32_t* cells_prev = cells_buf1;
+static uint32_t* cells      = cells_buf2;
 
-static LiteRect     rect_buf[CELLS_X * CELLS_Y / 2];
+static LiteRect rect_buf[CELLS_X * CELLS_Y / 2];
 
 static LiteArena*    command_buf;
 static LiteArenaTemp command_buf_temp;
 
-static Command*      first_command;
-static Command*      last_command;
+static Command* first_command;
+static Command* last_command;
 
-static LiteRect     screen_rect;
-static bool         show_debug;
+static LiteRect screen_rect;
+static bool     show_debug;
 
 #ifndef _WIN32
 static inline int32_t min(int32_t a, int32_t b)
@@ -85,8 +84,8 @@ static inline int32_t cell_idx(int32_t x, int32_t y)
 
 static inline bool rects_overlap(LiteRect a, LiteRect b)
 {
-    return b.x + b.width >= a.x && b.x <= a.x + a.width
-        && b.y + b.height >= a.y && b.y <= a.y + a.height;
+    return b.x + b.width >= a.x && b.x <= a.x + a.width &&
+           b.y + b.height >= a.y && b.y <= a.y + a.height;
 }
 
 static LiteRect intersect_rects(LiteRect a, LiteRect b)
@@ -95,12 +94,10 @@ static LiteRect intersect_rects(LiteRect a, LiteRect b)
     int32_t y1 = max(a.y, b.y);
     int32_t x2 = min(a.x + a.width, b.x + b.width);
     int32_t y2 = min(a.y + a.height, b.y + b.height);
-    return (LiteRect){
-        .x = x1,
-        .y = y1,
-        .width = max(0, x2 - x1),
-        .height = max(0, y2 - y1)
-    };
+    return (LiteRect){.x      = x1,
+                      .y      = y1,
+                      .width  = max(0, x2 - x1),
+                      .height = max(0, y2 - y1)};
 }
 
 static LiteRect merge_rects(LiteRect a, LiteRect b)
@@ -109,12 +106,7 @@ static LiteRect merge_rects(LiteRect a, LiteRect b)
     int32_t y1 = min(a.y, b.y);
     int32_t x2 = max(a.x + a.width, b.x + b.width);
     int32_t y2 = max(a.y + a.height, b.y + b.height);
-    return (LiteRect){
-        .x = x1,
-        .y = y1,
-        .width = x2 - x1,
-        .height = y2 - y1
-    };
+    return (LiteRect){.x = x1, .y = y1, .width = x2 - x1, .height = y2 - y1};
 }
 
 static Command* push_command(int32_t type, int32_t size)
@@ -128,12 +120,12 @@ static Command* push_command(int32_t type, int32_t size)
     if (first_command == NULL)
     {
         first_command = cmd;
-        last_command = cmd;
+        last_command  = cmd;
     }
     else
     {
         last_command->next = cmd;
-        last_command = cmd;
+        last_command       = cmd;
     }
 
     return cmd;
@@ -157,7 +149,8 @@ void lite_rencache_init(void)
 {
     if (command_buf == nullptr)
     {
-        command_buf = lite_arena_create(512 * 1024, 10 * 1024 * 1024, alignof(Command));
+        command_buf =
+            lite_arena_create(512 * 1024, 10 * 1024 * 1024, alignof(Command));
     }
 }
 
@@ -205,9 +198,8 @@ void lite_rencache_draw_rect(LiteRect rect, LiteColor color)
     }
 }
 
-int32_t lite_rencache_draw_text(LiteFont* font, const char* text,
-                                int32_t x, int32_t y,
-                                LiteColor color)
+int32_t lite_rencache_draw_text(LiteFont* font, const char* text, int32_t x,
+                                int32_t y, LiteColor color)
 {
     LiteRect rect;
     rect.x      = x;
@@ -289,8 +281,8 @@ static void push_rect(LiteRect r, int32_t* count)
 void lite_rencache_end_frame(void)
 {
     /* update cells from commands */
-    Command*  cmd = nullptr;
-    LiteRect  cr  = screen_rect;
+    Command* cmd = nullptr;
+    LiteRect cr  = screen_rect;
     while (next_command(&cmd))
     {
         if (cmd->type == SET_CLIP)
@@ -351,23 +343,17 @@ void lite_rencache_end_frame(void)
         {
             switch (cmd->type)
             {
-            case FREE_FONT:
-                has_free_commands = true;
-                break;
+            case FREE_FONT: has_free_commands = true; break;
 
             case SET_CLIP:
                 lite_renderer_set_clip_rect(intersect_rects(cmd->rect, r));
                 break;
 
-            case DRAW_RECT:
-                lite_draw_rect(cmd->rect, cmd->color);
-                break;
+            case DRAW_RECT: lite_draw_rect(cmd->rect, cmd->color); break;
 
             case DRAW_TEXT:
                 lite_set_font_tab_width(cmd->font, cmd->tab_width);
-                lite_draw_text(cmd->font,
-                               cmd->text,
-                               cmd->rect.x, cmd->rect.y,
+                lite_draw_text(cmd->font, cmd->text, cmd->rect.x, cmd->rect.y,
                                cmd->color);
                 break;
             }
@@ -375,7 +361,7 @@ void lite_rencache_end_frame(void)
 
         if (show_debug)
         {
-            LiteColor color = { .r = rand(), .g = rand(), .b = rand(), .a = 50 };
+            LiteColor color = {.r = rand(), .g = rand(), .b = rand(), .a = 50};
             lite_draw_rect(r, color);
         }
     }
@@ -400,12 +386,11 @@ void lite_rencache_end_frame(void)
     }
 
     /* swap cell buffer and reset */
-    uint32_t* tmp   = cells;
-    cells           = cells_prev;
-    cells_prev      = tmp;
-    first_command   = nullptr;
+    uint32_t* tmp = cells;
+    cells         = cells_prev;
+    cells_prev    = tmp;
+    first_command = nullptr;
     lite_arena_end_temp(command_buf_temp);
 }
 
 //! EOF
-

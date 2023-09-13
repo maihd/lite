@@ -8,5 +8,4 @@
 #define lite_log_debug(fmt, ...) ((void)printf(fmt, ##__VA_ARGS__))
 #endif
 
-//!EOF
-
+//! EOF
