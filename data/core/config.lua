@@ -21,5 +21,6 @@ config.scope_highlight = true
 
 config.auto_indent = false
 config.indent_newline = false
+config.prevent_open_binary_file = true
 
 return config
