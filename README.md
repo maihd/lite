@@ -70,7 +70,7 @@ The editor can be customized by making changes to the
 
 ## Building
 You can build the project yourself on Linux using the `build.sh` script
-or on Windows using the `build.bat` script *([MinGW](https://nuwen.net/mingw.html) is required)*.
+or on Windows using the `build_clang.bat` script *([clang]([https://nuwen.net/mingw.html](https://clang.llvm.org/)) is required, MinGW is not using now)*.
 Note that the project does not need to be rebuilt if you are only making changes
 to the Lua portion of the code.
 
