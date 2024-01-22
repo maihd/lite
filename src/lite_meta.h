@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------
-// This file for compiler compat
+// This file for compiler compat and extensions
 // -----------------------------------------------------------------
 
 #pragma once
@@ -14,7 +14,10 @@
 /// @note(maihd): simple define, no need to include <assert.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus) && !defined(static_assert)
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
 #define static_assert(cond, msg) _Static_assert(cond, msg)
+#else
+#define static_assert(cond, msg) struct { char __[(cond) ? 1 : -1]; }
 #endif
 
 /// thread_local attribute
@@ -35,18 +38,18 @@
 ///    Instead of use constexpr for functions (C++)
 ///    Use comptime (Zig) to mean that
 ///        function can be execute add compile-time (clearer mean)
-#if defined(__cplusplus)
+#if defined(__cplusplus) && __cplusplus >= 201402L
 #define __comptime constexpr
 #else
 #define __comptime                                                             \
     static_assert(0, "Only C++14 and above support comptime function"); // @note(maihd):
                                                                         // add
-// ';' here because
-// we donot know is
-// static_assert a
-// expression or not
-// base on compilers
-// implementation
+                                                                        // ';' here because
+                                                                        // we donot know is
+                                                                        // static_assert a
+                                                                        // expression or not
+                                                                        // base on compilers
+                                                                        // implementation
 #endif
 
 /// alignas attribute
