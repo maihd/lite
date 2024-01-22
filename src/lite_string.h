@@ -12,6 +12,7 @@ typedef struct LiteStringView
     const char* buffer;
 } LiteStringView;
 
+
 /// StringBuffer
 /// Data structure contain mutable string
 /// Utf8 support
@@ -21,19 +22,27 @@ typedef struct LiteStringView
 ///     StringBuffer  - wrong (compiler error)
 typedef struct LiteStringBuffer
 {
-    uint32_t mark;
-    uint32_t hash;
-    uint32_t flags;
-    uint32_t length;
-    uint32_t capacity;
-    char     data[];
+    uint32_t    mark;
+    uint32_t    hash;
+    uint32_t    flags;
+    uint32_t    length;
+    uint32_t    capacity;
+    char        data[];
 } LiteStringBuffer;
 
+
 /// Create string view, memory from frame buffer
-LiteStringView lite_string_temp(const char* string);
+LiteStringView  lite_string_temp(const char* string);
 
 /// Calculate string length (utf8 support)
-uint32_t lite_string_count(const char* string);
+uint32_t        lite_string_count(const char* string);
+
+/// Find last index of character
+int32_t         lite_last_index_of_char(LiteStringView string, char c);
+
+// --------------------------------------------------------------------------------
+// Utils
+// --------------------------------------------------------------------------------
 
 /// Create StringView
 static __forceinline
@@ -46,6 +55,7 @@ LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t ha
     return string_view;
 }
 
+
 /// Create string view, calculate length
 static __forceinline
 LiteStringView lite_string_view_cstr(const char* string)
@@ -53,8 +63,9 @@ LiteStringView lite_string_view_cstr(const char* string)
     return lite_string_view(string, lite_string_count(string), 0);
 }
 
+
 /// Create StringView from string literal
 #define lite_string_lit(string) lite_string_view(string, sizeof(string) - 1, 0)
 
-//! new empty line, required by GCC
+//! EOF
 
