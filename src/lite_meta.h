@@ -14,10 +14,11 @@
 /// @note(maihd): simple define, no need to include <assert.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus) && !defined(static_assert)
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-#define static_assert(cond, msg) _Static_assert(cond, msg)
-#else
-#define static_assert(cond, msg) struct { char __[(cond) ? 1 : -1]; }
+#   if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#       define static_assert(cond, msg) _Static_assert(cond, msg)
+#   else
+#       define static_assert(cond, msg) struct { char __[(cond) ? 1 : -1]; }
+#   endif
 #endif
 
 /// thread_local attribute
@@ -56,33 +57,33 @@
 /// @note(maihd): simple define, no need to include <stdalign.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus)
-#if defined(_MSC_VER)
-#define alignas(x) __declspec(align(x))
-#else
-#define alignas(x) _Alignas
-#endif
+#   if defined(_MSC_VER)
+#       define alignas(x) __declspec(align(x))
+#   else
+#       define alignas(x) _Alignas
+#   endif
 #endif
 
 /// alignof operator
 /// @note(maihd): simple define, no need to include <stdalign.h>
 /// @todo(maihd): as fallback implementation for other C/C++ dialect
 #if !defined(__cplusplus)
-#if defined(_MSC_VER)
-#define alignof(x) __alignof(x)
-#else
-#define alignof(x) _Alignof
-#endif
+#   if defined(_MSC_VER)
+#       define alignof(x) __alignof(x)
+#   else
+#       define alignof(x) _Alignof
+#   endif
 #endif
 
 /// __forceinline attribute
 /// @note(maihd): polyfill for multiple compiler to make sure will inline even
 /// on optimize off (unsure)
 #if !defined(_MSC_VER) && !defined(__forceinline)
-#if defined(__GNUC__)
-#define __forceinline __attribute__((always_inline))
-#else
-#define __forceinline inline
-#endif
+#   if defined(__GNUC__)
+#       define __forceinline __attribute__((always_inline))
+#   else
+#       define __forceinline inline
+#   endif
 #endif
 
 /// __count_of operator

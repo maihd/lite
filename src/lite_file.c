@@ -83,6 +83,8 @@ bool lite_is_binary_file(LiteStringView path)
 
 bool lite_create_directory_recursive(LiteStringView path)
 {
+    bool result = false;
+
     for (int32_t i = 0, j = 0, n = path.length; i < n; i++)
     {
         const char c = path.buffer[i];
@@ -97,13 +99,19 @@ bool lite_create_directory_recursive(LiteStringView path)
                 };
 
                 CreateDirectoryA(directory_path.buffer, nullptr);
+//                 if (!CreateDirectoryA(directory_path.buffer, nullptr))
+//                 {
+//                     return false;
+//                 }
+
+                result = true;
             }
 
             j = i;
         }
     }
 
-    return false;
+    return result;
 }
 
 
