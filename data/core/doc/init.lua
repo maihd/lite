@@ -114,12 +114,20 @@ end
 
 function Doc:save(filename)
     filename = filename or assert(self.filename, "no filename set to default to")
+
+    -- Support save file in new directory
+    local directory = system.parent_directory(filename)
+    system.mkdir_recursive(directory)
+
+    -- Save content
     local fp = assert(io.open(filename, "wb"))
     for _, line in ipairs(self.lines) do
         if self.crlf then line = line:gsub("\n", "\r\n") end
         fp:write(line)
     end
     fp:close()
+
+    -- Update UI
     self.filename = filename or self.filename
     self:reset_syntax()
     self:clean()

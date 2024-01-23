@@ -5,6 +5,7 @@
 #define WIN32_CLEAN_AND_MEAN
 #include <Windows.h>
 
+
 uint64_t lite_file_write_time(LiteStringView string)
 {
     HANDLE hFile = CreateFileA(
@@ -31,6 +32,7 @@ uint64_t lite_file_write_time(LiteStringView string)
 
     return (uint64_t)uiTime.QuadPart;
 }
+
 
 bool lite_is_binary_file(LiteStringView path)
 {
@@ -77,4 +79,66 @@ bool lite_is_binary_file(LiteStringView path)
 
     return false;
 }
+
+
+bool lite_create_directory_recursive(LiteStringView path)
+{
+    bool result = false;
+
+    for (int32_t i = 0, j = 0, n = path.length; i < n; i++)
+    {
+        const char c = path.buffer[i];
+        if (c == '/' || c == '\\')
+        {
+            if (i - j > 0)
+            {
+                const LiteStringView directory_path = {
+                    .buffer = path.buffer,
+                    .length = i + 1,
+                    .hash = 0
+                };
+
+                CreateDirectoryA(directory_path.buffer, nullptr);
+//                 if (!CreateDirectoryA(directory_path.buffer, nullptr))
+//                 {
+//                     return false;
+//                 }
+
+                result = true;
+            }
+
+            j = i;
+        }
+    }
+
+    return result;
+}
+
+
+LiteStringView lite_parent_directory(LiteStringView path)
+{
+    const char last_char = path.buffer[path.length - 1];
+    if (last_char == '/' || last_char == '\\')
+    {
+        path.length -= 1;
+    }
+
+    const char last_index_of_sep_0 = lite_last_index_of_char(path, '\\');
+    if (last_index_of_sep_0 != -1)
+    {
+        path.length = last_index_of_sep_0 + 1;
+        return path;
+    }
+
+    const char last_index_of_sep_1 = lite_last_index_of_char(path, '/');
+    if (last_index_of_sep_1 != -1)
+    {
+        path.length = last_index_of_sep_1 + 1;
+        return path;
+    }
+
+    return lite_string_lit("");
+}
+
 //! EOF
+

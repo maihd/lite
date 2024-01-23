@@ -508,6 +508,26 @@ static int f_end_frame(lua_State* L)
     return 0;
 }
 
+static int f_mkdir_recursive(lua_State* L)
+{
+    size_t      length;
+    const char* path = luaL_checklstring(L, 1, &length);
+
+    const bool result = lite_create_directory_recursive(lite_string_view(path, length, 0));
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+static int f_parent_directory(lua_State* L)
+{
+    size_t      length;
+    const char* path = luaL_checklstring(L, 1, &length);
+
+    const LiteStringView result = lite_parent_directory(lite_string_view(path, length, 0));
+    lua_pushstringview(L, result);
+    return 1;
+}
+
 static const luaL_Reg lib[] = {
     {"poll_event",          f_poll_event         },
     {"wait_event",          f_wait_event         },
@@ -532,6 +552,10 @@ static const luaL_Reg lib[] = {
     {"fuzzy_match",         f_fuzzy_match        },
     {"begin_frame",         f_begin_frame        },
     {"end_frame",           f_end_frame          },
+    
+    {"mkdir_recursive",     f_mkdir_recursive    },
+    {"parent_directory",    f_parent_directory   },
+
     {NULL,                  NULL                 }
 };
 
