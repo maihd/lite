@@ -1417,17 +1417,29 @@ static LRESULT WINAPI lite_win32_window_proc(
         return 0;
     }
 
-    case WM_MOUSEWHEEL:
+	case WM_MOUSEWHEEL:
+    case WM_MOUSEHWHEEL:
     {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
+        short amount = GET_WHEEL_DELTA_WPARAM(wParam);
+        float fAmount = (float)amount / WHEEL_DELTA;
+
+        int32_t x = 0;
+        int32_t y = 0;
+        if (msg == WM_MOUSEWHEEL)
+		{
+            y = (int32_t)fAmount;
+        }
+		else
+		{
+            x = (int32_t)fAmount;
+        }
+
         lite_push_event((LiteWindowEvent){
             .type = LiteWindowEventType_MouseWheel,
             .mouse_wheel.x = (int32_t)x,
             .mouse_wheel.y = (int32_t)y,
         });
-        return 0;
-    }
+    } break;
 
     default:
         break;
