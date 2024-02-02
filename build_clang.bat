@@ -2,8 +2,8 @@
 
 echo compiling (windows - clang - x64)...
 
-:: set PLATFORM_LIBS=-Ilibs/SDL2-2.28.3/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/SDL2-2.28.3/lib/x64
-set PLATFORM_LIBS=
+set PLATFORM_LIBS=-Ilibs/SDL2-2.28.3/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/SDL2-2.28.3/lib/x64
+:: set PLATFORM_LIBS=
 
 clang src/*.c src/api/*.c src/lib/stb/*.c ^
     -Ofast -std=c11 -fno-strict-aliasing ^

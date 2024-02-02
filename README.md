@@ -39,10 +39,10 @@ This editor don't and won't support C++ editting. For C++, I will use full IDE f
 - Display icon to show log type.
 - Draw intent guide line. (may be need more mechanic for syntax highlight)
 - Display project name in title bar and status bar
+- Convert to use native API instead of large library like SDL.
 
 ## TODOs
 - Make app more robust.
-- Convert to use native API instead of large library like SDL.
 - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 - Line wrapping.
 - Fix bug: some time single mouse click cause select token, line
