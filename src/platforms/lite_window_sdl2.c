@@ -122,7 +122,7 @@ void lite_window_open(void)
         // @todo(maihd): handle error
     }
 
-    
+
     lite_window_load_icon();
 }
 
@@ -157,9 +157,9 @@ void lite_window_hide(void)
 
 void lite_window_set_mode(LiteWindowMode mode)
 {
-    SDL_SetWindowFullscreen(window, 
-        mode == LiteWindowMode_FullScreen 
-        ? SDL_WINDOW_FULLSCREEN_DESKTOP 
+    SDL_SetWindowFullscreen(window,
+        mode == LiteWindowMode_FullScreen
+        ? SDL_WINDOW_FULLSCREEN_DESKTOP
         : 0);
 
     if (mode == LiteWindowMode_Normal)
@@ -184,10 +184,10 @@ void lite_window_set_cursor(LiteCursor cursor)
     static const int sdl_cursor_enums[] = {
         0,
         SDL_SYSTEM_CURSOR_HAND,
-        SDL_SYSTEM_CURSOR_ARROW, 
-        SDL_SYSTEM_CURSOR_IBEAM, 
+        SDL_SYSTEM_CURSOR_ARROW,
+        SDL_SYSTEM_CURSOR_IBEAM,
         SDL_SYSTEM_CURSOR_SIZEWE,
-        SDL_SYSTEM_CURSOR_SIZENS, 
+        SDL_SYSTEM_CURSOR_SIZENS,
     };
 
     int         n = sdl_cursor_enums[(uint32_t)cursor];
@@ -244,16 +244,16 @@ static LiteStringView lite_button_name(Uint8 button)
 {
     switch (button)
     {
-        case SDL_BUTTON_LEFT: 
+        case SDL_BUTTON_LEFT:
             return lite_string_lit("left");
 
-        case SDL_BUTTON_MIDDLE: 
+        case SDL_BUTTON_MIDDLE:
             return lite_string_lit("middle");
 
-        case SDL_BUTTON_RIGHT: 
+        case SDL_BUTTON_RIGHT:
             return lite_string_lit("right");
 
-        default: 
+        default:
             return lite_string_lit("?");
     }
 }
