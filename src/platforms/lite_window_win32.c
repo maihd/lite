@@ -625,7 +625,7 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 290 */ "EndCall",
 };
 
-static const LiteKeyCode windows_scancode_table[] = {
+static const LiteScanCode lite_win32_scancode_table[] = {
     /*0x00*/ LiteScanCode_UNKNOWN,
     /*0x01*/ LiteScanCode_ESCAPE,
     /*0x02*/ LiteScanCode_1,
@@ -947,7 +947,7 @@ static LiteScanCode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 
     /* Pack scan code into one byte to make the index. */
     index = LOBYTE(scanCode) | (HIBYTE(scanCode) ? 0x80 : 0x00);
-    code = windows_scancode_table[index];
+    code = lite_win32_scancode_table[index];
 
     return code;
 }
@@ -1238,7 +1238,7 @@ static LRESULT WINAPI lite_win32_window_proc(
                 }
 
                 const uint32_t length = lite_string_count(utf8);
-                char* text = lite_arena_acquire(frame_arena, length + 1);
+                char* text = (char*)lite_arena_acquire(frame_arena, length + 1);
                 memcpy(text, utf8, length);
 
                 lite_push_event((LiteWindowEvent){
@@ -1682,7 +1682,7 @@ void lite_window_set_title(const char* title)
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
-    static LPWSTR cursor_names[LiteCursor_COUNT] = {
+    static LPCSTR cursor_names[LiteCursor_COUNT] = {
         nullptr,
         IDC_HAND,
         IDC_ARROW,
@@ -1695,7 +1695,7 @@ void lite_window_set_cursor(LiteCursor cursor)
     HCURSOR hCursor = cursor_caches[cursor];
     if (hCursor == nullptr)
     {
-        hCursor = LoadCursor(nullptr, cursor_names[cursor]);
+        hCursor = LoadCursorA(nullptr, cursor_names[cursor]);
         cursor_caches[cursor] = hCursor;
     }
     SetCursor(hCursor);

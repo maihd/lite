@@ -118,7 +118,7 @@ static int f_is_binary_file(lua_State* L)
         return 2;
     }
 
-    bool result = lite_is_binary_file(lite_string_view(file_path, length, 0));
+    bool result = lite_is_binary_file(lite_string_view(file_path, (uint32_t)length, 0));
     lua_pushboolean(L, result);
     return 1;
 }
@@ -416,7 +416,7 @@ static int f_set_clipboard(lua_State* L)
 {
     size_t      length;
     const char* text = luaL_checklstring(L, 1, &length);
-    lite_clipboard_set(lite_string_view(text, (size_t)length, 0));
+    lite_clipboard_set(lite_string_view(text, (uint32_t)length, 0));
     return 0;
 }
 
@@ -513,7 +513,7 @@ static int f_mkdir_recursive(lua_State* L)
     size_t      length;
     const char* path = luaL_checklstring(L, 1, &length);
 
-    const bool result = lite_create_directory_recursive(lite_string_view(path, length, 0));
+    const bool result = lite_create_directory_recursive(lite_string_view(path, (uint32_t)length, 0));
     lua_pushboolean(L, result);
     return 1;
 }
@@ -523,7 +523,7 @@ static int f_parent_directory(lua_State* L)
     size_t      length;
     const char* path = luaL_checklstring(L, 1, &length);
 
-    const LiteStringView result = lite_parent_directory(lite_string_view(path, length, 0));
+    const LiteStringView result = lite_parent_directory(lite_string_view(path, (uint32_t)length, 0));
     lua_pushstringview(L, result);
     return 1;
 }
