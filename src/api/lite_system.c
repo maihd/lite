@@ -22,47 +22,47 @@
 
 static int f_poll_event(lua_State* L)
 {
-    LiteWindowEvent event = lite_window_poll_event();
+    LiteEvent event = lite_window_poll_event();
     switch (event.type)
     {
-    case LiteWindowEventType_Quit:
+    case LiteEventType_Quit:
         lua_pushstringview(L, lite_string_lit("quit"));
         return 1;
 
-    case LiteWindowEventType_Resized:
+    case LiteEventType_Resized:
         lua_pushstringview(L, lite_string_lit("resized"));
         lua_pushnumber(L, (lua_Number)event.resized.width);
         lua_pushnumber(L, (lua_Number)event.resized.height);
         return 3;
 
-    case LiteWindowEventType_Exposed:
+    case LiteEventType_Exposed:
         lite_rencache_invalidate();
         lua_pushstringview(L, lite_string_lit("exposed"));
         return 1;
 
-    case LiteWindowEventType_DropFile:
+    case LiteEventType_DropFile:
         lua_pushstringview(L, lite_string_lit("filedropped"));
         lua_pushstringview(L, event.drop_file.file_path);
         lua_pushnumber(L, (lua_Number)event.drop_file.x);
         lua_pushnumber(L, (lua_Number)event.drop_file.y);
         return 4;
 
-    case LiteWindowEventType_KeyDown:
+    case LiteEventType_KeyDown:
         lua_pushstringview(L, lite_string_lit("keypressed"));
         lua_pushstringview(L, event.key_down.key_name);
         return 2;
 
-    case LiteWindowEventType_KeyUp:
+    case LiteEventType_KeyUp:
         lua_pushstringview(L, lite_string_lit("keyreleased"));
         lua_pushstringview(L, event.key_up.key_name);
         return 2;
 
-    case LiteWindowEventType_TextInput:
+    case LiteEventType_TextInput:
         lua_pushstringview(L, lite_string_lit("textinput"));
         lua_pushstringview(L, event.text_input.text);
         return 2;
 
-    case LiteWindowEventType_MouseDown:
+    case LiteEventType_MouseDown:
         lua_pushstringview(L, lite_string_lit("mousepressed"));
         lua_pushstringview(L, event.mouse_down.button_name);
 
@@ -71,7 +71,7 @@ static int f_poll_event(lua_State* L)
         lua_pushnumber(L, (lua_Number)event.mouse_down.clicks);
         return 5;
 
-    case LiteWindowEventType_MouseUp:
+    case LiteEventType_MouseUp:
         lua_pushstringview(L, lite_string_lit("mousereleased"));
         lua_pushstringview(L, event.mouse_up.button_name);
         lua_pushnumber(L, (lua_Number)event.mouse_up.x);
@@ -79,7 +79,7 @@ static int f_poll_event(lua_State* L)
         lua_pushnumber(L, (lua_Number)event.mouse_up.clicks);
         return 5;
 
-    case LiteWindowEventType_MouseMove:
+    case LiteEventType_MouseMove:
         lua_pushstringview(L, lite_string_lit("mousemoved"));
         lua_pushnumber(L, (lua_Number)event.mouse_move.x);
         lua_pushnumber(L, (lua_Number)event.mouse_move.y);
@@ -87,7 +87,7 @@ static int f_poll_event(lua_State* L)
         lua_pushnumber(L, (lua_Number)event.mouse_move.dy);
         return 5;
 
-    case LiteWindowEventType_MouseWheel:
+    case LiteEventType_MouseWheel:
         lua_pushstringview(L, lite_string_lit("mousewheel"));
         lua_pushnumber(L, (lua_Number)event.mouse_wheel.y);
         return 2;

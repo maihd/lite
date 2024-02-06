@@ -11,6 +11,7 @@
 #include <windowsx.h>
 #endif
 
+#include "lite_mouse.h"
 #include "lite_memory.h"
 #include "lite_string.h"
 #include "lite_window.h"
@@ -30,12 +31,13 @@ static void*    surface_pixels;
 static int32_t  surface_width;
 static int32_t  surface_height;
 
-static LiteWindowEvent  s_events_queue[LITE_EVENT_QUEUE_SIZE];
+static LiteEvent        s_events_queue[LITE_EVENT_QUEUE_SIZE];
 static int32_t          s_events_queue_head = 0;
 static int32_t          s_events_queue_tail = 0;
 
 static LiteArena*       s_events_arena      = nullptr;
 static LiteArenaTemp    s_events_arena_temp = { 0 };
+
 
 static const LiteKeyCode lite_default_keymap[LITE_NUM_SCANCODES] = {
     /* 0 */ 0,
@@ -331,11 +333,12 @@ static const LiteKeyCode lite_default_keymap[LITE_NUM_SCANCODES] = {
     /* 290 */ LiteKeyCode_ENDCALL,
 };
 
+
 static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
-    /* 0 */ NULL,
-    /* 1 */ NULL,
-    /* 2 */ NULL,
-    /* 3 */ NULL,
+    /* 0 */ nullptr,
+    /* 1 */ nullptr,
+    /* 2 */ nullptr,
+    /* 3 */ nullptr,
     /* 4 */ "A",
     /* 5 */ "B",
     /* 6 */ "C",
@@ -432,7 +435,7 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 97 */ "Keypad 9",
     /* 98 */ "Keypad 0",
     /* 99 */ "Keypad .",
-    /* 100 */ NULL,
+    /* 100 */ nullptr,
     /* 101 */ "Application",
     /* 102 */ "Power",
     /* 103 */ "Keypad =",
@@ -462,29 +465,29 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 127 */ "Mute",
     /* 128 */ "VolumeUp",
     /* 129 */ "VolumeDown",
-    /* 130 */ NULL,
-    /* 131 */ NULL,
-    /* 132 */ NULL,
+    /* 130 */ nullptr,
+    /* 131 */ nullptr,
+    /* 132 */ nullptr,
     /* 133 */ "Keypad ,",
     /* 134 */ "Keypad = (AS400)",
-    /* 135 */ NULL,
-    /* 136 */ NULL,
-    /* 137 */ NULL,
-    /* 138 */ NULL,
-    /* 139 */ NULL,
-    /* 140 */ NULL,
-    /* 141 */ NULL,
-    /* 142 */ NULL,
-    /* 143 */ NULL,
-    /* 144 */ NULL,
-    /* 145 */ NULL,
-    /* 146 */ NULL,
-    /* 147 */ NULL,
-    /* 148 */ NULL,
-    /* 149 */ NULL,
-    /* 150 */ NULL,
-    /* 151 */ NULL,
-    /* 152 */ NULL,
+    /* 135 */ nullptr,
+    /* 136 */ nullptr,
+    /* 137 */ nullptr,
+    /* 138 */ nullptr,
+    /* 139 */ nullptr,
+    /* 140 */ nullptr,
+    /* 141 */ nullptr,
+    /* 142 */ nullptr,
+    /* 143 */ nullptr,
+    /* 144 */ nullptr,
+    /* 145 */ nullptr,
+    /* 146 */ nullptr,
+    /* 147 */ nullptr,
+    /* 148 */ nullptr,
+    /* 149 */ nullptr,
+    /* 150 */ nullptr,
+    /* 151 */ nullptr,
+    /* 152 */ nullptr,
     /* 153 */ "AltErase",
     /* 154 */ "SysReq",
     /* 155 */ "Cancel",
@@ -497,17 +500,17 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 162 */ "Clear / Again",
     /* 163 */ "CrSel",
     /* 164 */ "ExSel",
-    /* 165 */ NULL,
-    /* 166 */ NULL,
-    /* 167 */ NULL,
-    /* 168 */ NULL,
-    /* 169 */ NULL,
-    /* 170 */ NULL,
-    /* 171 */ NULL,
-    /* 172 */ NULL,
-    /* 173 */ NULL,
-    /* 174 */ NULL,
-    /* 175 */ NULL,
+    /* 165 */ nullptr,
+    /* 166 */ nullptr,
+    /* 167 */ nullptr,
+    /* 168 */ nullptr,
+    /* 169 */ nullptr,
+    /* 170 */ nullptr,
+    /* 171 */ nullptr,
+    /* 172 */ nullptr,
+    /* 173 */ nullptr,
+    /* 174 */ nullptr,
+    /* 175 */ nullptr,
     /* 176 */ "Keypad 00",
     /* 177 */ "Keypad 000",
     /* 178 */ "ThousandsSeparator",
@@ -554,8 +557,8 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 219 */ "Keypad Octal",
     /* 220 */ "Keypad Decimal",
     /* 221 */ "Keypad Hexadecimal",
-    /* 222 */ NULL,
-    /* 223 */ NULL,
+    /* 222 */ nullptr,
+    /* 223 */ nullptr,
     /* 224 */ "Left Ctrl",
     /* 225 */ "Left Shift",
     /* 226 */ "Left Alt",
@@ -564,31 +567,31 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 229 */ "Right Shift",
     /* 230 */ "Right Alt",
     /* 231 */ "Right GUI",
-    /* 232 */ NULL,
-    /* 233 */ NULL,
-    /* 234 */ NULL,
-    /* 235 */ NULL,
-    /* 236 */ NULL,
-    /* 237 */ NULL,
-    /* 238 */ NULL,
-    /* 239 */ NULL,
-    /* 240 */ NULL,
-    /* 241 */ NULL,
-    /* 242 */ NULL,
-    /* 243 */ NULL,
-    /* 244 */ NULL,
-    /* 245 */ NULL,
-    /* 246 */ NULL,
-    /* 247 */ NULL,
-    /* 248 */ NULL,
-    /* 249 */ NULL,
-    /* 250 */ NULL,
-    /* 251 */ NULL,
-    /* 252 */ NULL,
-    /* 253 */ NULL,
-    /* 254 */ NULL,
-    /* 255 */ NULL,
-    /* 256 */ NULL,
+    /* 232 */ nullptr,
+    /* 233 */ nullptr,
+    /* 234 */ nullptr,
+    /* 235 */ nullptr,
+    /* 236 */ nullptr,
+    /* 237 */ nullptr,
+    /* 238 */ nullptr,
+    /* 239 */ nullptr,
+    /* 240 */ nullptr,
+    /* 241 */ nullptr,
+    /* 242 */ nullptr,
+    /* 243 */ nullptr,
+    /* 244 */ nullptr,
+    /* 245 */ nullptr,
+    /* 246 */ nullptr,
+    /* 247 */ nullptr,
+    /* 248 */ nullptr,
+    /* 249 */ nullptr,
+    /* 250 */ nullptr,
+    /* 251 */ nullptr,
+    /* 252 */ nullptr,
+    /* 253 */ nullptr,
+    /* 254 */ nullptr,
+    /* 255 */ nullptr,
+    /* 256 */ nullptr,
     /* 257 */ "ModeSwitch",
     /* 258 */ "AudioNext",
     /* 259 */ "AudioPrev",
@@ -624,6 +627,7 @@ static const char* lite_scancode_names[LITE_NUM_SCANCODES] = {
     /* 289 */ "Call",
     /* 290 */ "EndCall",
 };
+
 
 static const LiteScanCode lite_win32_scancode_table[] = {
     /*0x00*/ LiteScanCode_UNKNOWN,
@@ -884,13 +888,15 @@ static const LiteScanCode lite_win32_scancode_table[] = {
     /*0xe07f*/ LiteScanCode_UNKNOWN
 };
 
-static void lite_push_event(LiteWindowEvent event)
+
+static void lite_push_event(LiteEvent event)
 {
     s_events_queue[s_events_queue_tail] = event;
     s_events_queue_tail = (s_events_queue_tail + 1) % LITE_EVENT_QUEUE_SIZE;
 }
 
-static LiteWindowEvent lite_pop_event(void)
+
+static LiteEvent lite_pop_event(void)
 {
     if (s_events_queue_head == s_events_queue_tail)
     {
@@ -900,17 +906,18 @@ static LiteWindowEvent lite_pop_event(void)
             s_events_arena_temp.arena = nullptr;
         }
 
-        return (LiteWindowEvent){
-            .type = LiteWindowEventType_None
+        return (LiteEvent){
+            .type = LiteEventType_None
         };
     }
 
-    LiteWindowEvent event = s_events_queue[s_events_queue_head];
+    LiteEvent event = s_events_queue[s_events_queue_head];
     s_events_queue_head = (s_events_queue_head + 1) % LITE_EVENT_QUEUE_SIZE;
     return event;
 }
 
-static LiteScanCode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
+
+static LiteScanCode lite_windows_scancode_convert(LPARAM lParam, WPARAM wParam)
 {
     LiteScanCode code;
     uint8_t index;
@@ -952,6 +959,7 @@ static LiteScanCode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     return code;
 }
 
+
 static char* lite_ucs4_to_utf8(uint32_t ch, char *dst)
 {
     uint8_t *p = (uint8_t*)dst;
@@ -984,6 +992,7 @@ static char* lite_ucs4_to_utf8(uint32_t ch, char *dst)
     return dst;
 }
 
+
 const char* lite_get_scan_code_name(LiteScanCode scancode)
 {
     const char *name;
@@ -1000,6 +1009,7 @@ const char* lite_get_scan_code_name(LiteScanCode scancode)
 
     return "";
 }
+
 
 static const char* lite_get_key_name_cstr(LiteKeyCode key_code)
 {
@@ -1039,6 +1049,7 @@ static const char* lite_get_key_name_cstr(LiteKeyCode key_code)
         return name;
     }
 }
+
 
 static LiteStringView lite_get_key_name(LiteKeyCode key_code)
 {
@@ -1107,6 +1118,151 @@ static LiteStringView lite_get_key_name(LiteKeyCode key_code)
 //     return lite_string_view(text, (uint32_t)text_length, 0);
 // }
 
+// -----------------------------------------------------------
+// Handle mouse state
+// -----------------------------------------------------------
+
+static void lite_send_mouse_button_event(uint64_t timestamp, uint32_t mouse_id, LiteEventAction action, LiteMouseButton button)
+{
+    LiteEventType type;
+    switch (action)
+    {
+        case LiteEventAction_None:
+            return;
+
+        case LiteEventAction_Pressed:
+            type = LiteEventType_MouseDown;
+            break;
+
+        case LiteEventAction_Released:
+            type = LiteEventType_MouseUp;
+            break;
+    }
+
+    const LiteStringView button_names[] = {
+        lite_string_lit("?"),
+        lite_string_lit("left"),
+        lite_string_lit("middle"),
+        lite_string_lit("right"),
+        lite_string_lit("x1"),
+        lite_string_lit("x2"),
+    };
+	const LiteStringView button_name = button_names[(uint32_t)button];
+
+    int32_t x, y;
+    uint32_t mouse_flags = lite_get_mouse_state(&x, &y);
+
+    if (action == LiteEventAction_Pressed)
+    {
+        mouse_flags |= LITE_MOUSE_BUTTON(button);
+    }
+    else
+    {
+        mouse_flags &= ~LITE_MOUSE_BUTTON(button);
+    }
+    lite_set_mouse_state(mouse_flags, x, y);
+
+
+    int32_t clicks;
+    LiteMouseButtonState* state = lite_get_mouse_button_state(button);
+    if (state)
+    {
+        if (action == LiteEventAction_Pressed)
+        {
+            const uint64_t  double_click_time   = 200; // miliseconds
+            const int32_t   double_click_radius = 32;
+
+            const uint64_t now = (uint64_t)GetTickCount64(); // miliseconds
+            if (now >= state->last_timestamp + double_click_time
+                || (x - state->last_x) > double_click_radius
+                || (y - state->last_y) > double_click_radius)
+            {
+                state->clicks = 0;
+            }
+
+            state->clicks += 1;
+            state->last_x = x;
+            state->last_y = y;
+            state->last_timestamp = now;
+        }
+
+        clicks = state->clicks;
+    }
+    else
+    {
+        clicks = 1;
+    }
+
+    lite_push_event((LiteEvent){
+        .type = type,
+        .mouse_up = {
+            .button_name = button_name,
+            .x = x,
+            .y = y,
+            .clicks = clicks
+        }
+    });
+}
+
+
+static void lite_check_wparam_mouse_button(uint64_t timestamp, bool wparam_mouse_pressed, uint32_t mouse_flags, bool bSwapButtons, LiteMouseButton button, uint32_t mouse_id)
+{
+    if (bSwapButtons)
+    {
+        if (button == LiteMouseButton_Left)
+        {
+            button = LiteMouseButton_Right;
+        } 
+        else if (button == LiteMouseButton_Right)
+        {
+            button = LiteMouseButton_Left;
+        }
+    }
+
+    // if (data->focus_click_pending & LITE_MOUSE_BUTTON(button)) {
+    //     /* Ignore the button click for activation */
+    //     if (!bwParamMousePressed) {
+    //         data->focus_click_pending &= ~LITE_MOUSE_BUTTON(button);
+    //         WIN_UpdateClipCursor(data->window);
+    //     }
+    //     if (WIN_ShouldIgnoreFocusClick(data)) {
+    //         return;
+    //     }
+    // }
+
+    if (wparam_mouse_pressed && !(mouse_flags & LITE_MOUSE_BUTTON(button)))
+    {
+        lite_send_mouse_button_event(timestamp, mouse_id, LiteEventAction_Pressed, button);
+    } 
+    else if (!wparam_mouse_pressed && (mouse_flags & LITE_MOUSE_BUTTON(button)))
+    {
+        lite_send_mouse_button_event(timestamp, mouse_id, LiteEventAction_Released, button);
+    }
+}
+
+
+/*
+ * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
+ *  so this function reconciles our view of the world with the current buttons reported by windows
+ */
+static void lite_check_wparam_mouse_buttons(uint64_t timestamp, WPARAM wParam, uint32_t mouse_id)
+{
+    uint32_t mouse_flags = lite_get_mouse_state(nullptr, nullptr);
+
+    /* WM_LBUTTONDOWN and friends handle button swapping for us. No need to check SM_SWAPBUTTON here.  */
+    lite_check_wparam_mouse_button(timestamp, (wParam & MK_LBUTTON), mouse_flags, false, LiteMouseButton_Left, mouse_id);
+    lite_check_wparam_mouse_button(timestamp, (wParam & MK_MBUTTON), mouse_flags, false, LiteMouseButton_Middle, mouse_id);
+    lite_check_wparam_mouse_button(timestamp, (wParam & MK_RBUTTON), mouse_flags, false, LiteMouseButton_Right, mouse_id);
+    lite_check_wparam_mouse_button(timestamp, (wParam & MK_XBUTTON1), mouse_flags, false, LiteMouseButton_X1, mouse_id);
+    lite_check_wparam_mouse_button(timestamp, (wParam & MK_XBUTTON2), mouse_flags, false, LiteMouseButton_X2, mouse_id);
+}
+
+
+// -----------------------------------------------------------
+// Window Procedure
+// -----------------------------------------------------------
+
+
 static LRESULT WINAPI lite_win32_window_proc(
     HWND hwnd,
     UINT msg,
@@ -1155,8 +1311,8 @@ static LRESULT WINAPI lite_win32_window_proc(
         hSurfaceBitmap = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, (void**)(&surface_pixels), nullptr, 0);
         SelectObject(hSurface, hSurfaceBitmap);
 
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_Resized,
+        lite_push_event((LiteEvent){
+            .type = LiteEventType_Resized,
             .resized.width = (int32_t)width,
             .resized.height = (int32_t)height,
         });
@@ -1171,7 +1327,7 @@ static LRESULT WINAPI lite_win32_window_proc(
         return 0;
 
     case WM_DESTROY:
-        lite_push_event((LiteWindowEvent){ .type = LiteWindowEventType_Quit });
+        lite_push_event((LiteEvent){ .type = LiteEventType_Quit });
         PostQuitMessage(0);
         return 0;
 
@@ -1179,7 +1335,7 @@ static LRESULT WINAPI lite_win32_window_proc(
         break;
 
     case WM_QUIT:
-        lite_push_event((LiteWindowEvent){ .type = LiteWindowEventType_Quit });
+        lite_push_event((LiteEvent){ .type = LiteEventType_Quit });
         return 0;
 
     case WM_DROPFILES:
@@ -1188,11 +1344,11 @@ static LRESULT WINAPI lite_win32_window_proc(
     case WM_SYSKEYUP:
     case WM_KEYUP:
     {
-        LiteScanCode scan_code = WindowsScanCodeToSDLScanCode(lParam, wParam);
+        LiteScanCode scan_code = lite_windows_scancode_convert(lParam, wParam);
         LiteKeyCode key_code = lite_default_keymap[scan_code];
 
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_KeyUp,
+        lite_push_event((LiteEvent){
+            .type = LiteEventType_KeyUp,
             .key_up.key_name = lite_get_key_name(key_code),
         });
         return 0;
@@ -1201,11 +1357,11 @@ static LRESULT WINAPI lite_win32_window_proc(
     case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
     {
-        LiteScanCode scan_code = WindowsScanCodeToSDLScanCode(lParam, wParam);
+        LiteScanCode scan_code = lite_windows_scancode_convert(lParam, wParam);
         LiteKeyCode key_code = lite_default_keymap[scan_code];
 
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_KeyDown,
+        lite_push_event((LiteEvent){
+            .type = LiteEventType_KeyDown,
             .key_down.key_name = lite_get_key_name(key_code),
         });
         return 0;
@@ -1241,8 +1397,8 @@ static LRESULT WINAPI lite_win32_window_proc(
                 char* text = (char*)lite_arena_acquire(frame_arena, length + 1);
                 memcpy(text, utf8, length);
 
-                lite_push_event((LiteWindowEvent){
-                    .type = LiteWindowEventType_TextInput,
+                lite_push_event((LiteEvent){
+                    .type = LiteEventType_TextInput,
                     .text_input.text = lite_string_view(text, length, 0),
                 });
             }
@@ -1291,94 +1447,24 @@ static LRESULT WINAPI lite_win32_window_proc(
             p[4] = 0;
         }
 
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_TextInput,
+        lite_push_event((LiteEvent){
+            .type = LiteEventType_TextInput,
             .text_input.text = lite_string_view(text, length, 0),
         });
         return 0;
     }
 
     case WM_LBUTTONUP:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseUp,
-            .mouse_up.button_name = lite_string_lit("left"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
-        return 0;
-    }
-
     case WM_RBUTTONUP:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseUp,
-            .mouse_up.button_name = lite_string_lit("right"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
-        return 0;
-    }
-
     case WM_MBUTTONUP:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseUp,
-            .mouse_up.button_name = lite_string_lit("middle"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
-        return 0;
-    }
-
     case WM_LBUTTONDOWN:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseDown,
-            .mouse_up.button_name = lite_string_lit("left"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
-        return 0;
-    }
-
     case WM_RBUTTONDOWN:
-    {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseDown,
-            .mouse_up.button_name = lite_string_lit("right"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
-        return 0;
-    }
-
     case WM_MBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
     {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseDown,
-            .mouse_up.button_name = lite_string_lit("middle"),
-            .mouse_up.x = (int32_t)x,
-            .mouse_up.y = (int32_t)y,
-            .mouse_up.clicks = 1,
-        });
+        lite_check_wparam_mouse_buttons((uint32_t)GetTickCount64(), wParam, 0);
         return 0;
     }
 
@@ -1387,8 +1473,8 @@ static LRESULT WINAPI lite_win32_window_proc(
         int x = GET_X_LPARAM(lParam);
         int y = GET_Y_LPARAM(lParam);
 
-        LiteWindowEvent event;
-        event.type = LiteWindowEventType_MouseMove;
+        LiteEvent event;
+        event.type = LiteEventType_MouseMove;
         event.mouse_move.x = (int32_t)x;
         event.mouse_move.y = (int32_t)y;
 
@@ -1414,6 +1500,7 @@ static LRESULT WINAPI lite_win32_window_proc(
         prev_mouse_y = y;
 
         lite_push_event(event);
+        lite_set_mouse_position(x, y);
         return 0;
     }
 
@@ -1434,10 +1521,10 @@ static LRESULT WINAPI lite_win32_window_proc(
             x = (int32_t)fAmount;
         }
 
-        lite_push_event((LiteWindowEvent){
-            .type = LiteWindowEventType_MouseWheel,
-            .mouse_wheel.x = (int32_t)x,
-            .mouse_wheel.y = (int32_t)y,
+        lite_push_event((LiteEvent){
+            .type = LiteEventType_MouseWheel,
+            .mouse_wheel.x = x,
+            .mouse_wheel.y = y,
         });
     } break;
 
@@ -1448,10 +1535,12 @@ static LRESULT WINAPI lite_win32_window_proc(
     return DefWindowProcA(hwnd, msg, wParam, lParam);
 }
 
+
 void lite_sleep(uint64_t ms)
 {
     Sleep((DWORD)ms);
 }
+
 
 void lite_usleep(uint64_t us)
 {
@@ -1483,6 +1572,7 @@ void lite_usleep(uint64_t us)
     }
 }
 
+
 uint64_t lite_cpu_ticks(void)
 {
     LARGE_INTEGER liCounter;
@@ -1490,12 +1580,14 @@ uint64_t lite_cpu_ticks(void)
     return (uint64_t)liCounter.QuadPart;
 }
 
+
 uint64_t lite_cpu_frequency(void)
 {
     LARGE_INTEGER liFrequency;
     QueryPerformanceFrequency(&liFrequency);
     return (uint64_t)liFrequency.QuadPart;
 }
+
 
 LiteStringView lite_clipboard_get(void)
 {
@@ -1526,6 +1618,7 @@ LiteStringView lite_clipboard_get(void)
     return result;
 }
 
+
 bool lite_clipboard_set(LiteStringView text)
 {
     if (!OpenClipboard(window))
@@ -1551,6 +1644,7 @@ bool lite_clipboard_set(LiteStringView text)
     return result;
 }
 
+
 void lite_console_open(void)
 {
 #if defined(_WIN32)
@@ -1561,12 +1655,14 @@ void lite_console_open(void)
 #endif
 }
 
+
 void lite_console_close(void)
 {
 #if defined(_WIN32)
     FreeConsole();
 #endif
 }
+
 
 void lite_window_open(void)
 {
@@ -1638,6 +1734,7 @@ void lite_window_open(void)
     ShowWindow(window, true);
 }
 
+
 void lite_window_close(void)
 {
     DeleteBitmap(hSurfaceBitmap);
@@ -1648,10 +1745,12 @@ void lite_window_close(void)
     window = nullptr;
 }
 
+
 void* lite_window_handle(void)
 {
     return (void*)(uintptr_t)window;
 }
+
 
 void* lite_window_surface(int32_t* width, int32_t* height)
 {
@@ -1660,15 +1759,18 @@ void* lite_window_surface(int32_t* width, int32_t* height)
     return surface_pixels;
 }
 
+
 void lite_window_show(void)
 {
     ShowWindow(window, true);
 }
 
+
 void lite_window_hide(void)
 {
     ShowWindow(window, false);
 }
+
 
 void lite_window_set_mode(LiteWindowMode mode)
 {
@@ -1687,10 +1789,12 @@ void lite_window_set_mode(LiteWindowMode mode)
     }
 }
 
+
 void lite_window_set_title(const char* title)
 {
     SetWindowTextA(window, title);
 }
+
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
@@ -1713,16 +1817,19 @@ void lite_window_set_cursor(LiteCursor cursor)
     SetCursor(hCursor);
 }
 
+
 float lite_window_dpi(void)
 {
     return (float)GetDpiForWindow(window);
 }
+
 
 bool lite_window_has_focus(void)
 {
     bool result = GetFocus() == window;
     return result;
 }
+
 
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
 {
@@ -1735,17 +1842,20 @@ void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
     BitBlt(hDC, 0, 0, surface_width, surface_height, hSurface, 0, 0, SRCCOPY);
 }
 
+
 void lite_window_message_box(const char* title, const char* message)
 {
     MessageBoxA(window, message, title, MB_OK);
 }
+
 
 bool lite_window_confirm_dialog(const char* title, const char* message)
 {
     return MessageBoxA(window, message, title, MB_YESNO) == IDYES;
 }
 
-LiteWindowEvent lite_window_poll_event(void)
+
+LiteEvent lite_window_poll_event(void)
 {
     MSG msg;
     while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -1756,6 +1866,7 @@ LiteWindowEvent lite_window_poll_event(void)
 
     return lite_pop_event();
 }
+
 
 bool lite_window_wait_event(uint64_t time_us)
 {
