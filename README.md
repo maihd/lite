@@ -42,22 +42,32 @@ This editor don't and won't support C++ editting. For C++, I will use full IDE f
 - Convert to use native API instead of large library like SDL.
 
 ## TODOs
-- Make app more robust.
-- Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
-- Line wrapping.
-- Fix bug: some time single mouse click cause select token, line
-- Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
-- Make typing work with UniKey (Vietnamese typing method).
-- Open binary file in preview-mode.
-- Use fast string algorithms (code editting are working on string heavily)
-- Bootstrap version for debugging and development.
-- Display launching messagebox with style and helper.
-- Add more render backends: OpenGL, Vulkan, Dear ImGui.
-- Compile to Lua to bytecode.
-- Package data. exe-only application. (data embed into exe, faster startup)
-- Make it embedding ready.
-- Better mouse interacting.
-- Software distributing
+- Native Runtime (focusing):
+    - Make app more robust.
+    - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+    - Bootstrap version for debugging and development.
+    - Display launching messagebox with style and helper.
+    - Add more render backends: OpenGL, Vulkan, Dear ImGui.
+    - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
+        - Simple and robust C framework
+        - Can be customize Lua runtime: Lua52, LuaJIT, Luau
+        - Fennel simple showcase for Emacs-like scripting experience
+        - Can run LiteXL Lua data
+
+- Features:
+    - Line wrapping.
+    - Fix bug: some time single mouse click cause select token, line.
+    - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
+    - Make typing work with UniKey (Vietnamese typing method).
+    - Open binary file in preview-mode.
+    - Use fast string algorithms (code editting are working on string heavily)
+    - Better mouse interacting.
+    - Key bindings docs (for mai usage and maistyle)
+
+- Software distributing:
+    - Compile to Lua to bytecode.
+    - Package data. exe-only application. (data embed into exe, faster startup)
+    - Make it embedding ready.
     - Installer
     - Add item to OS context menu.
 
