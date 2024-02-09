@@ -1060,7 +1060,7 @@ static LiteStringView lite_get_key_name(LiteKeyCode key_code)
         *p = tolower(*p);
         p++;
     }
-    return key_name; 
+    return key_name;
 }
 
 // static LiteStringView lite_get_key_name(WORD scanCode, WORD extended)
@@ -1147,7 +1147,7 @@ static void lite_send_mouse_button_event(uint64_t timestamp, uint32_t mouse_id, 
         lite_string_lit("x1"),
         lite_string_lit("x2"),
     };
-	const LiteStringView button_name = button_names[(uint32_t)button];
+    const LiteStringView button_name = button_names[(uint32_t)button];
 
     int32_t x, y;
     uint32_t mouse_flags = lite_get_mouse_state(&x, &y);
@@ -1212,7 +1212,7 @@ static void lite_check_wparam_mouse_button(uint64_t timestamp, bool wparam_mouse
         if (button == LiteMouseButton_Left)
         {
             button = LiteMouseButton_Right;
-        } 
+        }
         else if (button == LiteMouseButton_Right)
         {
             button = LiteMouseButton_Left;
@@ -1233,7 +1233,7 @@ static void lite_check_wparam_mouse_button(uint64_t timestamp, bool wparam_mouse
     if (wparam_mouse_pressed && !(mouse_flags & LITE_MOUSE_BUTTON(button)))
     {
         lite_send_mouse_button_event(timestamp, mouse_id, LiteEventAction_Pressed, button);
-    } 
+    }
     else if (!wparam_mouse_pressed && (mouse_flags & LITE_MOUSE_BUTTON(button)))
     {
         lite_send_mouse_button_event(timestamp, mouse_id, LiteEventAction_Released, button);
@@ -1351,7 +1351,7 @@ static LRESULT WINAPI lite_win32_window_proc(
             .type = LiteEventType_KeyUp,
             .key_up.key_name = lite_get_key_name(key_code),
         });
-        return 0;
+        return DefWindowProcA(hwnd, msg, wParam, lParam);
     }
 
     case WM_SYSKEYDOWN:
@@ -1364,7 +1364,7 @@ static LRESULT WINAPI lite_win32_window_proc(
             .type = LiteEventType_KeyDown,
             .key_down.key_name = lite_get_key_name(key_code),
         });
-        return 0;
+        return DefWindowProcA(hwnd, msg, wParam, lParam);
     }
 
     case WM_CHAR:
@@ -1504,7 +1504,7 @@ static LRESULT WINAPI lite_win32_window_proc(
         return 0;
     }
 
-	case WM_MOUSEWHEEL:
+    case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     {
         short amount = GET_WHEEL_DELTA_WPARAM(wParam);
@@ -1513,11 +1513,11 @@ static LRESULT WINAPI lite_win32_window_proc(
         int32_t x = 0;
         int32_t y = 0;
         if (msg == WM_MOUSEWHEEL)
-		{
+        {
             y = (int32_t)fAmount;
         }
-		else
-		{
+        else
+        {
             x = (int32_t)fAmount;
         }
 

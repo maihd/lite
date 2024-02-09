@@ -61,10 +61,13 @@ static void luaL_requiref(lua_State* L, const char* modname,
     lua_replace(L, -2);
 }
 
-void api_load_libs(lua_State* L)
+void lite_api_load_libs(lua_State* L)
 {
     for (int i = 0; i < __count_of(libs); i++)
     {
         luaL_requiref(L, libs[i].name, libs[i].func, 1);
     }
 }
+
+//! EOF
+

@@ -41,7 +41,7 @@ void lite_startup(const LiteStartupParams params)
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
-    api_load_libs(L);
+    lite_api_load_libs(L);
 
     lua_newtable(L);
     for (int i = 0; i < argc; i++)
