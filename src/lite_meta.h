@@ -86,6 +86,17 @@
 #   endif
 #endif
 
+/// __enum_vtype attribute
+/// @note(maihd): the placeholder for C enum's members value type, that also work for C++
+#if !defined(__enum_vtype)
+#   if defined(__cplusplus)
+#       define __enum_vtype(T) : T 
+#   else
+#       define __enum_vtype(T)
+#   endif
+#endif
+
+
 /// __count_of operator
 /// @note(maihd):
 #ifndef __count_of

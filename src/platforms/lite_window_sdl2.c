@@ -122,7 +122,7 @@ void lite_window_open(void)
         // @todo(maihd): handle error
     }
 
-    
+
     lite_window_load_icon();
 }
 
@@ -157,9 +157,9 @@ void lite_window_hide(void)
 
 void lite_window_set_mode(LiteWindowMode mode)
 {
-    SDL_SetWindowFullscreen(window, 
-        mode == LiteWindowMode_FullScreen 
-        ? SDL_WINDOW_FULLSCREEN_DESKTOP 
+    SDL_SetWindowFullscreen(window,
+        mode == LiteWindowMode_FullScreen
+        ? SDL_WINDOW_FULLSCREEN_DESKTOP
         : 0);
 
     if (mode == LiteWindowMode_Normal)
@@ -184,10 +184,10 @@ void lite_window_set_cursor(LiteCursor cursor)
     static const int sdl_cursor_enums[] = {
         0,
         SDL_SYSTEM_CURSOR_HAND,
-        SDL_SYSTEM_CURSOR_ARROW, 
-        SDL_SYSTEM_CURSOR_IBEAM, 
+        SDL_SYSTEM_CURSOR_ARROW,
+        SDL_SYSTEM_CURSOR_IBEAM,
         SDL_SYSTEM_CURSOR_SIZEWE,
-        SDL_SYSTEM_CURSOR_SIZENS, 
+        SDL_SYSTEM_CURSOR_SIZENS,
     };
 
     int         n = sdl_cursor_enums[(uint32_t)cursor];
@@ -242,20 +242,15 @@ bool lite_window_confirm_dialog(const char* title, const char* message)
 
 static LiteStringView lite_button_name(Uint8 button)
 {
-    switch (button)
-    {
-        case SDL_BUTTON_LEFT: 
-            return lite_string_lit("left");
-
-        case SDL_BUTTON_MIDDLE: 
-            return lite_string_lit("middle");
-
-        case SDL_BUTTON_RIGHT: 
-            return lite_string_lit("right");
-
-        default: 
-            return lite_string_lit("?");
-    }
+    const LiteStringView button_names[] = {
+        lite_string_lit("?"),
+        lite_string_lit("left"),
+        lite_string_lit("middle"),
+        lite_string_lit("right"),
+        lite_string_lit("x1"),
+        lite_string_lit("x2"),
+    };
+    return button_names[button];
 }
 
 static LiteStringView lite_key_name(SDL_Keycode sym)
@@ -270,7 +265,7 @@ static LiteStringView lite_key_name(SDL_Keycode sym)
     return key_name;
 }
 
-LiteWindowEvent lite_window_poll_event(void)
+LiteEvent lite_window_poll_event(void)
 {
     SDL_Event e;
     while (SDL_PollEvent(&e))
@@ -278,15 +273,15 @@ LiteWindowEvent lite_window_poll_event(void)
         switch (e.type)
         {
         case SDL_QUIT:
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_Quit
+            return (LiteEvent){
+                .type = LiteEventType_Quit
             };
 
         case SDL_WINDOWEVENT:
             if (e.window.event == SDL_WINDOWEVENT_RESIZED)
             {
-                return (LiteWindowEvent){
-                    .type = LiteWindowEventType_Resized,
+                return (LiteEvent){
+                    .type = LiteEventType_Resized,
                     .resized = {
                         .width = e.window.data1,
                         .height = e.window.data2,
@@ -296,8 +291,8 @@ LiteWindowEvent lite_window_poll_event(void)
 
             if (e.window.event == SDL_WINDOWEVENT_EXPOSED)
             {
-                return (LiteWindowEvent){
-                    .type = LiteWindowEventType_Exposed
+                return (LiteEvent){
+                    .type = LiteEventType_Exposed
                 };
             }
 
@@ -317,8 +312,8 @@ LiteWindowEvent lite_window_poll_event(void)
             SDL_GetWindowPosition(window, &wx, &wy);
             LiteStringView text = lite_string_temp(e.drop.file);
             SDL_free(e.drop.file);
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_DropFile,
+            return (LiteEvent){
+                .type = LiteEventType_DropFile,
                 .drop_file = {
                     .file_path = text, // @note(maihd): may leak,
                     .x = mx - wx,
@@ -329,8 +324,8 @@ LiteWindowEvent lite_window_poll_event(void)
 
         case SDL_KEYDOWN:
             lite_log_debug("SDL_KEYDOWN: %s\n", lite_key_name(e.key.keysym.sym).buffer);
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_KeyDown,
+            return (LiteEvent){
+                .type = LiteEventType_KeyDown,
                 .key_down = {
                     .key_name = lite_key_name(e.key.keysym.sym)
                 }
@@ -338,8 +333,8 @@ LiteWindowEvent lite_window_poll_event(void)
 
         case SDL_KEYUP:
             lite_log_debug("SDL_KEYUP: %s\n", lite_key_name(e.key.keysym.sym).buffer);
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_KeyUp,
+            return (LiteEvent){
+                .type = LiteEventType_KeyUp,
                 .key_up = {
                     .key_name = lite_key_name(e.key.keysym.sym)
                 }
@@ -347,8 +342,8 @@ LiteWindowEvent lite_window_poll_event(void)
 
         case SDL_TEXTINPUT:
             lite_log_debug("SDL_TextInput: %s\n", e.text.text);
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_TextInput,
+            return (LiteEvent){
+                .type = LiteEventType_TextInput,
                 .text_input = {
                     .text = lite_string_temp(e.text.text)
                 }
@@ -360,8 +355,8 @@ LiteWindowEvent lite_window_poll_event(void)
                 SDL_CaptureMouse(true);
             }
 
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_MouseDown,
+            return (LiteEvent){
+                .type = LiteEventType_MouseDown,
                 .mouse_down = {
                     .button_name = lite_button_name(e.button.button),
                     .x = e.button.x,
@@ -376,8 +371,8 @@ LiteWindowEvent lite_window_poll_event(void)
                 SDL_CaptureMouse(false);
             }
 
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_MouseUp,
+            return (LiteEvent){
+                .type = LiteEventType_MouseUp,
                 .mouse_up = {
                     .button_name = lite_button_name(e.button.button),
                     .x = e.button.x,
@@ -387,8 +382,8 @@ LiteWindowEvent lite_window_poll_event(void)
             };
 
         case SDL_MOUSEMOTION:
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_MouseMove,
+            return (LiteEvent){
+                .type = LiteEventType_MouseMove,
                 .mouse_move = {
                     .x = e.motion.x,
                     .y = e.motion.y,
@@ -398,8 +393,8 @@ LiteWindowEvent lite_window_poll_event(void)
             };
 
         case SDL_MOUSEWHEEL:
-            return (LiteWindowEvent){
-                .type = LiteWindowEventType_MouseWheel,
+            return (LiteEvent){
+                .type = LiteEventType_MouseWheel,
                 .mouse_wheel = {
                     .x = e.wheel.x,
                     .y = e.wheel.y,
@@ -411,8 +406,8 @@ LiteWindowEvent lite_window_poll_event(void)
         }
     }
 
-    return (LiteWindowEvent){
-        .type = LiteWindowEventType_None
+    return (LiteEvent){
+        .type = LiteEventType_None
     };
 }
 
