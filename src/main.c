@@ -39,14 +39,13 @@ int main(int argc, char** argv)
     lite_renderer_init();
     lite_rencache_init();
 
-    const LiteStartupParams startup_params = {.argc = (uint32_t)argc,
-                                              .argv = (const char**)argv,
-
-                                              .title = "lite",
-                                              .window_handle =
-                                                  lite_window_handle(),
-
-                                              .flags = LiteStartupFlags_None};
+    const LiteStartupParams startup_params = {
+        .argc = (uint32_t)argc,
+        .argv = (const char**)argv,
+        .title = "lite",
+        .window_handle = lite_window_handle(),
+        .flags = LiteStartupFlags_None
+    };
     lite_startup(startup_params);
 
     lite_rencache_deinit();

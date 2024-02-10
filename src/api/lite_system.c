@@ -20,6 +20,7 @@
 #include "lite_rencache.h"
 #include "lite_window.h"
 
+
 static int f_poll_event(lua_State* L)
 {
     LiteEvent event = lite_window_poll_event();
@@ -98,12 +99,14 @@ static int f_poll_event(lua_State* L)
     return 0;
 }
 
+
 static int f_wait_event(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
     lua_pushboolean(L, lite_window_wait_event((uint64_t)(n * 1000 * 1000)));
     return 1;
 }
+
 
 static int f_is_binary_file(lua_State* L)
 {
@@ -123,6 +126,7 @@ static int f_is_binary_file(lua_State* L)
     return 1;
 }
 
+
 static const char* cursor_opts[] = {"arrow", "ibeam", "sizeh",
                                     "sizev", "hand",  NULL};
 
@@ -137,12 +141,14 @@ static int f_set_cursor(lua_State* L)
     return 0;
 }
 
+
 static int f_set_window_title(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
     lite_window_set_title(title);
     return 0;
 }
+
 
 static int f_set_window_mode(lua_State* L)
 {
@@ -154,6 +160,20 @@ static int f_set_window_mode(lua_State* L)
     lite_window_set_mode(window_modes[n]);
     return 0;
 }
+
+static int f_show_window_titlebar(lua_State* L)
+{
+    lite_window_show_titlebar();
+    return 0;
+}
+
+
+static int f_hide_window_titlebar(lua_State* L)
+{
+    lite_window_hide_titlebar();
+    return 0;
+}
+
 
 static int f_window_has_focus(lua_State* L)
 {
@@ -184,6 +204,7 @@ static int f_set_window_opacity(lua_State* L)
 }
 #endif
 
+
 static int f_show_confirm_dialog(lua_State* L)
 {
     const char* title = luaL_checkstring(L, 1);
@@ -198,6 +219,7 @@ static int f_show_confirm_dialog(lua_State* L)
 #endif
     return 1;
 }
+
 
 static int f_chdir(lua_State* L)
 {
@@ -218,6 +240,7 @@ static int f_chdir(lua_State* L)
     return 0;
 }
 
+
 static int f_file_time(lua_State* L)
 {
     size_t      len;
@@ -236,6 +259,7 @@ static int f_file_time(lua_State* L)
     lua_pushnumber(L, lua_file_time);
     return 1;
 }
+
 
 static int f_list_dir(lua_State* L)
 {
@@ -342,13 +366,16 @@ static int f_list_dir_iter(lua_State* L)
 #define realpath(x, y) _fullpath(y, x, MAX_PATH)
 #endif
 
+
 #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
 #define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
 #endif
 
+
 #if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
 #define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
 #endif
+
 
 static int f_absolute_path(lua_State* L)
 {
@@ -362,6 +389,7 @@ static int f_absolute_path(lua_State* L)
     free(res);
     return 1;
 }
+
 
 static int f_get_file_info(lua_State* L)
 {
@@ -400,6 +428,7 @@ static int f_get_file_info(lua_State* L)
     return 1;
 }
 
+
 static int f_get_clipboard(lua_State* L)
 {
     LiteStringView text = lite_clipboard_get();
@@ -412,6 +441,7 @@ static int f_get_clipboard(lua_State* L)
     return 1;
 }
 
+
 static int f_set_clipboard(lua_State* L)
 {
     size_t      length;
@@ -420,6 +450,7 @@ static int f_set_clipboard(lua_State* L)
     return 0;
 }
 
+
 static int f_get_time(lua_State* L)
 {
     double n = (double)lite_cpu_ticks() / (double)lite_cpu_frequency();
@@ -427,12 +458,14 @@ static int f_get_time(lua_State* L)
     return 1;
 }
 
+
 static int f_sleep(lua_State* L)
 {
     double n = luaL_checknumber(L, 1);
     lite_usleep((uint32_t)(n * 1000 * 1000));
     return 0;
 }
+
 
 static int f_exec(lua_State* L)
 {
@@ -456,6 +489,7 @@ static int f_exec(lua_State* L)
     free(buf);
     return 0;
 }
+
 
 static int f_fuzzy_match(lua_State* L)
 {
@@ -496,17 +530,20 @@ static int f_fuzzy_match(lua_State* L)
     return 1;
 }
 
+
 static int f_begin_frame(lua_State* L)
 {
     lite_frame_arena_begin();
     return 0;
 }
 
+
 static int f_end_frame(lua_State* L)
 {
     lite_frame_arena_end();
     return 0;
 }
+
 
 static int f_mkdir_recursive(lua_State* L)
 {
@@ -518,6 +555,7 @@ static int f_mkdir_recursive(lua_State* L)
     return 1;
 }
 
+
 static int f_parent_directory(lua_State* L)
 {
     size_t      length;
@@ -528,40 +566,43 @@ static int f_parent_directory(lua_State* L)
     return 1;
 }
 
-static const luaL_Reg lib[] = {
-    {"poll_event",          f_poll_event         },
-    {"wait_event",          f_wait_event         },
-    {"set_cursor",          f_set_cursor         },
-    {"set_window_title",    f_set_window_title   },
-    {"set_window_mode",     f_set_window_mode    },
+
+static const luaL_Reg lib_funcs[] = {
+    {"poll_event",              f_poll_event            },
+    {"wait_event",              f_wait_event            },
+    {"set_cursor",              f_set_cursor            },
+    {"set_window_title",        f_set_window_title      },
+    {"set_window_mode",         f_set_window_mode       },
+    {"show_window_titlebar",    f_show_window_titlebar  },
+    {"hide_window_titlebar",    f_hide_window_titlebar  },
  //{"get_window_opacity",  f_get_window_opacity },
   //{"set_window_opacity",  f_set_window_opacity },
-    {"window_has_focus",    f_window_has_focus   },
-    {"show_confirm_dialog", f_show_confirm_dialog},
-    {"chdir",               f_chdir              },
-    {"file_time",           f_file_time          },
-    {"is_binary_file",      f_is_binary_file     },
-    {"list_dir",            f_list_dir           },
-    {"absolute_path",       f_absolute_path      },
-    {"get_file_info",       f_get_file_info      },
-    {"get_clipboard",       f_get_clipboard      },
-    {"set_clipboard",       f_set_clipboard      },
-    {"get_time",            f_get_time           },
-    {"sleep",               f_sleep              },
-    {"exec",                f_exec               },
-    {"fuzzy_match",         f_fuzzy_match        },
-    {"begin_frame",         f_begin_frame        },
-    {"end_frame",           f_end_frame          },
+    {"window_has_focus",        f_window_has_focus      },
+    {"show_confirm_dialog",     f_show_confirm_dialog   },
+    {"chdir",                   f_chdir                 },
+    {"file_time",               f_file_time             },
+    {"is_binary_file",          f_is_binary_file        },
+    {"list_dir",                f_list_dir              },
+    {"absolute_path",           f_absolute_path         },
+    {"get_file_info",           f_get_file_info         },
+    {"get_clipboard",           f_get_clipboard         },
+    {"set_clipboard",           f_set_clipboard         },
+    {"get_time",                f_get_time              },
+    {"sleep",                   f_sleep                 },
+    {"exec",                    f_exec                  },
+    {"fuzzy_match",             f_fuzzy_match           },
+    {"begin_frame",             f_begin_frame           },
+    {"end_frame",               f_end_frame             },
     
-    {"mkdir_recursive",     f_mkdir_recursive    },
-    {"parent_directory",    f_parent_directory   },
+    {"mkdir_recursive",         f_mkdir_recursive       },
+    {"parent_directory",        f_parent_directory      },
 
-    {NULL,                  NULL                 }
+    {NULL,                      NULL                    }
 };
 
 int luaopen_system(lua_State* L)
 {
-    luaL_newlib(L, lib);
+    luaL_newlib(L, lib_funcs);
     return 1;
 }
 

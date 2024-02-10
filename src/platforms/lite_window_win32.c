@@ -21,15 +21,15 @@
 
 enum { LITE_EVENT_QUEUE_SIZE = 64 };
 
-static HWND     window;
+static HWND             s_window;
 
-static HDC      hDC;
-static HDC      hSurface;
-static HBITMAP  hSurfaceBitmap;
+static HDC              s_hDC;
+static HDC              s_hSurface;
+static HBITMAP          s_hSurfaceBitmap;
 
-static void*    surface_pixels;
-static int32_t  surface_width;
-static int32_t  surface_height;
+static void*            s_surface_pixels;
+static int32_t          s_surface_width;
+static int32_t          s_surface_height;
 
 static LiteEvent        s_events_queue[LITE_EVENT_QUEUE_SIZE];
 static int32_t          s_events_queue_head = 0;
@@ -1288,28 +1288,28 @@ static LRESULT WINAPI lite_win32_window_proc(
     {
     case WM_SIZE:
     {
-        //ReleaseDC(window, hSurface);
+        //ReleaseDC(s_window, s_hSurface);
         UINT width = LOWORD(lParam);
         UINT height = HIWORD(lParam);
 
-        DeleteBitmap(hSurfaceBitmap);
-        DeleteDC(hSurface);
+        DeleteBitmap(s_hSurfaceBitmap);
+        DeleteDC(s_hSurface);
 
-        surface_width = (int32_t)width;
-        surface_height = (int32_t)height;
+        s_surface_width = (int32_t)width;
+        s_surface_height = (int32_t)height;
 
-        hSurface = CreateCompatibleDC(hDC);
+        s_hSurface = CreateCompatibleDC(s_hDC);
 
         BITMAPINFO bmi = { 0 };
         bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         bmi.bmiHeader.biWidth = (LONG)width;
         bmi.bmiHeader.biHeight = -(LONG)height; // top-down
-        bmi.bmiHeader.biSizeImage = (DWORD)(surface_width * surface_height * sizeof(LiteColor));
+        bmi.bmiHeader.biSizeImage = (DWORD)(s_surface_width * s_surface_height * sizeof(LiteColor));
         bmi.bmiHeader.biPlanes = 1;
         bmi.bmiHeader.biBitCount = 32;
         bmi.bmiHeader.biCompression = BI_RGB;
-        hSurfaceBitmap = CreateDIBSection(hDC, &bmi, DIB_RGB_COLORS, (void**)(&surface_pixels), nullptr, 0);
-        SelectObject(hSurface, hSurfaceBitmap);
+        s_hSurfaceBitmap = CreateDIBSection(s_hDC, &bmi, DIB_RGB_COLORS, (void**)(&s_surface_pixels), nullptr, 0);
+        SelectObject(s_hSurface, s_hSurfaceBitmap);
 
         lite_push_event((LiteEvent){
             .type = LiteEventType_Resized,
@@ -1596,7 +1596,7 @@ LiteStringView lite_clipboard_get(void)
         return lite_string_lit("");
     }
 
-    if (!OpenClipboard(window))
+    if (!OpenClipboard(s_window))
     {
         return lite_string_lit("");
     }
@@ -1621,7 +1621,7 @@ LiteStringView lite_clipboard_get(void)
 
 bool lite_clipboard_set(LiteStringView text)
 {
-    if (!OpenClipboard(window))
+    if (!OpenClipboard(s_window))
     {
         return false;
     }
@@ -1712,9 +1712,10 @@ void lite_window_open(void)
     DWORD window_x = (monitor_width - window_width) / 2;
     DWORD window_y = (monitor_height - window_height) / 2;
 
-    window = CreateWindowA(
+    s_window = CreateWindowA(
         window_class,
         "",
+        //WS_POPUP,
         WS_OVERLAPPEDWINDOW,
         window_x, window_y,
         window_width, window_height,
@@ -1723,52 +1724,64 @@ void lite_window_open(void)
         wc.hInstance,
         nullptr
     );
-    if (window == nullptr)
+    if (s_window == nullptr)
     {
         // @todo(maihd): handle error
         return;
     }
 
-    hDC = GetDC(window);
+    s_hDC = GetDC(s_window);
 
-    ShowWindow(window, true);
+    ShowWindow(s_window, true);
 }
 
 
 void lite_window_close(void)
 {
-    DeleteBitmap(hSurfaceBitmap);
-    DeleteDC(hSurface);
+    DeleteBitmap(s_hSurfaceBitmap);
+    DeleteDC(s_hSurface);
 
-    ReleaseDC(window, hDC);
-    DestroyWindow(window);
-    window = nullptr;
+    ReleaseDC(s_window, s_hDC);
+    DestroyWindow(s_window);
+    s_window = nullptr;
 }
 
 
 void* lite_window_handle(void)
 {
-    return (void*)(uintptr_t)window;
+    return (void*)(uintptr_t)s_window;
 }
 
 
 void* lite_window_surface(int32_t* width, int32_t* height)
 {
-    *width = surface_width;
-    *height = surface_height;
-    return surface_pixels;
+    *width = s_surface_width;
+    *height = s_surface_height;
+    return s_surface_pixels;
 }
 
 
 void lite_window_show(void)
 {
-    ShowWindow(window, true);
+    ShowWindow(s_window, true);
 }
 
 
 void lite_window_hide(void)
 {
-    ShowWindow(window, false);
+    ShowWindow(s_window, false);
+}
+
+
+void lite_window_show_titlebar(void)
+{
+    SetWindowLongA(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+}
+
+
+void lite_window_hide_titlebar(void)
+{
+    SetWindowLongA(s_window, GWL_STYLE, WS_POPUP);
 }
 
 
@@ -1777,11 +1790,11 @@ void lite_window_set_mode(LiteWindowMode mode)
     switch (mode)
     {
     case LiteWindowMode_Normal:
-        PostMessageA(window, WM_SYSCOMMAND, SC_RESTORE, 0);
+        PostMessageA(s_window, WM_SYSCOMMAND, SC_RESTORE, 0);
         break;
 
     case LiteWindowMode_Maximized:
-        PostMessageA(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+        PostMessageA(s_window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
         break;
 
     case LiteWindowMode_FullScreen:
@@ -1792,7 +1805,7 @@ void lite_window_set_mode(LiteWindowMode mode)
 
 void lite_window_set_title(const char* title)
 {
-    SetWindowTextA(window, title);
+    SetWindowTextA(s_window, title);
 }
 
 
@@ -1820,38 +1833,40 @@ void lite_window_set_cursor(LiteCursor cursor)
 
 float lite_window_dpi(void)
 {
-    return (float)GetDpiForWindow(window);
+    return (float)GetDpiForWindow(s_window);
 }
 
 
 bool lite_window_has_focus(void)
 {
-    bool result = GetFocus() == window;
+    bool result = GetFocus() == s_window;
     return result;
 }
 
 
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
 {
-    //for (uint32_t i = 0; i < count; i++)
-    //{
+    // Update pixels per rects
+    // for (uint32_t i = 0; i < count; i++)
+    // {
     //    const LiteRect rect = rects[i];
-    //    BitBlt(hDC, rect.x, rect.y, rect.width, rect.height, hSurface, rect.x, rect.y, SRCCOPY);
-    //}
+    //    BitBlt(s_hDC, rect.x, rect.y, rect.width, rect.height, s_hSurface, rect.x, rect.y, SRCCOPY);
+    // }
 
-    BitBlt(hDC, 0, 0, surface_width, surface_height, hSurface, 0, 0, SRCCOPY);
+    // Copy all pixels surface to s_window
+    BitBlt(s_hDC, 0, 0, s_surface_width, s_surface_height, s_hSurface, 0, 0, SRCCOPY);
 }
 
 
 void lite_window_message_box(const char* title, const char* message)
 {
-    MessageBoxA(window, message, title, MB_OK);
+    MessageBoxA(s_window, message, title, MB_OK);
 }
 
 
 bool lite_window_confirm_dialog(const char* title, const char* message)
 {
-    return MessageBoxA(window, message, title, MB_YESNO) == IDYES;
+    return MessageBoxA(s_window, message, title, MB_YESNO) == IDYES;
 }
 
 

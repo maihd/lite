@@ -145,15 +145,30 @@ void* lite_window_surface(int32_t* width, int32_t* height)
     return surface->pixels;
 }
 
+
 void lite_window_show(void)
 {
     SDL_ShowWindow(window);
 }
 
+
 void lite_window_hide(void)
 {
     SDL_HideWindow(window);
 }
+
+
+void lite_window_show_titlebar(void)
+{
+    // SetWindowLong(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+}
+
+
+void lite_window_hide_titlebar(void)
+{
+    // SetWindowLong(s_window, GWL_STYLE, WS_POPUP);
+}
+
 
 void lite_window_set_mode(LiteWindowMode mode)
 {

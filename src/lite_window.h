@@ -47,6 +47,9 @@ void*           lite_window_surface(int32_t* width, int32_t* height);
 void            lite_window_show(void);
 void            lite_window_hide(void);
 
+void            lite_window_show_titlebar(void);
+void            lite_window_hide_titlebar(void);
+
 void            lite_window_set_mode(LiteWindowMode mode);
 void            lite_window_set_title(const char* title);
 void            lite_window_set_cursor(LiteCursor cursor);
