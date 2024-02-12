@@ -45,7 +45,7 @@ int32_t         lite_last_index_of_char(LiteStringView string, char c);
 // --------------------------------------------------------------------------------
 
 /// Create StringView
-static __forceinline
+__forceinline
 LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t hash)
 {
     LiteStringView string_view;
@@ -57,7 +57,7 @@ LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t ha
 
 
 /// Create string view, calculate length
-static __forceinline
+__forceinline
 LiteStringView lite_string_view_cstr(const char* string)
 {
     return lite_string_view(string, lite_string_count(string), 0);

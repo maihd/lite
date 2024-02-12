@@ -4,13 +4,13 @@
 #include "lite_window.h"
 
 #ifdef _WIN32
-#ifdef NDEBUG
-#define USE_TERMINAL_CONSOLE 0
+#   ifdef NDEBUG
+#       define USE_TERMINAL_CONSOLE 0
+#   else
+#       define USE_TERMINAL_CONSOLE 1
+#   endif
 #else
-#define USE_TERMINAL_CONSOLE 1
-#endif
-#else
-#define USE_TERMINAL_CONSOLE 0
+#   define USE_TERMINAL_CONSOLE 0
 #endif
 
 #ifdef _WIN32

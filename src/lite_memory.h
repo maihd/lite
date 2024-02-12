@@ -56,7 +56,7 @@ void        lite_frame_arena_end(void);
 // ----------------------------------------------------------------------------
 
 
-static __forceinline LiteArenaTemp lite_arena_begin_temp(LiteArena* arena)
+__forceinline LiteArenaTemp lite_arena_begin_temp(LiteArena* arena)
 {
     LiteArenaTemp temp;
     temp.arena         = arena;
@@ -65,7 +65,7 @@ static __forceinline LiteArenaTemp lite_arena_begin_temp(LiteArena* arena)
 }
 
 
-static __forceinline void lite_arena_end_temp(LiteArenaTemp temp)
+__forceinline void lite_arena_end_temp(LiteArenaTemp temp)
 {
     temp.arena->current->position = temp.mark_position;
 }

@@ -53,7 +53,11 @@ static Command* last_command;
 static LiteRect screen_rect;
 static bool     show_debug;
 
-#ifndef _WIN32
+#ifdef _WIN32
+#undef min
+#undef max
+#endif
+
 static inline int32_t min(int32_t a, int32_t b)
 {
     return a < b ? a : b;
@@ -63,7 +67,6 @@ static inline int32_t max(int32_t a, int32_t b)
 {
     return a > b ? a : b;
 }
-#endif
 
 /* 32bit fnv-1a hash */
 #define HASH_INITIAL 2166136261

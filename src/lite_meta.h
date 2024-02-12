@@ -60,7 +60,7 @@
 #   if defined(_MSC_VER)
 #       define alignas(x) __declspec(align(x))
 #   else
-#       define alignas(x) _Alignas
+#       define alignas(x) _Alignas(x)
 #   endif
 #endif
 
@@ -70,8 +70,10 @@
 #if !defined(__cplusplus)
 #   if defined(_MSC_VER)
 #       define alignof(x) __alignof(x)
+// #   elif defined(__GNUC__)
+// #       define alignof(x) __alignof__(x)
 #   else
-#       define alignof(x) _Alignof
+#       define alignof(x) _Alignof(x)
 #   endif
 #endif
 
