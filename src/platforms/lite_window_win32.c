@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <libloaderapi.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -1811,7 +1812,7 @@ void lite_window_set_title(const char* title)
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
-    static LPWSTR cursor_names[LiteCursor_COUNT] = {
+    static LPSTR cursor_names[LiteCursor_COUNT] = {
         nullptr,
         IDC_HAND,
         IDC_ARROW,
@@ -1824,7 +1825,7 @@ void lite_window_set_cursor(LiteCursor cursor)
     HCURSOR hCursor = cursor_caches[cursor];
     if (hCursor == nullptr)
     {
-        hCursor = LoadCursorW(nullptr, cursor_names[cursor]);
+        hCursor = LoadCursor(nullptr, cursor_names[cursor]);
         cursor_caches[cursor] = hCursor;
     }
     SetCursor(hCursor);
@@ -1833,7 +1834,25 @@ void lite_window_set_cursor(LiteCursor cursor)
 
 float lite_window_dpi(void)
 {
-    return (float)GetDpiForWindow(s_window);
+    // GetDpiForWindow is not support in older Windows verions
+    // And MinGW headers does not providing it
+    // So we use dynamic call for compiling with MinGW and target older Windows versions
+
+    typedef UINT WINAPI GetDpiForWindowFn(HWND hWnd);
+    static GetDpiForWindowFn* pGetDpiForWindowFn = nullptr;
+
+    if (pGetDpiForWindowFn == nullptr)
+    {
+        HMODULE hModule = GetModuleHandle(nullptr);
+        pGetDpiForWindowFn = (GetDpiForWindowFn*)GetProcAddress(hModule, "GetDpiForWindow");
+    }
+
+    if (pGetDpiForWindowFn != nullptr)
+    {
+        return (float)pGetDpiForWindowFn(s_window);
+    }
+
+    return 96.0f;
 }
 
 

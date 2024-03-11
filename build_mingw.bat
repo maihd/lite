@@ -13,13 +13,18 @@ echo Compiling (windows - mingw - x64)...
 set CC=C:\msys64\mingw64\bin\clang.exe
 @REM set CC=gcc.exe
 
+:: Libs for SDL (uncomment to use)
+@REM set PLATFORM_LIBS=-Ilibs/SDL2-2.0.10/x86_64-w64-mingw32/include -DLITE_SYSTEM_SDL2 -lSDL2main -lSDL2 -Llibs/SDL2-2.0.10/x86_64-w64-mingw32/lib
+
+:: Libs for Win32 (uncomment to use)
+set PLATFORM_LIBS=
+
 windres res/res.rc -O coff -o res.res
 %CC% src/*.c src/api/*.c src/lib/stb/*.c ^
     -O3 -std=c11 -fno-strict-aliasing ^
     -DNDEBUG=1^
     -Isrc -DLUA_USE_POPEN ^
-    -Ilibs/SDL2-2.0.10/x86_64-w64-mingw32/include -DLITE_SYSTEM_SDL2^
-    -lSDL2main -lSDL2 -Llibs/SDL2-2.0.10/x86_64-w64-mingw32/lib^
+    %PLATFORM_LIBS%^
     -Ilibs/luajit_2.1.0-beta3/src^
     -lluajit_mingw -Llibs/luajit_2.1.0-beta3/prebuilt/x64^
     -mwindows res.res^
