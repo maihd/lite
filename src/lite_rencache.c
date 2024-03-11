@@ -212,7 +212,7 @@ int32_t lite_rencache_draw_text(LiteFont* font, const char* text, int32_t x,
 
     if (rects_overlap(screen_rect, rect))
     {
-        int      sz  = strlen(text) + 1;
+        int      sz  = (int)(strlen(text) + 1);
         Command* cmd = push_command(DRAW_TEXT, sizeof(Command) + sz);
         if (cmd)
         {

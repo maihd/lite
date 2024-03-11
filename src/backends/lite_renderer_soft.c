@@ -12,7 +12,9 @@
 #include "lite_window.h"
 #include "lite_renderer.h"
 
+
 #define MAX_GLYPHSET 256
+
 
 struct LiteImage
 {
@@ -20,11 +22,13 @@ struct LiteImage
     int32_t     width, height;
 };
 
+
 typedef struct
 {
     LiteImage*          image;
     stbtt_bakedchar     glyphs[256];
 } GlyphSet;
+
 
 struct LiteFont
 {
@@ -35,14 +39,17 @@ struct LiteFont
     GlyphSet*           sets[MAX_GLYPHSET];
 };
 
+
 static LiteImage    g_surface;
 static LiteArena*   g_img_arena;
 static LiteArena*   g_font_arena;
+
 
 static struct
 {
     int32_t left, top, right, bottom;
 } clip;
+
 
 // @todo: replace with assert
 static void* check_alloc(void* ptr)
@@ -56,6 +63,7 @@ static void* check_alloc(void* ptr)
 
     return ptr;
 }
+
 
 static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
 {
@@ -93,6 +101,7 @@ static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
     return p + 1;
 }
 
+
 void lite_renderer_init(void)
 {
     g_surface.pixels  = (LiteColor*)lite_window_surface(
@@ -110,6 +119,7 @@ void lite_renderer_init(void)
     g_font_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(GlyphSet));
 }
 
+
 void lite_renderer_deinit(void)
 {
     lite_arena_destroy(g_font_arena);
@@ -120,6 +130,7 @@ void lite_renderer_deinit(void)
     assert(g_img_arena && "Leak arena in renderer");
     assert(g_font_arena && "Leak arena in renderer");
 }
+
 
 void lite_renderer_update_rects(LiteRect* rects, int32_t count)
 {
@@ -133,6 +144,7 @@ void lite_renderer_update_rects(LiteRect* rects, int32_t count)
     }
 }
 
+
 void lite_renderer_set_clip_rect(LiteRect rect)
 {
     clip.left   = rect.x;
@@ -141,6 +153,7 @@ void lite_renderer_set_clip_rect(LiteRect rect)
     clip.bottom = rect.y + rect.height;
 }
 
+
 void lite_renderer_get_size(int32_t* x, int32_t* y)
 {
     assert(x);
@@ -148,6 +161,7 @@ void lite_renderer_get_size(int32_t* x, int32_t* y)
 
     lite_window_surface(x, y);
 }
+
 
 LiteImage* lite_new_image(int32_t width, int32_t height)
 {
@@ -163,10 +177,12 @@ LiteImage* lite_new_image(int32_t width, int32_t height)
     return image;
 }
 
+
 void lite_free_image(LiteImage* image)
 {
 //     free(image);
 }
+
 
 static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 {
@@ -204,11 +220,11 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
     float   scale = stbtt_ScaleForMappingEmToPixels(&font->stbfont, font->size);
-    int32_t scaled_ascent = ascent * scale + 0.5;
+    int32_t scaled_ascent = (int32_t)(ascent * scale + 0.5f);
     for (int32_t i = 0; i < 256; i++)
     {
         set->glyphs[i].yoff += scaled_ascent;
-        set->glyphs[i].xadvance = floor(set->glyphs[i].xadvance);
+        set->glyphs[i].xadvance = floorf(set->glyphs[i].xadvance);
     }
 
     // convert 8bit data to 32bit
@@ -224,6 +240,7 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
     return set;
 }
 
+
 static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 {
     int32_t idx = (codepoint >> 8) % MAX_GLYPHSET;
@@ -234,6 +251,7 @@ static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 
     return font->sets[idx];
 }
+
 
 LiteFont* lite_load_font(const char* filename, float size)
 {
@@ -261,7 +279,7 @@ LiteFont* lite_load_font(const char* filename, float size)
 
     /* load */
     font->data = check_alloc(lite_arena_acquire(g_font_arena, buf_size));
-    int32_t _  = fread(font->data, 1, buf_size, fp);
+    size_t  _  = fread(font->data, 1, buf_size, fp);
     (void)_;
     fclose(fp);
     fp = nullptr;
@@ -278,7 +296,7 @@ LiteFont* lite_load_font(const char* filename, float size)
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
-    font->height = (ascent - descent + linegap) * scale + 0.5;
+    font->height = (int32_t)((ascent - descent + linegap) * scale + 0.5f);
 
     /* make tab and newline glyphs invisible */
     stbtt_bakedchar* g = get_glyphset(font, '\n')->glyphs;
@@ -287,6 +305,7 @@ LiteFont* lite_load_font(const char* filename, float size)
 
     return font;
 }
+
 
 void lite_free_font(LiteFont* font)
 {
@@ -303,17 +322,20 @@ void lite_free_font(LiteFont* font)
     free(font);
 }
 
+
 void lite_set_font_tab_width(LiteFont* font, int32_t n)
 {
     GlyphSet* set              = get_glyphset(font, '\t');
-    set->glyphs['\t'].xadvance = n;
+    set->glyphs['\t'].xadvance = (float)n;
 }
+
 
 int32_t lite_get_font_tab_width(LiteFont* font)
 {
     GlyphSet* set = get_glyphset(font, '\t');
-    return set->glyphs['\t'].xadvance;
+    return (int32_t)set->glyphs['\t'].xadvance;
 }
+
 
 int32_t lite_get_font_width(LiteFont* font, const char* text)
 {
@@ -325,15 +347,18 @@ int32_t lite_get_font_width(LiteFont* font, const char* text)
         p                    = utf8_to_codepoint(p, &codepoint);
         GlyphSet*        set = get_glyphset(font, codepoint);
         stbtt_bakedchar* g   = &set->glyphs[codepoint & 0xff];
-        x += g->xadvance;
+
+        x += (int32_t)g->xadvance;
     }
     return x;
 }
+
 
 int32_t lite_get_font_height(LiteFont* font)
 {
     return font->height;
 }
+
 
 static inline LiteColor blend_pixel(LiteColor dst, LiteColor src)
 {
@@ -343,6 +368,7 @@ static inline LiteColor blend_pixel(LiteColor dst, LiteColor src)
     dst.b      = ((src.b * src.a) + (dst.b * ia)) >> 8;
     return dst;
 }
+
 
 static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor color)
 {
@@ -354,6 +380,7 @@ static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor col
     return dst;
 }
 
+
 #define rect_draw_loop(expr)                                                   \
     for (int32_t j = y1; j < y2; j++)                                          \
     {                                                                          \
@@ -364,6 +391,7 @@ static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor col
         }                                                                      \
         d += dr;                                                               \
     }
+
 
 void lite_draw_rect(LiteRect rect, LiteColor color)
 {
@@ -397,6 +425,7 @@ void lite_draw_rect(LiteRect rect, LiteColor color)
         rect_draw_loop(blend_pixel(*d, color));
     }
 }
+
 
 void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, LiteColor color)
 {
@@ -459,6 +488,7 @@ void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, Lite
     }
 }
 
+
 int32_t lite_draw_text(LiteFont* font, const char* text, int32_t x, int32_t y, LiteColor color)
 {
     LiteRect rect;
@@ -473,8 +503,9 @@ int32_t lite_draw_text(LiteFont* font, const char* text, int32_t x, int32_t y, L
         rect.y               = g->y0;
         rect.width           = g->x1 - g->x0;
         rect.height          = g->y1 - g->y0;
-        lite_draw_image(set->image, &rect, x + g->xoff, y + g->yoff, color);
-        x += g->xadvance;
+        lite_draw_image(set->image, &rect, x + (int32_t)g->xoff, y + (int32_t)g->yoff, color);
+
+        x += (int32_t)g->xadvance;
     }
     return x;
 }

@@ -1563,7 +1563,7 @@ void lite_usleep(uint64_t us)
     if (NtDelayExecution)
     {
         LARGE_INTEGER times;
-        times.QuadPart = (LONGLONG)(-us * 10); // Timer is precise as 100 nanoseconds
+        times.QuadPart = (-(LONGLONG)us * 10); // Timer is precise as 100 nanoseconds
         (void)NtDelayExecution(FALSE, &times);
     }
     else
@@ -1811,7 +1811,7 @@ void lite_window_set_title(const char* title)
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
-    static LPCSTR cursor_names[LiteCursor_COUNT] = {
+    static LPWSTR cursor_names[LiteCursor_COUNT] = {
         nullptr,
         IDC_HAND,
         IDC_ARROW,
@@ -1824,7 +1824,7 @@ void lite_window_set_cursor(LiteCursor cursor)
     HCURSOR hCursor = cursor_caches[cursor];
     if (hCursor == nullptr)
     {
-        hCursor = LoadCursorA(nullptr, cursor_names[cursor]);
+        hCursor = LoadCursorW(nullptr, cursor_names[cursor]);
         cursor_caches[cursor] = hCursor;
     }
     SetCursor(hCursor);
