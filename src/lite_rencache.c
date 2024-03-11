@@ -24,7 +24,7 @@ enum
 
 typedef struct Command Command;
 
-alignas(16) struct Command
+struct alignas(16) Command
 {
     Command* next;
 

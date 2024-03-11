@@ -7,12 +7,12 @@ typedef struct LiteFont  LiteFont;
 typedef struct LiteColor LiteColor;
 typedef struct LiteRect  LiteRect;
 
-alignas(4) struct LiteColor
+struct alignas(4) LiteColor
 {
     uint8_t b, g, r, a;
 };
 
-alignas(4) struct LiteRect
+struct alignas(4) LiteRect
 {
     int32_t x, y, width, height;
 };

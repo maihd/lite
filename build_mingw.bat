@@ -8,7 +8,7 @@
 :: and install clang:
 :: pacman -S mingw-w64-x86_64-clang
 
-echo compiling (windows - mingw - x64)...
+echo Compiling (windows - mingw - x64)...
 
 set CC=C:\msys64\mingw64\bin\clang.exe
 @REM set CC=gcc.exe
@@ -21,7 +21,7 @@ windres res/res.rc -O coff -o res.res
     -Ilibs/SDL2-2.0.10/x86_64-w64-mingw32/include -DLITE_SYSTEM_SDL2^
     -lSDL2main -lSDL2 -Llibs/SDL2-2.0.10/x86_64-w64-mingw32/lib^
     -Ilibs/luajit_2.1.0-beta3/src^
-    -llua51 -Llibs/luajit_2.1.0-beta3/prebuilt/x64^
+    -lluajit_mingw -Llibs/luajit_2.1.0-beta3/prebuilt/x64^
     -mwindows res.res^
     -o lite.exe
 
