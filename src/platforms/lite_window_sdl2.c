@@ -55,6 +55,7 @@ uint64_t lite_cpu_frequency(void)
     return SDL_GetPerformanceFrequency();
 }
 
+
 LiteStringView lite_clipboard_get(void)
 {
     char* sdl_text = SDL_GetClipboardText();
@@ -62,6 +63,7 @@ LiteStringView lite_clipboard_get(void)
     SDL_free(sdl_text);
     return text;
 }
+
 
 bool lite_clipboard_set(LiteStringView text)
 {
@@ -78,12 +80,14 @@ void lite_console_open(void)
 #endif
 }
 
+
 void lite_console_close(void)
 {
 #if defined(_WIN32)
     FreeConsole();
 #endif
 }
+
 
 void lite_window_open(void)
 {
@@ -126,16 +130,19 @@ void lite_window_open(void)
     lite_window_load_icon();
 }
 
+
 void lite_window_close(void)
 {
     SDL_DestroyWindow(window);
     window = nullptr;
 }
 
+
 void* lite_window_handle(void)
 {
     return window;
 }
+
 
 void* lite_window_surface(int32_t* width, int32_t* height)
 {
@@ -188,10 +195,12 @@ void lite_window_set_mode(LiteWindowMode mode)
     }
 }
 
+
 void lite_window_set_title(const char* title)
 {
     SDL_SetWindowTitle(window, title);
 }
+
 
 void lite_window_set_cursor(LiteCursor cursor)
 {
@@ -215,6 +224,21 @@ void lite_window_set_cursor(LiteCursor cursor)
     SDL_SetCursor(sdl_cursor);
 }
 
+
+float lite_window_get_opacity(void)
+{
+    float opacity = 1.0f;
+    SDL_GetWindowOpacity(window, &opacity);
+    return opacity;
+}
+
+
+void lite_window_set_opacity(float opacity)
+{
+    SDL_SetWindowOpacity(window, opacity);
+}
+
+
 float lite_window_dpi(void)
 {
     float dpi;
@@ -222,21 +246,25 @@ float lite_window_dpi(void)
     return dpi;
 }
 
+
 bool lite_window_has_focus(void)
 {
     Uint32 flags = SDL_GetWindowFlags(window);
     return flags & SDL_WINDOW_INPUT_FOCUS;
 }
 
+
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
 {
     SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, (int)count);
 }
 
+
 void lite_window_message_box(const char* title, const char* message)
 {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, window);
 }
+
 
 bool lite_window_confirm_dialog(const char* title, const char* message)
 {
@@ -255,6 +283,7 @@ bool lite_window_confirm_dialog(const char* title, const char* message)
     return buttonid == 1;
 }
 
+
 static LiteStringView lite_button_name(Uint8 button)
 {
     const LiteStringView button_names[] = {
@@ -268,6 +297,7 @@ static LiteStringView lite_button_name(Uint8 button)
     return button_names[button];
 }
 
+
 static LiteStringView lite_key_name(SDL_Keycode sym)
 {
     LiteStringView key_name = lite_string_temp(SDL_GetKeyName(sym));
@@ -279,6 +309,7 @@ static LiteStringView lite_key_name(SDL_Keycode sym)
     }
     return key_name;
 }
+
 
 LiteEvent lite_window_poll_event(void)
 {
@@ -425,6 +456,7 @@ LiteEvent lite_window_poll_event(void)
         .type = LiteEventType_None
     };
 }
+
 
 bool lite_window_wait_event(uint64_t time_us)
 {

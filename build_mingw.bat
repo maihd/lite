@@ -14,10 +14,10 @@ set CC=C:\msys64\mingw64\bin\clang.exe
 @REM set CC=gcc.exe
 
 :: Libs for SDL (uncomment to use)
-@REM set PLATFORM_LIBS=-Ilibs/SDL2-2.0.10/x86_64-w64-mingw32/include -DLITE_SYSTEM_SDL2 -lSDL2main -lSDL2 -Llibs/SDL2-2.0.10/x86_64-w64-mingw32/lib
+set PLATFORM_LIBS=-Ilibs/SDL2-2.0.10/x86_64-w64-mingw32/include -DLITE_SYSTEM_SDL2 -lSDL2main -lSDL2 -Llibs/SDL2-2.0.10/x86_64-w64-mingw32/lib
 
 :: Libs for Win32 (uncomment to use)
-set PLATFORM_LIBS=
+@REM set PLATFORM_LIBS=
 
 windres res/res.rc -O coff -o res.res
 %CC% src/*.c src/api/*.c src/lib/stb/*.c ^

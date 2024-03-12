@@ -181,17 +181,9 @@ static int f_window_has_focus(lua_State* L)
     return 1;
 }
 
-#if 0
 static int f_get_window_opacity(lua_State* L)
 {
-    float opacity;
-    if (SDL_GetWindowOpacity(window, &opacity))
-    {
-        lua_pushstring(L, "window is invalid");
-        lua_error(L);
-        return 0;
-    }
-
+    float opacity = lite_window_get_opacity();
     lua_pushnumber(L, opacity);
     return 1;
 }
@@ -199,10 +191,9 @@ static int f_get_window_opacity(lua_State* L)
 static int f_set_window_opacity(lua_State* L)
 {
     float opacity = (float)luaL_checknumber(L, 1);
-    SDL_SetWindowOpacity(window, opacity);
+    lite_window_set_opacity(opacity);
     return 0;
 }
-#endif
 
 
 static int f_show_confirm_dialog(lua_State* L)
@@ -211,12 +202,6 @@ static int f_show_confirm_dialog(lua_State* L)
     const char* msg   = luaL_checkstring(L, 2);
 
     lua_pushboolean(L, lite_window_confirm_dialog(title, msg));
-#if _WIN32
-    // int id = MessageBoxA(0, msg, title, MB_YESNO | MB_ICONWARNING);
-    // lua_pushboolean(L, id == IDYES);
-#else
-
-#endif
     return 1;
 }
 
@@ -575,8 +560,8 @@ static const luaL_Reg lib_funcs[] = {
     {"set_window_mode",         f_set_window_mode       },
     {"show_window_titlebar",    f_show_window_titlebar  },
     {"hide_window_titlebar",    f_hide_window_titlebar  },
- //{"get_window_opacity",  f_get_window_opacity },
-  //{"set_window_opacity",  f_set_window_opacity },
+    {"get_window_opacity",      f_get_window_opacity    },
+    {"set_window_opacity",      f_set_window_opacity    },
     {"window_has_focus",        f_window_has_focus      },
     {"show_confirm_dialog",     f_show_confirm_dialog   },
     {"chdir",                   f_chdir                 },
@@ -593,7 +578,7 @@ static const luaL_Reg lib_funcs[] = {
     {"fuzzy_match",             f_fuzzy_match           },
     {"begin_frame",             f_begin_frame           },
     {"end_frame",               f_end_frame             },
-    
+
     {"mkdir_recursive",         f_mkdir_recursive       },
     {"parent_directory",        f_parent_directory      },
 

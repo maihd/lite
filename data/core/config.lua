@@ -23,4 +23,6 @@ config.auto_indent = false
 config.indent_newline = false
 config.prevent_open_binary_file = true
 
+config.window_opacity = 0.925
+
 return config

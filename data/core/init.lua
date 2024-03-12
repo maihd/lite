@@ -146,6 +146,8 @@ function core.init()
     if got_plugin_error or got_user_error or got_project_error then
         command.perform("core:open-log")
     end
+
+    system.set_window_opacity(config.window_opacity or 1.0)
 end
 
 local temp_uid = (system.get_time() * 1000) % 0xffffffff

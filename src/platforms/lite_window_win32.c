@@ -1832,6 +1832,19 @@ void lite_window_set_cursor(LiteCursor cursor)
 }
 
 
+float lite_window_get_opacity(void)
+{
+    return 1.0f;
+}
+
+
+void lite_window_set_opacity(float opacity)
+{
+
+}
+
+
+
 float lite_window_dpi(void)
 {
     // GetDpiForWindow is not support in older Windows verions
