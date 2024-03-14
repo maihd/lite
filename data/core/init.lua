@@ -459,6 +459,12 @@ function core.step()
     core.clip_rect_stack[1] = { 0, 0, width, height }
     renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
     core.root_view:draw()
+
+    -- @note(maihd): drawing fake titlebar
+    local width, height = system.get_window_size()
+    renderer.draw_text(style.code_font, "X", width - 10, 10, { common.color "#ffffff" })
+--     renderer.draw_rect(width - 20, 10, 1000, 1000, { common.color "#ffffff" })
+
     renderer.end_frame()
     return true
 end
@@ -520,6 +526,7 @@ function core.run()
                 collectgarbage("collect")
             end
 
+            -- Recalculate the elapsed
             elapsed = system.get_time() - core.frame_start
         end
 
@@ -530,7 +537,7 @@ function core.run()
         else
             delta = elapsed
 
-            -- Do GC every seconds
+            -- Do GC every seconds (2nd attempt)
             -- @note(maihd): call here to avoid missing GC call
             if time - math.floor(time) <= frame then
                 -- core.log("Cleaning up memory...")

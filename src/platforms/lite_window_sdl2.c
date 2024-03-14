@@ -116,11 +116,16 @@ void lite_window_open(void)
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
 
+    Uint32 window_flags = SDL_WINDOW_RESIZABLE
+                          | SDL_WINDOW_ALLOW_HIGHDPI
+                          | SDL_WINDOW_HIDDEN;
+//     window_flags |= SDL_WINDOW_BORDERLESS;
+
     window = SDL_CreateWindow("",
-                              SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, (int)(dm.w * 0.8), (int)(dm.h * 0.8),
-                              SDL_WINDOW_RESIZABLE
-                              | SDL_WINDOW_ALLOW_HIGHDPI
-                              | SDL_WINDOW_HIDDEN);
+                              SDL_WINDOWPOS_UNDEFINED,
+                              SDL_WINDOWPOS_UNDEFINED,
+                              (int)(dm.w * 0.8), (int)(dm.h * 0.8),
+                              window_flags);
     if (window)
     {
         // @todo(maihd): handle error
@@ -236,6 +241,12 @@ float lite_window_get_opacity(void)
 void lite_window_set_opacity(float opacity)
 {
     SDL_SetWindowOpacity(window, opacity);
+}
+
+
+void lite_window_get_size(int32_t* width, int32_t* height)
+{
+    SDL_GetWindowSize(window, width, height);
 }
 
 

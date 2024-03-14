@@ -57,6 +57,8 @@ void            lite_window_set_cursor(LiteCursor cursor);
 float           lite_window_get_opacity(void);                  // Opacity in range [0.0f, 1.0f]
 void            lite_window_set_opacity(float opacity);         // Opacity in range [0.0f, 1.0f]
 
+void            lite_window_get_size(int32_t* width, int32_t* height);
+
 float           lite_window_dpi(void);
 bool            lite_window_has_focus(void);
 

@@ -161,6 +161,19 @@ static int f_set_window_mode(lua_State* L)
     return 0;
 }
 
+
+static int f_get_window_size(lua_State* L)
+{
+    int32_t width, height;
+    lite_window_get_size(&width, &height);
+
+    lua_pushinteger(L, width);
+    lua_pushinteger(L, height);
+
+    return 2;
+}
+
+
 static int f_show_window_titlebar(lua_State* L)
 {
     lite_window_show_titlebar();
@@ -545,7 +558,6 @@ static int f_parent_directory(lua_State* L)
 {
     size_t      length;
     const char* path = luaL_checklstring(L, 1, &length);
-
     const LiteStringView result = lite_parent_directory(lite_string_view(path, (uint32_t)length, 0));
     lua_pushstringview(L, result);
     return 1;
@@ -558,6 +570,7 @@ static const luaL_Reg lib_funcs[] = {
     {"set_cursor",              f_set_cursor            },
     {"set_window_title",        f_set_window_title      },
     {"set_window_mode",         f_set_window_mode       },
+    {"get_window_size",         f_get_window_size       },
     {"show_window_titlebar",    f_show_window_titlebar  },
     {"hide_window_titlebar",    f_hide_window_titlebar  },
     {"get_window_opacity",      f_get_window_opacity    },

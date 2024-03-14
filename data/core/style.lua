@@ -30,6 +30,8 @@ style.scrollbar = { common.color "#414146" }
 style.scrollbar2 = { common.color "#4b4b52" }
 style.scope_line = { common.color "#494950" }
 
+style.titlebar = { common.color "#111111", common.color "#000000" }
+
 style.syntax = {}
 style.syntax["normal"] = { common.color "#e1e1e6" }
 style.syntax["symbol"] = { common.color "#e1e1e6" }
