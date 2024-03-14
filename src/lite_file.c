@@ -95,7 +95,6 @@ bool lite_create_directory_recursive(LiteStringView path)
                 const LiteStringView directory_path = {
                     .buffer = path.buffer,
                     .length = i + 1,
-                    .hash = 0
                 };
 
                 CreateDirectoryA(directory_path.buffer, nullptr);

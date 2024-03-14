@@ -1116,7 +1116,7 @@ static LiteStringView lite_get_key_name(LiteKeyCode key_code)
 //         text[i] = tolower(text[i]);
 //     }
 
-//     return lite_string_view(text, (uint32_t)text_length, 0);
+//     return lite_string_view(text, (uint32_t)text_length);
 // }
 
 // -----------------------------------------------------------
@@ -1394,13 +1394,13 @@ static LRESULT WINAPI lite_win32_window_proc(
                     return 0;
                 }
 
-                const uint32_t length = lite_string_count(utf8);
+                const size_t length = lite_string_count(utf8);
                 char* text = (char*)lite_arena_acquire(frame_arena, length + 1);
                 memcpy(text, utf8, length);
 
                 lite_push_event((LiteEvent){
                     .type = LiteEventType_TextInput,
-                    .text_input.text = lite_string_view(text, length, 0),
+                    .text_input.text = lite_string_view(text, length),
                 });
             }
 
@@ -1417,7 +1417,7 @@ static LRESULT WINAPI lite_win32_window_proc(
             return 1;
         }
 
-        const uint32_t length = 4;
+        const size_t length = 4;
         char* text = (char*)lite_arena_acquire(frame_arena, length + 1);
 
         uint32_t ch = (uint32_t)wParam;
@@ -1450,7 +1450,7 @@ static LRESULT WINAPI lite_win32_window_proc(
 
         lite_push_event((LiteEvent){
             .type = LiteEventType_TextInput,
-            .text_input.text = lite_string_view(text, length, 0),
+            .text_input.text = lite_string_view(text, length),
         });
         return 0;
     }

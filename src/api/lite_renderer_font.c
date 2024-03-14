@@ -2,11 +2,12 @@
 #include "lite_rencache.h"
 #include "lite_renderer.h"
 
+
 static int f_load(lua_State* L)
 {
-    const char* filename = luaL_checkstring(L, 1);
-    float       size     = (float)luaL_checknumber(L, 2);
-    LiteFont**  self     = lua_newuserdata(L, sizeof(*self));
+    LiteStringView	filename = lua_checkstringview(L, 1);
+    float			size     = (float)luaL_checknumber(L, 2);
+    LiteFont**		self     = lua_newuserdata(L, sizeof(*self));
     luaL_setmetatable(L, API_TYPE_FONT);
     *self = lite_load_font(filename, size);
     if (!*self)
@@ -16,13 +17,15 @@ static int f_load(lua_State* L)
     return 1;
 }
 
+
 static int f_set_tab_width(lua_State* L)
 {
     LiteFont** self = luaL_checkudata(L, 1, API_TYPE_FONT);
-    int32_t    n    = (int32_t)luaL_checknumber(L, 2);
+    int32_t    n    = luaL_checkinteger(L, 2);
     lite_set_font_tab_width(*self, n);
     return 0;
 }
+
 
 static int f_gc(lua_State* L)
 {
@@ -34,29 +37,33 @@ static int f_gc(lua_State* L)
     return 0;
 }
 
+
 static int f_get_width(lua_State* L)
 {
-    LiteFont**  self = luaL_checkudata(L, 1, API_TYPE_FONT);
-    const char* text = luaL_checkstring(L, 2);
-    lua_pushnumber(L, lite_get_font_width(*self, text));
+    LiteFont**		self = luaL_checkudata(L, 1, API_TYPE_FONT);
+    LiteStringView	text = lua_checkstringview(L, 2);
+    lua_pushinteger(L, lite_get_font_width(*self, text));
     return 1;
 }
+
 
 static int f_get_height(lua_State* L)
 {
     LiteFont** self = luaL_checkudata(L, 1, API_TYPE_FONT);
-    lua_pushnumber(L, lite_get_font_height(*self));
+    lua_pushinteger(L, lite_get_font_height(*self));
     return 1;
 }
 
+
 static const luaL_Reg lib[] = {
-    {"__gc",          f_gc           },
-    {"load",          f_load         },
-    {"set_tab_width", f_set_tab_width},
-    {"get_width",     f_get_width    },
-    {"get_height",    f_get_height   },
-    {NULL,            NULL           }
+    { "__gc",          f_gc            },
+    { "load",          f_load          },
+    { "set_tab_width", f_set_tab_width },
+    { "get_width",     f_get_width     },
+    { "get_height",    f_get_height    },
+    { nullptr,         nullptr         },
 };
+
 
 int luaopen_renderer_font(lua_State* L)
 {
@@ -66,3 +73,5 @@ int luaopen_renderer_font(lua_State* L)
     lua_setfield(L, -2, "__index");
     return 1;
 }
+
+//! EOF

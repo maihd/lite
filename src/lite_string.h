@@ -5,10 +5,11 @@
 /// StringView
 /// Data structure contain string characters and it length
 /// Utf8 support
-typedef struct LiteStringView
+/// @note(maihd):
+///     the size/alignment need to fit one register, StringView commonly be using as parameter
+typedef struct alignas(16) LiteStringView
 {
-    uint32_t    hash;
-    uint32_t    length;
+    size_t      length;
     const char* buffer;
 } LiteStringView;
 
@@ -35,7 +36,7 @@ typedef struct LiteStringBuffer
 LiteStringView  lite_string_temp(const char* string);
 
 /// Calculate string length (utf8 support)
-uint32_t        lite_string_count(const char* string);
+size_t          lite_string_count(const char* string);
 
 /// Find last index of character
 int32_t         lite_last_index_of_char(LiteStringView string, char c);
@@ -46,10 +47,9 @@ int32_t         lite_last_index_of_char(LiteStringView string, char c);
 
 /// Create StringView
 __forceinline
-LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t hash)
+LiteStringView lite_string_view(const char* string, size_t length)
 {
     LiteStringView string_view;
-    string_view.hash   = hash;
     string_view.length = length;
     string_view.buffer = string;
     return string_view;
@@ -60,12 +60,12 @@ LiteStringView lite_string_view(const char* string, uint32_t length, uint32_t ha
 __forceinline
 LiteStringView lite_string_view_cstr(const char* string)
 {
-    return lite_string_view(string, lite_string_count(string), 0);
+    return lite_string_view(string, lite_string_count(string));
 }
 
 
 /// Create StringView from string literal
-#define lite_string_lit(string) lite_string_view(string, sizeof(string) - 1, 0)
+#define lite_string_lit(string) lite_string_view(string, sizeof(string) - 1)
 
 //! EOF
 

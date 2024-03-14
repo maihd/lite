@@ -13,21 +13,21 @@
 #include "lite_renderer.h"
 
 
-#define MAX_GLYPHSET 256
+enum { MAX_GLYPHSET = 256, GLYPHSET_CHARS = 256 };
 
 
 struct LiteImage
 {
-    LiteColor*  pixels;
-    int32_t     width, height;
+    LiteColor*          pixels;
+    int32_t             width, height;
 };
 
 
-typedef struct
+typedef struct LiteGlyphSet
 {
     LiteImage*          image;
-    stbtt_bakedchar     glyphs[256];
-} GlyphSet;
+    stbtt_bakedchar     glyphs[GLYPHSET_CHARS];
+} LiteGlyphSet;
 
 
 struct LiteFont
@@ -36,13 +36,13 @@ struct LiteFont
     stbtt_fontinfo      stbfont;
     float               size;
     int32_t             height;
-    GlyphSet*           sets[MAX_GLYPHSET];
+    LiteGlyphSet*       sets[MAX_GLYPHSET];
 };
 
 
-static LiteImage    g_surface;
-static LiteArena*   g_img_arena;
-static LiteArena*   g_font_arena;
+static LiteImage        g_surface;
+static LiteArena*       g_img_arena;
+static LiteArena*       g_font_arena;
 
 
 static struct
@@ -65,40 +65,49 @@ static void* check_alloc(void* ptr)
 }
 
 
-static const char* utf8_to_codepoint(const char* p, uint32_t* dst)
+static LiteStringView utf8_to_codepoint(LiteStringView p, uint32_t* dst)
 {
+	assert(p.buffer != nullptr);
+	assert(p.length > 0);
+
     uint32_t res, n;
-    switch (*p & 0xf0)
+    switch (*p.buffer & 0xf0)
     {
     case 0xf0:
-        res = *p & 0x07;
+        res = *p.buffer & 0x07;
         n   = 3;
         break;
 
     case 0xe0:
-        res = *p & 0x0f;
+        res = *p.buffer & 0x0f;
         n   = 2;
         break;
 
     case 0xd0:
     case 0xc0:
-        res = *p & 0x1f;
+        res = *p.buffer & 0x1f;
         n   = 1;
         break;
 
     default:
-        res = *p;
+        res = *p.buffer;
         n   = 0;
         break;
     }
 
     while (n--)
     {
-        res = (res << 6) | (*(++p) & 0x3f);
+		p.buffer += 1;
+		p.length -= 1;
+
+        res = (res << 6) | (*p.buffer & 0x3f);
     }
 
     *dst = res;
-    return p + 1;
+
+    p.buffer += 1;
+	p.length -= 1;
+	return p;
 }
 
 
@@ -116,7 +125,7 @@ void lite_renderer_init(void)
                                 });
 
     g_img_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteColor));
-    g_font_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(GlyphSet));
+    g_font_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteGlyphSet));
 }
 
 
@@ -184,9 +193,9 @@ void lite_free_image(LiteImage* image)
 }
 
 
-static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
+static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 {
-    GlyphSet* set = check_alloc(calloc(1, sizeof(GlyphSet)));
+    LiteGlyphSet* set = check_alloc(calloc(1, sizeof(LiteGlyphSet)));
 
     /* init image */
     int32_t width  = 128;
@@ -241,7 +250,7 @@ static GlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 }
 
 
-static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
+static LiteGlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 {
     int32_t idx = (codepoint >> 8) % MAX_GLYPHSET;
     if (font->sets[idx] == NULL)
@@ -253,7 +262,7 @@ static GlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 }
 
 
-LiteFont* lite_load_font(const char* filename, float size)
+LiteFont* lite_load_font(LiteStringView filename, float size)
 {
     LiteArenaTemp arena_temp = lite_arena_begin_temp(g_font_arena);
 
@@ -266,7 +275,7 @@ LiteFont* lite_load_font(const char* filename, float size)
     font->size = size;
 
     /* load font into buffer */
-    fp = fopen(filename, "rb");
+    fp = fopen(filename.buffer, "rb");
     if (!fp)
     {
         return nullptr;
@@ -311,7 +320,7 @@ void lite_free_font(LiteFont* font)
 {
     for (int32_t i = 0; i < MAX_GLYPHSET; i++)
     {
-        GlyphSet* set = font->sets[i];
+        LiteGlyphSet* set = font->sets[i];
         if (set)
         {
             lite_free_image(set->image);
@@ -325,27 +334,27 @@ void lite_free_font(LiteFont* font)
 
 void lite_set_font_tab_width(LiteFont* font, int32_t n)
 {
-    GlyphSet* set              = get_glyphset(font, '\t');
+    LiteGlyphSet* set = get_glyphset(font, '\t');
     set->glyphs['\t'].xadvance = (float)n;
 }
 
 
 int32_t lite_get_font_tab_width(LiteFont* font)
 {
-    GlyphSet* set = get_glyphset(font, '\t');
+    LiteGlyphSet* set = get_glyphset(font, '\t');
     return (int32_t)set->glyphs['\t'].xadvance;
 }
 
 
-int32_t lite_get_font_width(LiteFont* font, const char* text)
+int32_t lite_get_font_width(LiteFont* font, LiteStringView text)
 {
-    int32_t     x = 0;
-    const char* p = text;
-    unsigned    codepoint;
-    while (*p)
+    int32_t			x = 0;
+    LiteStringView	p = text;
+    unsigned		codepoint;
+    while (p.length > 0)
     {
         p                    = utf8_to_codepoint(p, &codepoint);
-        GlyphSet*        set = get_glyphset(font, codepoint);
+        LiteGlyphSet*    set = get_glyphset(font, codepoint);
         stbtt_bakedchar* g   = &set->glyphs[codepoint & 0xff];
 
         x += (int32_t)g->xadvance;
@@ -489,15 +498,15 @@ void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, Lite
 }
 
 
-int32_t lite_draw_text(LiteFont* font, const char* text, int32_t x, int32_t y, LiteColor color)
+int32_t lite_draw_text(LiteFont* font, LiteStringView text, int32_t x, int32_t y, LiteColor color)
 {
-    LiteRect rect;
-    const char* p = text;
-    uint32_t    codepoint;
-    while (*p)
+    LiteRect		rect;
+    LiteStringView	p = text; 
+    uint32_t		codepoint;
+    while (p.length > 0)
     {
         p                    = utf8_to_codepoint(p, &codepoint);
-        GlyphSet*        set = get_glyphset(font, codepoint);
+        LiteGlyphSet*    set = get_glyphset(font, codepoint);
         stbtt_bakedchar* g   = &set->glyphs[codepoint & 0xff];
         rect.x               = g->x0;
         rect.y               = g->y0;

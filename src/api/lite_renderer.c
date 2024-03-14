@@ -75,12 +75,12 @@ static int f_draw_rect(lua_State* L)
 
 static int f_draw_text(lua_State* L)
 {
-    LiteFont**  font   = luaL_checkudata(L, 1, API_TYPE_FONT);
-    const char* text   = luaL_checkstring(L, 2);
-    int         x      = (int)luaL_checknumber(L, 3);
-    int         y      = (int)luaL_checknumber(L, 4);
-    LiteColor   color  = checkcolor(L, 5, 255);
-    int         next_x = lite_rencache_draw_text(*font, text, x, y, color);
+    LiteFont**		font   = luaL_checkudata(L, 1, API_TYPE_FONT);
+    LiteStringView	text   = lua_checkstringview(L, 2);
+    int				x      = (int)luaL_checknumber(L, 3);
+    int				y      = (int)luaL_checknumber(L, 4);
+    LiteColor		color  = checkcolor(L, 5, 255);
+    int				next_x = lite_rencache_draw_text(*font, text, x, y, color);
     lua_pushnumber(L, next_x);
     return 1;
 }
