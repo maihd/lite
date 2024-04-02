@@ -429,9 +429,11 @@ function core.step()
     -- end
 
     local width, height = renderer.get_size()
+    local titlebar_width, titlebar_height = 0, 0
 
     -- update
-    core.root_view.size.x, core.root_view.size.y = width, height
+    core.root_view.position.x, core.root_view.position.y = 0, titlebar_height
+    core.root_view.size.x, core.root_view.size.y = width, height - titlebar_height
     core.root_view:update()
     if not core.redraw then return false end
     core.redraw = false
@@ -456,14 +458,19 @@ function core.step()
 
     -- draw
     renderer.begin_frame()
+
+    -- Draw titlebar
+    local text_width, text_height = style.code_font:get_width("X"), style.code_font:get_height("X")
+    local text_x, text_y = width - titlebar_width + (titlebar_width - text_width) * 0.5, (titlebar_height - text_height) * 0.5
+    renderer.draw_rect(0, 0, width, titlebar_height, { common.color "#000000" })
+    renderer.draw_text(style.code_font, "X", text_x, text_y, { common.color "#ffffff" })
+    renderer.draw_text(style.code_font, "+", text_x - titlebar_width, text_y, { common.color "#ffffff" })
+    renderer.draw_text(style.code_font, "-", text_x - titlebar_width * 2, text_y, { common.color "#ffffff" })
+
+    -- Draw root view
     core.clip_rect_stack[1] = { 0, 0, width, height }
     renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
     core.root_view:draw()
-
-    -- @note(maihd): drawing fake titlebar
-    local width, height = system.get_window_size()
-    renderer.draw_text(style.code_font, "X", width - 10, 10, { common.color "#ffffff" })
---     renderer.draw_rect(width - 20, 10, 1000, 1000, { common.color "#ffffff" })
 
     renderer.end_frame()
     return true
