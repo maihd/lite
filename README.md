@@ -21,6 +21,9 @@ This fork is attempt to speed up the application, and adding features for person
 And importantly, this fork use LuaJIT, some plugins must be port (table.unpack -> unpack), and FFI is not disabled, use at your risk.
 The *simple* will be keep in the interfaces, *implementation* will be seperated into two categories: *simple* and *optimized*.
 This editor don't and won't support C++ editting. For C++, I will use full IDE for the jobs.
+Production ready Lite forks:
+- Lite XL Editor: https://lite-xl.com/
+- Pragtical Editor: https://pragtical.dev/
 
 ## Changes
 - Use LuaJIT-2.1.0-beta3 instead of Lua 5.2
