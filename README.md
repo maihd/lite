@@ -51,6 +51,7 @@ Production ready Lite forks:
     - Bootstrap version for debugging and development.
     - Display launching messagebox with style and helper.
     - Add more render backends: OpenGL, Vulkan, Dear ImGui.
+    - Better font rendering.
     - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
         - Simple and robust C framework
         - Can be customize Lua runtime: Lua52, LuaJIT, Luau
@@ -65,7 +66,7 @@ Production ready Lite forks:
     - Open binary file in preview-mode.
     - Use fast string algorithms (code editting are working on string heavily)
     - Better mouse interacting.
-    - Key bindings docs (for mai usage and maistyle)
+    - Key bindings docs (for Mai usage and MaiStyle)
 
 - Software distributing:
     - Compile to Lua to bytecode.
