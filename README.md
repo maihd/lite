@@ -21,15 +21,16 @@ This fork is attempt to speed up the application, and adding features for person
 And importantly, this fork use LuaJIT, some plugins must be port (table.unpack -> unpack), and FFI is not disabled, use at your risk.
 The *simple* will be keep in the interfaces, *implementation* will be seperated into two categories: *simple* and *optimized*.
 This editor don't and won't support C++ editting. For C++, I will use full IDE for the jobs.
-Production ready Lite forks:
+
+Production ready Lite forks (recommended):
 - Lite XL Editor: https://lite-xl.com/
 - Pragtical Editor: https://pragtical.dev/
 
 ## Changes
-- Use LuaJIT-2.1.0-beta3 instead of Lua 5.2
-- Check directory changed based on last write time instead of file diffs
-- Add premake5 to generate Visual Studio project, for debugging purpose
-- Add clang build script on Windows
+- Use LuaJIT-2.1.0-beta3 instead of Lua 5.2.
+- Check directory changed based on last write time instead of file diffs.
+- Add premake5 to generate Visual Studio project, for debugging purpose.
+- Add clang build script on Windows.
 - Display MessageBox when app failed to launch.
 - Add clang-format.
 - Skip opening binary file.
@@ -41,8 +42,8 @@ Production ready Lite forks:
 - Align line numbers near code.
 - Display icon to show log type.
 - Draw intent guide line. (may be need more mechanic for syntax highlight)
-- Display project name in title bar and status bar
-- Convert to use native API instead of large library like SDL.
+- Display project name in title bar and status bar.
+- Convert to use native API instead of large library like SDL. (Still have fallback to SDL when native API version is buggy)
 
 ## TODOs
 - Native Runtime (focusing):
@@ -54,9 +55,10 @@ Production ready Lite forks:
     - Better font rendering.
     - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
         - Simple and robust C framework
-        - Can be customize Lua runtime: Lua52, LuaJIT, Luau
+        - Can be customize Lua runtime: Lua52 (or 53, 54), LuaJIT, Luau
         - Fennel simple showcase for Emacs-like scripting experience
-        - Can run LiteXL Lua data
+        - Can run LiteXL Lua data (Use Lua54, but there are no compat layer for LuaJIT)
+        - Can run Pragtical Lua data
 
 - Features:
     - Line wrapping.
