@@ -17,3 +17,6 @@ error.txt
 /project
 
 edit-with-lite-dll.reg
+__edit_with_lite.reg
+
+.lite_temp*
