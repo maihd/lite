@@ -71,11 +71,13 @@ Production ready Lite forks (recommended):
     - Key bindings docs (for Mai usage and MaiStyle)
 
 - Software distributing:
+    - Add item to OS context menu.
+
+- Software distributing (unnecessary):
     - Compile to Lua to bytecode.
     - Package data. exe-only application. (data embed into exe, faster startup)
     - Make it embedding ready.
     - Installer
-    - Add item to OS context menu.
 
 ## Customization
 Additional functionality can be added through plugins which are available from

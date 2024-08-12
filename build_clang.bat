@@ -20,4 +20,8 @@ clang src/*.c src/api/*.c src/lib/stb/*.c ^
     -mwindows res/res.res^
     -o lite.exe
 
+:: Remove redundant files
+del lite.exp
+del lite.lib
+
 echo done
