@@ -112,6 +112,7 @@ void lite_window_open(void)
 #if SDL_VERSION_ATLEAST(2, 0, 5)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 #endif
+    SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "175");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);

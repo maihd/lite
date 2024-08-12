@@ -1,0 +1,28 @@
+## Change from rxi/lite
+- Use LuaJIT-2.1.0-beta3 instead of Lua 5.2.
+- Check directory changed based on last write time instead of file diffs.
+- Add premake5 to generate Visual Studio project, for debugging purpose.
+- Add clang build script on Windows.
+- Display MessageBox when app failed to launch.
+- Add clang-format.
+- Skip opening binary file.
+- Fix BOM on Unicode files.
+- Soft tab VSCode-like.
+- Languages: `Batch`, `C#`, `C`.
+- Double click to log line to open file.
+- Refactor C sources.
+- Align line numbers near code.
+- Display icon to show log type.
+- Draw intent guide line. (may be need more mechanic for syntax highlight)
+- Display project name in title bar and status bar.
+- Convert to use native API instead of large library like SDL. (Still have fallback to SDL when native API version is buggy)
+- Separated mouse button events:
+    - Left Click for selection
+    - Right Click for open menu context (WIP, currently no-ops)
+    - Middle Click for close tab
+    - X1, X2 for backward and forward (WIP, currently no-ops)
+- Fix bug: some time single mouse click cause select token, line.
+- Better mouse interacting.
+- Fallback version for fixing scripts (safe mode).
+- Bootstrap version for debugging and development.
+    - Realize that thing exactly what above things did, but with different words, the problem turn out was very simple.

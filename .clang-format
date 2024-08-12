@@ -4,10 +4,10 @@ UseTab: Never
 InsertNewlineAtEOF: true
 #KeepEmptyLinesAtEOF: true
 #InsertTrailingCommas: Wrapped
-IntegerLiteralSeparator:
-  Binary: -1
-  Decimal: -1
-  Hex: -1
+#IntegerLiteralSeparator:
+#  Binary: -1
+#  Decimal: -1
+#  Hex: -1
 ---
 Language: Cpp
 ColumnLimit: 80

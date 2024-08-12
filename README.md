@@ -27,30 +27,15 @@ Production ready Lite forks (recommended):
 - Pragtical Editor: https://pragtical.dev/
 
 ## Changes
-- Use LuaJIT-2.1.0-beta3 instead of Lua 5.2.
-- Check directory changed based on last write time instead of file diffs.
-- Add premake5 to generate Visual Studio project, for debugging purpose.
-- Add clang build script on Windows.
-- Display MessageBox when app failed to launch.
-- Add clang-format.
-- Skip opening binary file.
-- Fix BOM on Unicode files.
-- Soft tab VSCode-like.
-- Languages: Batch, `C#`, C.
-- Double click to log line to open file.
-- Refactor C sources.
-- Align line numbers near code.
-- Display icon to show log type.
-- Draw intent guide line. (may be need more mechanic for syntax highlight)
-- Display project name in title bar and status bar.
-- Convert to use native API instead of large library like SDL. (Still have fallback to SDL when native API version is buggy)
+See [changelog.md](/changelog.md)
 
 ## TODOs
+ToDo list, order by priority.
+
 - Native Runtime (focusing):
     - Make app more robust.
     - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
-    - Bootstrap version for debugging and development.
-    - Display launching messagebox with style and helper.
+    - Display launching message box with style and helper.
     - Add more render backends: OpenGL, Vulkan, Dear ImGui.
     - Better font rendering.
     - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
@@ -60,21 +45,40 @@ Production ready Lite forks (recommended):
         - Can run LiteXL Lua data (Use Lua54, but there are no compat layer for LuaJIT)
         - Can run Pragtical Lua data
 
-- Features:
-    - Line wrapping.
-    - Fix bug: some time single mouse click cause select token, line.
-    - Fix bug: cannot open dock when focus TreeView (maybe other lock view)
+- Features (add when needed):
+    - Line wrapping
+    - Multi cursors
+    - Ignore folders, files (blacklist)
+    - Fix bug: cannot open doc when focus TreeView (maybe other lock view)
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.
-    - Use fast string algorithms (code editting are working on string heavily)
-    - Better mouse interacting.
+    - Use fast string algorithms (code editing are working on string heavily)
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
+    - Recent files in `Open File From Profect` command
+    - Mouse next/previous button (good for reading code)
+    - VCS status display
+
+- Fix bugs:
+    - Extra space for end of file is too large
+    - TreeView have no scroll rect
+    - Toggle comment not work when:
+        - Prefix have no space between content
+        - Prefix does not start at begin of the line
+    - Cannot open file with command when focus TreeView (or locked view)
+    - Modal tabbing (Vi-like) does not trim
+
+- Syntax highlights:
+    - Simple syntax highlights are enough.
+    - When have some syntax highlight is wrong, and cannot ignore, just fix it.
+    - When plugins can solve, use it.
+    - No need something complex like lsp or intellisense. You should remember the API.
+    - Unknown token should be have underline to present error. Token can be detected without the need of LSP.
 
 - Software distributing:
     - Add item to OS context menu.
 
-- Software distributing (unnecessary):
+- Unnessary software distributing (we are hacker, we install software from source code):
     - Compile to Lua to bytecode.
     - Package data. exe-only application. (data embed into exe, faster startup)
     - Make it embedding ready.
