@@ -69,7 +69,7 @@ Production ready Lite forks (recommended):
     - Open binary file in preview-mode.
     - Use fast string algorithms (code editting are working on string heavily)
     - Better mouse interacting.
-    - Key bindings docs (for Mai usage and MaiStyle)
+    - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
 
 - Software distributing:
     - Add item to OS context menu.

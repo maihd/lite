@@ -205,7 +205,7 @@ end
 
 function DocView:on_mouse_pressed(button, x, y, clicks, timestamp)
     local caught = DocView.super.on_mouse_pressed(self, button, x, y, clicks)
-    if caught then
+    if caught or button ~= "left" then
         return
     end
     if keymap.modkeys["shift"] then
@@ -219,6 +219,18 @@ function DocView:on_mouse_pressed(button, x, y, clicks, timestamp)
         local line, col = self:resolve_screen_position(x, y)
         self.doc:set_selection(mouse_selection(self.doc, clicks, line, col, line, col))
         self.mouse_selecting = { line, col, clicks = clicks }
+
+        -- Jump immediately instead of moving caret
+        -- This effect is more appreciated, more feel than moving
+        -- Because we have focusing the mouse cursor
+        local lh = self:get_line_height()
+        local ox, oy = self:get_line_screen_position(line)
+        local caret_x = ox + self:get_col_x_offset(line, col)
+        local caret_y = oy
+        self.caret_x = caret_x
+        self.caret_y = caret_y
+        self.shadow_caret_x = caret_x
+        self.shadow_caret_y = caret_y
     end
     self.mouse_pressed_timestamp = timestamp
     self.blink_timer = 0
@@ -310,15 +322,29 @@ function DocView:draw_line_body(idx, x, y)
 
     -- draw selection if it overlaps this line
     local line1, col1, line2, col2 = self.doc:get_selection(true)
-    if idx >= line1 and idx <= line2 then
-        local text = self.doc.lines[idx]
-        if line1 ~= idx then col1 = 1 end
-        if line2 ~= idx then col2 = #text + 1 end
-        local x1 = x + self:get_col_x_offset(idx, col1)
-        local x2 = x + self:get_col_x_offset(idx, col2)
-        local lh = self:get_line_height()
-        renderer.draw_rect(x1, y, x2 - x1, lh, style.selection)
-    end
+    repeat
+        if idx >= line1 and idx <= line2 then
+            local text = self.doc.lines[idx]
+            if line1 ~= idx then col1 = 1 end
+            if line2 ~= idx then col2 = #text + 1 end
+            local x1 = x + self:get_col_x_offset(idx, col1)
+            local x2 = x + self:get_col_x_offset(idx, col2)
+
+            -- Effect for selection
+            local lh = self:get_line_height()
+            -- local ox, oy = self:get_line_screen_position(line)
+            -- local caret_x = ox + self:get_col_x_offset(line, col)
+            -- local caret_y = oy
+            -- if self.caret_x ~= caret_x and self.caret_y ~= self.caret_y then
+            --     if x2 > self.caret_x and y == self.caret_y then
+            --         x2 = self.caret_x
+            --     end
+            -- end
+
+            -- Draw
+            renderer.draw_rect(x1, y, x2 - x1, lh, style.selection)
+        end
+    until true
 
     -- draw line highlight if caret is on this line
     if config.highlight_current_line
