@@ -49,6 +49,10 @@ function TreeView:get_item_height()
     return style.font:get_height() + style.padding.y
 end
 
+function TreeView:get_scrollable_size()
+    return math.huge
+end
+
 function TreeView:check_cache()
     -- invalidate cache's skip values if project_files has changed
     if core.project_files ~= self.last_project_files then
@@ -135,7 +139,8 @@ function TreeView:draw()
     self:draw_background(style.background2)
 
     local icon_width = style.icon_font:get_width("D")
-    local spacing = style.font:get_width(" ") * 2
+--     local spacing = style.font:get_width(" ") * 2
+    local spacing = 4
 
     local doc = core.active_view.doc
     local active_filename = doc and system.absolute_path(doc.filename or "")
@@ -188,11 +193,11 @@ command.add(nil, {
 
     ["treeview:toggle-focus"] = function()
         view.visible = not view.visible
-        --         if view.visible then
-        --             core.set_active_view(view)
-        --         else
-        --             core.set_active_view(core.last_active_view)
-        --         end
+        if view.visible then
+            core.set_active_view(view)
+        else
+            core.set_active_view(core.last_active_view)
+        end
     end
 })
 

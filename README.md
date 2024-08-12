@@ -63,6 +63,7 @@ Production ready Lite forks (recommended):
 - Features:
     - Line wrapping.
     - Fix bug: some time single mouse click cause select token, line.
+    - Fix bug: cannot open dock when focus TreeView (maybe other lock view)
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.

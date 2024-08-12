@@ -10,8 +10,8 @@ local View = require "core.view"
 
 local StatusView = View:extend()
 
-StatusView.separator  = "      "
-StatusView.separator2 = "   |   "
+StatusView.separator  = "  "
+StatusView.separator2 = " | "
 
 
 function StatusView:new()
@@ -97,17 +97,17 @@ function StatusView:get_items()
         local dirty = dv.doc:is_dirty()
 
         return {
-            dirty and style.accent or style.text, style.icon_font, "f",
+            dirty and style.file_dirty or style.file, style.icon_font, style.icons.file,
             style.dim, style.font, self.separator2, style.text,
             dv.doc.filename and style.text or style.dim, dv.doc:get_name(),
             style.text,
             self.separator,
-            "line: ", line,
+            "Line: ", line,
             self.separator,
-            col > config.line_limit and style.accent or style.text, "col: ", col,
+            col > config.line_limit and style.accent or style.text, "Columns: ", col,
             style.text,
             self.separator,
-            string.format("%d%%", line / #dv.doc.lines * 100),
+            "Scroll: ", string.format("%d%%", line / #dv.doc.lines * 100),
         }, {
             -- FPS
             style.font, "FPS",
@@ -116,15 +116,15 @@ function StatusView:get_items()
             self.separator,
 
             -- Language
-            style.icon_font, "p",
+            style.icon_font, style.icons.proglang,
             style.font, style.dim, self.separator2, style.text,
             style.font, dv.doc:get_language_name(),
             self.separator,
 
             -- Lines
-            style.icon_font, "g",
+            style.icon_font, style.icons.graph,
             style.font, style.dim, self.separator2, style.text,
-            #dv.doc.lines, " lines",
+            #dv.doc.lines, " Lines",
             self.separator,
 
             -- Line ending
@@ -134,9 +134,9 @@ function StatusView:get_items()
 
     -- Status of project
     return {
-        style.icon_font, "d",
-        style.font, style.dim, self.separator2,
-        style.font, core.project_dir_name
+        style.file, style.icon_font, style.icons.folder,
+        style.accent, style.font, style.dim, self.separator2,
+        style.accent, style.font, core.project_dir_name
     }, {
         -- FPS
         style.font, "FPS",
@@ -145,10 +145,10 @@ function StatusView:get_items()
         self.separator,
 
         -- Files
-        style.icon_font, "g",
+        style.icon_font, style.icons.graph,
         style.font, style.dim, self.separator2,
         #core.docs, style.text, " / ",
-        #core.project_files, " files"
+        #core.project_files, " Files"
     }
 end
 
