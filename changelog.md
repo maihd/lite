@@ -26,3 +26,8 @@
 - Fallback version for fixing scripts (safe mode).
 - Bootstrap version for debugging and development.
     - Realize that thing exactly what above things did, but with different words, the problem turn out was very simple.
+
+- Software distributing:
+    - Add item to OS context menu.
+    - Add update script
+    - Add install script
