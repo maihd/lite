@@ -136,8 +136,8 @@ void lite_renderer_deinit(void)
     g_font_arena = nullptr;
     g_img_arena = nullptr;
 
-    assert(g_img_arena && "Leak arena in renderer");
-    assert(g_font_arena && "Leak arena in renderer");
+    assert(g_img_arena == nullptr && "Leak arena in renderer");
+    assert(g_font_arena == nullptr && "Leak arena in renderer");
 }
 
 
@@ -237,8 +237,8 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
     }
 
     // convert 8bit data to 32bit
-    // @todo: why must be pre-convert?
-    // @todo: why must be in reverted-order loop?
+    // @todo(maihd): why must be pre-convert?
+    // @todo(maihd): why must be in reverted-order loop?
     for (int32_t i = width * height - 1; i >= 0; i--)
     {
         uint8_t n = ((uint8_t*)set->image->pixels)[i];
@@ -327,8 +327,10 @@ void lite_free_font(LiteFont* font)
             free(set);
         }
     }
-    free(font->data);
-    free(font);
+
+	// @note(maihd): font now use LiteArena, so there no need to free
+    //free(font->data);
+    //free(font);
 }
 
 

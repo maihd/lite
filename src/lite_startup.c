@@ -6,6 +6,7 @@
 #include "api/lite_api.h"
 #include "lite_startup.h"
 #include "lite_window.h"
+#include "lite_rencache.h"
 
 static double lite_get_scale(void)
 {
@@ -34,12 +35,9 @@ static void lite_get_exe_filename(char* buf, int sz)
 #endif
 }
 
-void lite_startup(const LiteStartupParams params)
+static lua_State* lite_create_lua(uint32_t argc, const char** argv)
 {
-    uint32_t     argc = params.argc;
-    const char** argv = params.argv;
-
-    lua_State* L = luaL_newstate();
+	lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     lite_api_load_libs(L);
 
@@ -65,6 +63,16 @@ void lite_startup(const LiteStartupParams params)
 
     lua_pushstring(L, exename);
     lua_setglobal(L, "EXEFILE");
+
+	return L;
+}
+
+void lite_startup(const LiteStartupParams params)
+{
+    uint32_t     argc = params.argc;
+    const char** argv = params.argv;
+
+	lua_State* L = lite_create_lua(argc, argv);
 
     int errcode = luaL_dostring(
         L,
@@ -105,6 +113,10 @@ void lite_startup(const LiteStartupParams params)
         sprintf(dialog_message, "Cannot launch application. Error:\n%s\n\nLaunch application with safe mode?", errmsg);
         if (lite_window_confirm_dialog(title, dialog_message))
         {
+			lua_close(L);
+			
+			L = lite_create_lua(argc, argv);
+
             errcode = luaL_dostring(
                 L,
                 "local core, err\n"
@@ -138,10 +150,11 @@ void lite_startup(const LiteStartupParams params)
                 if (errmsg == NULL)
                 {
                     errmsg = "Unknown error!";
-                    sprintf(dialog_message, "Cannot launch application in safe mode. Error:\n%s\n\n"
-                                            "Did you edited the scripts in fallback folder?", errmsg);
-                    lite_window_message_box(title, dialog_message);
                 }
+
+                sprintf(dialog_message, "Cannot launch application in safe mode. Error:\n%s\n\n"
+                                        "Did you edited the scripts in fallback folder?", errmsg);
+                lite_window_message_box(title, dialog_message);
             }
         }
     }

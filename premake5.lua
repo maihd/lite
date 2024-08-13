@@ -56,12 +56,13 @@ do
 
     filter { "configurations:Debug*" }
     do
-        debugargs { "../data" }
+        debugargs { "../data", "../fallback" }
 
         targetdir (BUILD_DIR)
 
         postbuildcommands {
             "xcopy \"" .. path.join(ROOT_DIR, "data") .. "\" \"$(OutDir)\\data\" /D /E /I /F /Y",
+            "xcopy \"" .. path.join(ROOT_DIR, "fallback") .. "\" \"$(OutDir)\\fallback\" /D /E /I /F /Y",
         }
 
         filter {}
