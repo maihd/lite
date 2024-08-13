@@ -1,6 +1,6 @@
 @echo off
 
-echo > Pulling update from github repo...
+echo - Pulling update from github repo...
 git pull https://github.com/maihd/lite master
 
 if not %ErrorLevel%==0 (
@@ -12,9 +12,9 @@ call build_clang.bat
 
 :done
 echo:
-echo > All progression of update done!
+echo - All progression of update done!
 
 if not %ErrorLevel%==0 (
     echo:
-    echo > Error occured, please just message print above to troubleshooting!
+    echo Error occured, please just message print above to troubleshooting!
 )

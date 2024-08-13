@@ -7,10 +7,10 @@ set TARGET=__edit_with_lite.reg
 for /f "delims=" %%A in ('
     PowerShell -NoP "$(Get-Location).Path.Replace('\','\\')"
 ') do set LITE_EXE=%%A\lite.exe
-echo > Absolute path of lite is %LITE_EXE%
+echo - Absolute path of lite is %LITE_EXE%
 
 :: Generate .reg file
-echo > Generating .reg file...
+echo - Generating .reg file...
 (
     echo Windows Registry Editor Version 5.00
 
@@ -34,11 +34,11 @@ echo > Generating .reg file...
 ) > %TARGET%
 
 :: The magic occur here
-echo > Requesting add registry to system...
+echo - Requesting add registry to system...
 call %TARGET%
 
 :: All done, .reg is no need anymore, delete it!
-echo > Removing redundant .reg file...
+echo - Removing redundant .reg file...
 del %TARGET%
 
-echo > Edit with Lite activation succeed!
+echo - Edit with Lite activation succeed!
