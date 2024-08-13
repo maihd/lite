@@ -1,19 +1,19 @@
-Lua gmatch cheatsheet
----------------------
-Have you ever hard to find gmatch (used in language plugins) docs? This simple doc should help.
+Lua string.find/string.gmatch cheatsheet
+----------------------------------------
+Have you ever hard to find string.find/string.gmatch (used in language plugins) docs? This simple doc should help.
 
 -- CHARACTER CLASSES
-  .	  -- all characters
-  %a	-- letters
-  %c	-- control characters
-  %d	-- digits
-  %l	-- lower case letters
-  %p	-- punctuation characters
-  %s	-- space characters
-  %u	-- upper case letters
-  %w	-- alphanumeric characters
-  %x	-- hexadecimal digits
-  %z	-- the character with representation 0
+  .      -- all characters
+  %a    -- letters
+  %c    -- control characters
+  %d    -- digits
+  %l    -- lower case letters
+  %p    -- punctuation characters
+  %s    -- space characters
+  %u    -- upper case letters
+  %w    -- alphanumeric characters
+  %x    -- hexadecimal digits
+  %z    -- the character with representation 0
 
 -- MAGIC CHARACTERS
   . % * + - ? ^ $ [ ] ( )

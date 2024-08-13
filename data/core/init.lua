@@ -11,7 +11,6 @@ local Doc
 
 local core = {}
 
-
 local function project_scan_thread()
     local function diff_files(a, b)
         if #a ~= #b then return true end
@@ -36,8 +35,9 @@ local function project_scan_thread()
         local dirs, files = {}, {}
 
         for _, file in ipairs(all) do
-            if not config.ignore_files or not common.match_pattern(file, config.ignore_files) then
-                local file = (path ~= "." and path .. PATHSEP or "") .. file
+            local file = (path ~= "." and path .. PATHSEP or "") .. file
+
+            if not core.is_ignore(file) then
                 local info = system.get_file_info(file)
                 if info and info.size < size_limit then
                     info.filename = file
@@ -133,8 +133,8 @@ function core.init()
     core.root_view.root_node:split("down", core.command_view, true)
     core.root_view.root_node.b:split("down", core.status_view, true)
 
-    core.add_thread(project_scan_thread)
     command.add_defaults()
+
     local got_plugin_error = not core.load_plugins()
     local got_user_error = not core.try(require, "user")
     local got_project_error = not core.load_project_module()
@@ -147,8 +147,10 @@ function core.init()
         command.perform("core:open-log")
     end
 
+    core.add_thread(project_scan_thread)
     system.set_window_opacity(config.window_opacity or 1.0)
 end
+
 
 local temp_uid = (system.get_time() * 1000) % 0xffffffff
 local temp_file_prefix = string.format(".lite_temp_%08x", temp_uid)
@@ -162,11 +164,13 @@ local function delete_temp_files()
     end
 end
 
+
 function core.temp_filename(ext)
     temp_file_counter = temp_file_counter + 1
     return EXEDIR .. PATHSEP .. temp_file_prefix
         .. string.format("%06x", temp_file_counter) .. (ext or "")
 end
+
 
 function core.quit(force)
     if force then
@@ -194,6 +198,7 @@ function core.quit(force)
     core.quit(true)
 end
 
+
 function core.load_plugins()
     local no_errors = true
     local files = system.list_dir(EXEDIR .. "/data/plugins")
@@ -211,6 +216,7 @@ function core.load_plugins()
     return no_errors
 end
 
+
 function core.load_project_module()
     local filename = ".lite_project.lua"
     if system.get_file_info(filename) then
@@ -224,6 +230,7 @@ function core.load_project_module()
     return true
 end
 
+
 function core.reload_module(name)
     local old = package.loaded[name]
     package.loaded[name] = nil
@@ -234,6 +241,7 @@ function core.reload_module(name)
     end
 end
 
+
 function core.set_active_view(view)
     assert(view, "Tried to set active view to nil")
     if view ~= core.active_view then
@@ -242,11 +250,13 @@ function core.set_active_view(view)
     end
 end
 
+
 function core.add_thread(f, weak_ref)
     local key = weak_ref or #core.threads + 1
     local fn = function() return core.try(f) end
     core.threads[key] = { cr = coroutine.create(fn), wake = 0 }
 end
+
 
 function core.push_clip_rect(x, y, w, h)
     local x2, y2, w2, h2 = unpack(core.clip_rect_stack[#core.clip_rect_stack])
@@ -258,11 +268,13 @@ function core.push_clip_rect(x, y, w, h)
     renderer.set_clip_rect(x, y, w, h)
 end
 
+
 function core.pop_clip_rect()
     table.remove(core.clip_rect_stack)
     local x, y, w, h = unpack(core.clip_rect_stack[#core.clip_rect_stack])
     renderer.set_clip_rect(x, y, w, h)
 end
+
 
 function core.open_doc(filename)
     if filename then
@@ -293,6 +305,7 @@ function core.open_doc(filename)
     return doc
 end
 
+
 function core.get_views_referencing_doc(doc)
     local res = {}
     local views = core.root_view.root_node:get_children()
@@ -301,6 +314,7 @@ function core.get_views_referencing_doc(doc)
     end
     return res
 end
+
 
 local function log(icon, icon_color, fmt, ...)
     local text = string.format(fmt, ...)
@@ -323,14 +337,17 @@ function core.log(...)
     return log("i", style.text, ...)
 end
 
+
 function core.log_quiet(...)
     -- return log("!", style.text, ...)
     return log(nil, nil, ...)
 end
 
+
 function core.error(...)
     return log("!", style.accent, ...)
 end
+
 
 function core.try(fn, ...)
     local err
@@ -344,6 +361,7 @@ function core.try(fn, ...)
     end
     return false, err
 end
+
 
 function core.on_event(type, ...)
     local did_keymap = false
@@ -379,6 +397,7 @@ function core.on_event(type, ...)
     end
     return did_keymap
 end
+
 
 function core.step()
     -- handle events
@@ -476,6 +495,7 @@ function core.step()
     return true
 end
 
+
 local run_threads = coroutine.wrap(function()
     while true do
         local max_time = 1 / config.fps - 0.004
@@ -559,6 +579,7 @@ function core.run()
     end
 end
 
+
 function core.on_error(err)
     -- write error to file
     local fp = io.open(EXEDIR .. "/error.txt", "wb")
@@ -571,6 +592,36 @@ function core.on_error(err)
             doc:save(doc.filename .. "~")
         end
     end
+end
+
+
+function core.add_ignore(pattern)
+    if type(pattern) == "table" then
+        for _, v in ipairs(pattern) do
+            core.add_ignore(v)
+        end
+
+        return
+    end
+
+    if not core.ignore_files then
+        core.ignore_files = {}
+    end
+
+    table.insert(core.ignore_files, pattern)
+end
+
+
+function core.is_ignore(file)
+    if config.ignore_files and common.match_pattern(file, config.ignore_files) then
+        return true
+    end
+
+    if not core.ignore_files then
+        return false
+    end
+
+    return common.match_pattern(file, core.ignore_files)
 end
 
 return core
