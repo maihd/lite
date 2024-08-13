@@ -37,7 +37,7 @@ static void lite_get_exe_filename(char* buf, int sz)
 
 static lua_State* lite_create_lua(uint32_t argc, const char** argv)
 {
-	lua_State* L = luaL_newstate();
+    lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     lite_api_load_libs(L);
 
@@ -64,7 +64,7 @@ static lua_State* lite_create_lua(uint32_t argc, const char** argv)
     lua_pushstring(L, exename);
     lua_setglobal(L, "EXEFILE");
 
-	return L;
+    return L;
 }
 
 void lite_startup(const LiteStartupParams params)
@@ -72,7 +72,7 @@ void lite_startup(const LiteStartupParams params)
     uint32_t     argc = params.argc;
     const char** argv = params.argv;
 
-	lua_State* L = lite_create_lua(argc, argv);
+    lua_State* L = lite_create_lua(argc, argv);
 
     int errcode = luaL_dostring(
         L,
@@ -113,9 +113,9 @@ void lite_startup(const LiteStartupParams params)
         sprintf(dialog_message, "Cannot launch application. Error:\n%s\n\nLaunch application with safe mode?", errmsg);
         if (lite_window_confirm_dialog(title, dialog_message))
         {
-			lua_close(L);
-			
-			L = lite_create_lua(argc, argv);
+            lua_close(L);
+
+            L = lite_create_lua(argc, argv);
 
             errcode = luaL_dostring(
                 L,
@@ -125,8 +125,8 @@ void lite_startup(const LiteStartupParams params)
                 "  PATHSEP = package.config:sub(1, 1)\n"
                 //"  PATHSEP = \"/\"\n"
                 "  EXEDIR = EXEFILE:match(\"^(.+)[/\\\\].*$\")\n"
-                "  package.path = EXEDIR .. '/fallback/?.lua;' .. package.path\n"
-                "  package.path = EXEDIR .. '/fallback/?/init.lua;' .. package.path\n"
+                "  package.path = EXEDIR .. '/.fallback/?.lua;' .. package.path\n"
+                "  package.path = EXEDIR .. '/.fallback/?/init.lua;' .. package.path\n"
                 "  core = require('core')\n"
                 "  core.init()\n"
                 "  core.run()\n"

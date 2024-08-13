@@ -18,4 +18,4 @@ command.add(nil, {
 
 keymap.add { ["ctrl+shift+b"] = "project:build-project" }
 
-core.add_ignore { "^build", "^fallback", }
+core.add_ignore { "^libs", "^.build", "^.project", "^.fallback", }

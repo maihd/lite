@@ -54,6 +54,7 @@ local function find(label, search_fn)
             dv.doc:set_selection(line2, col2, line1, col1)
             dv:scroll_to_line(line2, true)
             found = true
+            last_fn, last_text = search_fn, text
         else
             dv.doc:set_selection(unpack(sel))
             found = false

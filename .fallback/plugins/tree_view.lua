@@ -144,7 +144,7 @@ function TreeView:draw()
 
     local icon_width = style.icon_font:get_width("D")
 --     local spacing = style.font:get_width(" ") * 2
-    local spacing = 4
+    local spacing = 2
 
     local doc = core.active_view.doc
     local active_filename = doc and system.absolute_path(doc.filename or "")

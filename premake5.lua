@@ -1,7 +1,7 @@
 local ROOT_DIR = path.getabsolute(".")
 local LIBS_DIR = path.join(ROOT_DIR, "libs")
-local BUILD_DIR = path.join(ROOT_DIR, "build")
-local PROJECT_DIR = path.join(ROOT_DIR, "project")
+local BUILD_DIR = path.join(ROOT_DIR, ".build")
+local PROJECT_DIR = path.join(ROOT_DIR, ".project")
 
 workspace "lite"
 do
