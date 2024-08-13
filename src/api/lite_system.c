@@ -590,6 +590,11 @@ static const luaL_Reg lib_funcs[] = {
     {"begin_frame",             f_begin_frame           },
     {"end_frame",               f_end_frame             },
 
+    // @todo(maihd): add set_window_position
+    // @todo(maihd): add minimize_window
+    // @todo(maihd): add maximize_window
+    // @todo(maihd): add close_window
+
     {"mkdir_recursive",         f_mkdir_recursive       },
     {"parent_directory",        f_parent_directory      },
 

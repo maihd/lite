@@ -21,7 +21,11 @@ function StatusView:new()
 end
 
 
-function StatusView:on_mouse_pressed()
+function StatusView:on_mouse_pressed(button, x, y, clicks)
+    if button ~= "left" then
+        return
+    end
+
     core.set_active_view(core.last_active_view)
     if system.get_time() < self.message_timeout
     and not core.active_view:is(LogView) then
