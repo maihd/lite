@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     const LiteStartupParams startup_params = {
         .argc = (uint32_t)argc,
         .argv = (const char**)argv,
-        .title = "lite",
+        .title = "Lite",
         .window_handle = lite_window_handle(),
         .flags = LiteStartupFlags_None
     };
