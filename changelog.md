@@ -31,3 +31,5 @@
     - Add item to OS context menu.
     - Add update script
     - Add install script
+
+- Ignore folders, files (blacklist)

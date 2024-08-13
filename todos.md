@@ -1,23 +1,9 @@
 # TODOs
 ToDo list, order by priority.
 
-- Native Runtime (focusing):
-    - Make app more robust.
-    - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
-    - Display launching message box with style and helper.
-    - Add more render backends: OpenGL, Vulkan, Dear ImGui.
-    - Better font rendering.
-    - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
-        - Simple and robust C framework
-        - Can be customize Lua runtime: Lua52 (or 53, 54), LuaJIT, Luau
-        - Fennel simple showcase for Emacs-like scripting experience
-        - Can run LiteXL Lua data (Use Lua54, but there are no compat layer for LuaJIT)
-        - Can run Pragtical Lua data
-
 - Features (add when needed):
     - Line wrapping
     - Multi cursors
-    - Ignore folders, files (blacklist)
     - Next/Previous find with arrow keys
     - Utf8
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
@@ -37,6 +23,23 @@ ToDo list, order by priority.
         - Prefix does not start at begin of the line
     - Cannot open file with command when focus TreeView (or locked view)
     - Modal tabbing (Vi-like) does not trim
+    - Scope line wrong position
+    - MarkDown language
+    - Crash when long searching progress (commonly with Project Search)
+        - Reproduce: search in project with `previous`
+
+- Native Runtime:
+    - Make app more robust.
+    - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
+    - Display launching message box with style and helper.
+    - Add more render backends: OpenGL, Vulkan, Dear ImGui.
+    - Better font rendering: FreeType, SDF, advance usage of `stb_truetype`
+    - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
+        - Simple and robust C framework
+        - Can be customize Lua runtime: Lua52 (or 53, 54), LuaJIT, Luau
+        - Fennel simple showcase for Emacs-like scripting experience
+        - Can run LiteXL Lua data (Use Lua54, but there are no compat layer for LuaJIT)
+        - Can run Pragtical Lua data
 
 - Syntax highlights:
     - Simple syntax highlights are enough.
