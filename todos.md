@@ -18,13 +18,14 @@ ToDo list, order by priority.
     - Line wrapping
     - Multi cursors
     - Ignore folders, files (blacklist)
-    - Fix bug: cannot open doc when focus TreeView (maybe other lock view)
+    - Next/Previous find with arrow keys
+    - Utf8
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.
     - Use fast string algorithms (code editing are working on string heavily)
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
-    - Recent files in `Open File From Profect` command
+    - Recent files in `Open File From Project` command view
     - Mouse next/previous button (good for reading code)
     - VCS status display
 

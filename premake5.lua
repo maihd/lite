@@ -117,15 +117,15 @@ do
     do
         links {
             "SDL2-static",
-            "Gdi32", 
-            "Shell32", 
-            "Winmm", 
-            "Ole32", 
-            "Version", 
-            "CfgMgr32", 
-            "Imm32", 
-            "Setupapi", 
-            "Advapi32", 
+            "Gdi32",
+            "Shell32",
+            "Winmm",
+            "Ole32",
+            "Version",
+            "CfgMgr32",
+            "Imm32",
+            "Setupapi",
+            "Advapi32",
             "OleAut32"
         }
 
