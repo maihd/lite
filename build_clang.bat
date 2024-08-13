@@ -1,6 +1,6 @@
 @echo off
 
-echo Compiling (windows - clang - x64)...
+echo > Compiling (windows - clang - x64)...
 
 :: Libs for SDL (uncomment to use)
 set PLATFORM_LIBS=-Ilibs/SDL2-2.28.3/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/SDL2-2.28.3/lib/x64
@@ -20,8 +20,14 @@ clang src/*.c src/api/*.c src/lib/stb/*.c ^
     -mwindows res/res.res^
     -o lite.exe
 
+if not %ErrorLevel%==0 (
+    echo > Build failed, maybe lite still running, please close and recompile with build_clang.bat
+    goto :done
+)
+
 :: Remove redundant files
 del lite.exp
 del lite.lib
 
-echo done
+:done
+echo > Build done!

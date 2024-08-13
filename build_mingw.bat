@@ -8,7 +8,7 @@
 :: and install clang:
 :: pacman -S mingw-w64-x86_64-clang
 
-echo Compiling (windows - mingw - x64)...
+echo > Compiling (windows - mingw - x64)...
 
 set CC=C:\msys64\mingw64\bin\clang.exe
 @REM set CC=gcc.exe
@@ -30,4 +30,5 @@ windres res/res.rc -O coff -o res.res
     -mwindows res.res^
     -o lite.exe
 
-echo done
+:done
+echo > Build done!
