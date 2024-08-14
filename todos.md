@@ -6,6 +6,7 @@ ToDo list, order by priority.
     - Multi cursors
     - Next/Previous find with arrow keys
     - Utf8
+    - Custom titlebar
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.
@@ -16,8 +17,6 @@ ToDo list, order by priority.
     - VCS status display
 
 - Fix bugs:
-    - Extra space for end of file is too large
-    - TreeView have no scroll rect
     - Toggle comment not work when:
         - Prefix have no space between content
         - Prefix does not start at begin of the line

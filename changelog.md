@@ -9,28 +9,35 @@
 - Fix BOM on Unicode files.
 - Soft tab VSCode-like.
 - Languages: `Batch`, `C#`, `C`.
-- Double click to log line to open file.
-- Refactor C sources.
+- Double click log line to open file.
+- Refactory C sources.
 - Align line numbers near code.
 - Display icon to show log type.
 - Draw intent guide line. (may be need more mechanic for syntax highlight)
 - Display project name in title bar and status bar.
 - Convert to use native API instead of large library like SDL. (Still have fallback to SDL when native API version is buggy)
+
 - Separated mouse button events:
     - Left Click for selection
     - Right Click for open menu context (WIP, currently no-ops)
     - Middle Click for close tab
     - X1, X2 for backward and forward (WIP, currently no-ops)
-- Fix bug: some time single mouse click cause select token, line.
+
+- Fix bugs:
+    - Some time single mouse click cause select token, line.
+    - Extra space for end of file is too large
+    - TreeView have no scroll rect
+
 - Better mouse interacting.
 - Fallback version for fixing scripts (safe mode).
 - Bootstrap version for debugging and development.
     - Realize that thing exactly what above things did, but with different words, the problem turn out was very simple.
 
 - Software distributing:
-    - Add item to OS context menu.
+    - Add item to OS context menu
     - Add update script
     - Add install script
+    - Add sync fallback script
 
 - Ignore folders, files (blacklist)
 - Better log and log style
