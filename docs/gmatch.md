@@ -3,7 +3,7 @@ Lua string.find/string.gmatch cheatsheet
 Have you ever hard to find string.find/string.gmatch (used in language plugins) docs? This simple doc should help.
 
 -- CHARACTER CLASSES
-  .      -- all characters
+  .     -- all characters
   %a    -- letters
   %c    -- control characters
   %d    -- digits
