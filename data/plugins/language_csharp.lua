@@ -2,8 +2,11 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "C#",
+    version = "v0.0.3",
     files = { "%.cs$" },
+
     comment = "//",
+
     patterns = {
         { pattern = "//.-\n",               type = "comment"  },
         { pattern = { "/%*", "%*/" },       type = "comment"  },
@@ -17,6 +20,7 @@ syntax.add {
         { pattern = "[%a_][%w_]*%f[(]",     type = "function" },
         { pattern = "[%a_][%w_]*",          type = "symbol"   },
     },
+
     symbols = {
         ["if"]              = "keyword",
         ["else"]            = "keyword",
@@ -51,11 +55,22 @@ syntax.add {
         ["catch"]           = "keyword",
         ["finally"]         = "keyword",
 
+        ["lock"]            = "keyword",
+        ["unchecked"]       = "keyword",
+
         ["public"]          = "keyword",
         ["private"]         = "keyword",
-        ["partial"]         = "keyword",
         ["internal"]        = "keyword",
         ["protected"]       = "keyword",
+
+        ["get"]             = "keyword",
+        ["set"]             = "keyword",
+
+        ["sealed"]          = "keyword",
+        ["partial"]         = "keyword",
+        ["virtual"]         = "keyword",
+        ["abstract"]        = "keyword",
+        ["override"]        = "keyword",
 
         ["int"]             = "keyword2",
         ["byte"]            = "keyword2",
