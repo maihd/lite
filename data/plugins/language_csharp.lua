@@ -50,6 +50,7 @@ syntax.add {
         ["readonly"]        = "keyword",
 
         ["var"]             = "keyword",
+        ["new"]             = "keyword",
 
         ["try"]             = "keyword",
         ["catch"]           = "keyword",
@@ -72,6 +73,9 @@ syntax.add {
         ["abstract"]        = "keyword",
         ["override"]        = "keyword",
 
+        ["async"]           = "keyword",
+        ["await"]           = "keyword",
+
         ["int"]             = "keyword2",
         ["byte"]            = "keyword2",
         ["short"]           = "keyword2",
@@ -85,6 +89,7 @@ syntax.add {
         ["ulong"]           = "keyword2",
         ["bool"]            = "keyword2",
         ["string"]          = "keyword2",
+        ["object"]          = "keyword2",
         ["decimal"]         = "keyword2",
 
         ["true"]            = "literal",
