@@ -541,6 +541,89 @@ static int f_end_frame(lua_State* L)
 }
 
 
+static int f_set_window_position(lua_State* L)
+{
+    int32_t x = (int32_t)luaL_checknumber(L, 1);
+    int32_t y = (int32_t)luaL_checknumber(L, 2);
+    lite_window_set_position(x, y);
+    return 0;
+}
+
+
+static int f_get_window_position(lua_State* L)
+{
+    int32_t x;
+    int32_t y;
+    lite_window_get_position(&x, &y);
+
+    lua_pushnumber(L, (lua_Number)x);
+    lua_pushnumber(L, (lua_Number)y);
+
+    return 2;
+}
+
+
+static int f_minimize_window(lua_State* L)
+{
+    lite_window_minimize();
+    return 0;
+}
+
+
+static int f_maximize_window(lua_State* L)
+{
+    lite_window_maximize();
+    return 0;
+}
+
+
+static int f_toggle_maximize_window(lua_State* L)
+{
+    lite_window_toggle_maximize();
+    return 0;
+}
+
+
+static int f_restore_maximize_window(lua_State* L)
+{
+    lite_window_restore_maximize();
+    return 0;
+}
+
+
+static int f_get_mouse_position(lua_State* L)
+{
+    int32_t x;
+    int32_t y;
+    lite_window_get_mouse_position(&x, &y);
+
+    lua_pushnumber(L, (lua_Number)x);
+    lua_pushnumber(L, (lua_Number)y);
+
+    return 2;
+}
+
+
+static int f_get_global_mouse_position(lua_State* L)
+{
+    int32_t x;
+    int32_t y;
+    lite_window_get_global_mouse_position(&x, &y);
+
+    lua_pushnumber(L, (lua_Number)x);
+    lua_pushnumber(L, (lua_Number)y);
+
+    return 2;
+}
+
+
+static int f_close_window(lua_State* L)
+{
+    lite_window_close();
+    return 0;
+}
+
+
 static int f_mkdir_recursive(lua_State* L)
 {
     size_t      length;
@@ -590,10 +673,18 @@ static const luaL_Reg lib_funcs[] = {
     {"begin_frame",             f_begin_frame           },
     {"end_frame",               f_end_frame             },
 
-    // @todo(maihd): add set_window_position
-    // @todo(maihd): add minimize_window
-    // @todo(maihd): add maximize_window
-    // @todo(maihd): add close_window
+    {"set_window_position",     f_set_window_position   },
+    {"get_window_position",     f_get_window_position   },
+    
+    {"minimize_window",         f_minimize_window       },
+    {"maximize_window",         f_maximize_window       },
+    {"toggle_maximize_window",  f_toggle_maximize_window    },
+    {"restore_maximize_window", f_restore_maximize_window   },
+
+    {"get_mouse_position",      f_get_mouse_position    },
+    {"get_global_mouse_position",      f_get_global_mouse_position    },
+
+    {"close_window",            f_close_window          },
 
     {"mkdir_recursive",         f_mkdir_recursive       },
     {"parent_directory",        f_parent_directory      },

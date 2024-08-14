@@ -42,6 +42,10 @@ style.scope_line        = { common.color "#494950" }
 
 -- MaiHD custom colors
 
+style.info              = { common.color "#97979c" }
+style.warn              = { common.color "#f7c95c" }
+style.error             = { common.color "#F77483" }
+
 style.file              = { common.color "#93DDFA" }
 style.file_dirty        = { common.color "#F77483" }
 style.titlebar          = { common.color "#111111", common.color "#000000" }

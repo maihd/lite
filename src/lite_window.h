@@ -50,9 +50,20 @@ void            lite_window_hide(void);
 void            lite_window_show_titlebar(void);
 void            lite_window_hide_titlebar(void);
 
+void            lite_window_set_position(int32_t x, int32_t y);
+void            lite_window_get_position(int32_t* x, int32_t* y);
+
+void            lite_window_minimize(void);
+void            lite_window_maximize(void);
+void            lite_window_toggle_maximize(void);
+void            lite_window_restore_maximize(void);
+
 void            lite_window_set_mode(LiteWindowMode mode);
 void            lite_window_set_title(const char* title);
 void            lite_window_set_cursor(LiteCursor cursor);
+
+void            lite_window_get_mouse_position(int32_t* x, int32_t* y);
+void            lite_window_get_global_mouse_position(int32_t* x, int32_t* y);
 
 float           lite_window_get_opacity(void);                  // Opacity in range [0.0f, 1.0f]
 void            lite_window_set_opacity(float opacity);         // Opacity in range [0.0f, 1.0f]

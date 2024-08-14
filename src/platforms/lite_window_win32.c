@@ -1786,6 +1786,55 @@ void lite_window_hide_titlebar(void)
 }
 
 
+void lite_window_set_position(int32_t x, int32_t y)
+{
+
+}
+
+
+void lite_window_get_position(int32_t* x, int32_t* y)
+{
+
+}
+
+
+void lite_window_maximize(void)
+{
+
+}
+
+
+void lite_window_minimize(void)
+{
+
+}
+
+
+void lite_window_toggle_maximize(void)
+{
+    int32_t w, h;
+    int32_t max_w, max_h;
+
+    // SDL_GetWindowSize(window, &w, &h);
+    // SDL_GetWindowSize(window, &max_w, &max_h);
+
+    // if (w == max_w && h == max_h)
+    // {
+    //     SDL_RestoreWindow(window);
+    // }
+    // else
+    // {
+    //     SDL_MaximizeWindow(window);
+    // }
+}
+
+
+void lite_window_restore_maximize(void)
+{
+    // SDL_RestoreWindow(window);
+}
+
+
 void lite_window_set_mode(LiteWindowMode mode)
 {
     switch (mode)

@@ -339,18 +339,23 @@ end
 
 
 function core.log(...)
-    return log("i", style.text, ...)
+    return log("i", style.info, ...)
 end
 
 
 function core.log_quiet(...)
-    -- return log("!", style.text, ...)
+--     return log("i", style.text, ...)
     return log(nil, nil, ...)
 end
 
 
+function core.warn(...)
+    return log("!", style.warn, ...)
+end
+
+
 function core.error(...)
-    return log("!", style.accent, ...)
+    return log("!", style.error, ...)
 end
 
 

@@ -113,14 +113,15 @@ void lite_window_open(void)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 #endif
     SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "175");
+    // SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
+    // SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
 
     Uint32 window_flags = SDL_WINDOW_RESIZABLE
-                          | SDL_WINDOW_ALLOW_HIGHDPI
-                          | SDL_WINDOW_HIDDEN;
-//     window_flags |= SDL_WINDOW_BORDERLESS;
+                        | SDL_WINDOW_ALLOW_HIGHDPI
+                        | SDL_WINDOW_HIDDEN;
 
     window = SDL_CreateWindow("",
                               SDL_WINDOWPOS_UNDEFINED,
@@ -174,12 +175,57 @@ void lite_window_hide(void)
 void lite_window_show_titlebar(void)
 {
     // SetWindowLong(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+    SDL_SetWindowBordered(window, SDL_TRUE);
 }
 
 
 void lite_window_hide_titlebar(void)
 {
     // SetWindowLong(s_window, GWL_STYLE, WS_POPUP);
+    SDL_SetWindowBordered(window, SDL_FALSE);
+}
+
+
+void lite_window_set_position(int32_t x, int32_t y)
+{
+    SDL_SetWindowPosition(window, x, y);
+}
+
+
+void lite_window_get_position(int32_t* x, int32_t* y)
+{
+    SDL_GetWindowPosition(window, x, y);
+}
+
+
+void lite_window_minimize(void)
+{
+    SDL_MinimizeWindow(window);
+}
+
+
+void lite_window_maximize(void)
+{
+    SDL_MaximizeWindow(window);
+}
+
+
+void lite_window_toggle_maximize(void)
+{
+    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)
+    {
+        SDL_RestoreWindow(window);
+    }
+    else
+    {
+        SDL_MaximizeWindow(window);
+    }
+}
+
+
+void lite_window_restore_maximize(void)
+{
+    SDL_RestoreWindow(window);
 }
 
 
@@ -228,6 +274,18 @@ void lite_window_set_cursor(LiteCursor cursor)
         sdl_cursor_cache[n] = sdl_cursor;
     }
     SDL_SetCursor(sdl_cursor);
+}
+
+
+void lite_window_get_mouse_position(int32_t* x, int32_t* y)
+{
+    SDL_GetMouseState(x, y);
+}
+
+
+void lite_window_get_global_mouse_position(int32_t* x, int32_t* y)
+{
+    SDL_GetGlobalMouseState(x, y);
 }
 
 

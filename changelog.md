@@ -33,3 +33,4 @@
     - Add install script
 
 - Ignore folders, files (blacklist)
+- Better log and log style

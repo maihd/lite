@@ -26,7 +26,14 @@ end
 function TitleBar:update()
     self.size.y = style.font:get_height() + style.padding.y * 2
     self.scroll.to.y = 0
-    self.size.y = 0 -- Temporary turn titlebar off
+
+    local turn_off = true -- Temporary turn titlebar off
+    if turn_off then
+        self.size.y = 0
+        system.show_window_titlebar()
+    else
+        system.hide_window_titlebar()
+    end
 
     TitleBar.super.update(self)
 end
@@ -80,8 +87,8 @@ function TitleBar:on_mouse_moved(x, y, dx, dy)
     -- Handle moving window
 
     if self.moving then
-
-
+        local mx, my = system.get_global_mouse_position()
+        system.set_window_position(mx - self.mouse_dx, my - self.mouse_dy)
         return
     end
 
@@ -124,7 +131,7 @@ function TitleBar:on_mouse_pressed(button, x, y, clicks)
 
     -- Maximize
     if self.hover_index == 1 then
-        system.maximize_window()
+        system.toggle_maximize_window()
         return
     end
 
@@ -135,6 +142,12 @@ function TitleBar:on_mouse_pressed(button, x, y, clicks)
     end
 
     self.moving = true
+
+    local mx, my = system.get_global_mouse_position()
+    local wx, wy = system.get_window_position()
+
+    self.mouse_dx = mx - wx
+    self.mouse_dy = my - wy
 end
 
 
@@ -166,13 +179,6 @@ function TitleBar:draw_right_items(items, yoffset)
     local w = draw_right_items(self, items, 0, 0, item_size, text_width)
     x = x + self.size.x - w
 
-    if not self.logged then
-        self.logged = true
-        core.log("w = " .. w)
-        core.log("x = " .. x)
-        core.log("self.size.x = " .. self.size.x)
-    end
-
     if self.hover_index then
         renderer.draw_rect(x + self.hover_index * item_size, y, item_size, self.size.y, style.syntax["keyword2"])
     end
@@ -183,7 +189,7 @@ end
 
 function TitleBar:get_items()
     return {
-        style.file, style.icon_font, style.icons.folder,
+        style.file, style.font, "{L}",
         style.accent, style.font, style.dim, self.separator2,
         style.accent, style.font, core.window_title,
     }, {
