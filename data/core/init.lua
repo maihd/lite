@@ -482,7 +482,7 @@ function core.step()
 
     -- update window title
     local name = core.active_view:get_name()
-    local title_root = core.project_dir_name .. " - Lite"
+    local title_root = core.project_dir_name -- .. " - Lite" -- We have the icon, no need to present "Lite"
     local title = (name ~= "---") and (name .. " - " .. title_root) or title_root
     if title ~= core.window_title then
         system.set_window_title(title)
