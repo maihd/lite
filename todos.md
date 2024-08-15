@@ -21,6 +21,7 @@ ToDo list, order by priority.
         - Prefix have no space between content
         - Prefix does not start at begin of the line
     - Cannot open file with command when focus TreeView (or locked view)
+    - Cannot return from TreeView to DocView
     - Modal tabbing (Vi-like) does not trim
     - Scope line wrong position
     - MarkDown language

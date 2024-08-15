@@ -448,7 +448,9 @@ function DocView:draw()
         if config.scope_highlight then
             local indent = 0
             for _, scope in pairs(self.doc.highlighter.scopes) do
-                if not (scope.end_line < minline or scope.begin_line > maxline) then
+                if scope.end_line ~= scope.begin_line
+--                     and not (scope.end_line < minline or scope.begin_line > maxline)
+                then
                     local begin_draw_line = math.max(minline, scope.begin_line + 1)
                     local end_draw_line = math.min(maxline, scope.end_line - 1)
                     local sx, sy = self:get_line_screen_position(begin_draw_line)
