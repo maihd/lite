@@ -7,7 +7,6 @@ local Object = require "core.object"
 
 local View = Object:extend()
 
-
 function View:new()
     self.position = { x = 0, y = 0 }
     self.size = { x = 0, y = 0 }

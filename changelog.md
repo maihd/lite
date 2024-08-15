@@ -1,4 +1,5 @@
 ## Change from rxi/lite
+- Important: Keybinds is difference from rxi/lite
 - Use LuaJIT-2.1.0-beta3 instead of Lua 5.2.
 - Check directory changed based on last write time instead of file diffs.
 - Add premake5 to generate Visual Studio project, for debugging purpose.

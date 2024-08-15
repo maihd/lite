@@ -187,6 +187,7 @@ end
 
 
 -- patch event logic into RootView
+
 local on_text_input = RootView.on_text_input
 local update = RootView.update
 local draw = RootView.draw
@@ -268,14 +269,19 @@ command.add(predicate, {
     ["autocomplete:cancel"] = function()
         reset_suggestions()
     end,
+
+    ["autocomplete:update-suggestions"] = function ()
+        update_suggestions()
+    end
 })
 
 
 keymap.add {
-    ["tab"]    = "autocomplete:complete",
-    ["up"]     = "autocomplete:previous",
-    ["down"]   = "autocomplete:next",
-    ["escape"] = "autocomplete:cancel",
+    ["tab"]         = "autocomplete:complete",
+    ["up"]          = "autocomplete:previous",
+    ["down"]        = "autocomplete:next",
+    ["escape"]      = "autocomplete:cancel",
+    ["ctrl+space"]  = "autocomplete:update-suggestions"
 }
 
 

@@ -90,16 +90,16 @@ keymap.add {
     ["ctrl+n"] = "core:new-doc",
     ["f11"] = "core:toggle-fullscreen",
 
-    ["alt+shift+j"] = "root:split-left",
-    ["alt+shift+l"] = "root:split-right",
-    ["alt+shift+i"] = "root:split-up",
-    ["alt+shift+k"] = "root:split-down",
+    ["ctrl+alt+shift+left"] = "root:split-left",
+    ["ctrl+alt+shift+right"] = "root:split-right",
+    ["ctrl+alt+shift+up"] = "root:split-up",
+    ["ctrl+alt+shift+down"] = "root:split-down",
 
     -- @todo(maihd): add switch-toggle command
-    ["alt+j"] = "root:switch-to-left",
-    ["alt+l"] = "root:switch-to-right",
-    ["alt+i"] = "root:switch-to-up",
-    ["alt+k"] = "root:switch-to-down",
+    ["alt+shift+left"] = "root:switch-to-left",
+    ["alt+shift+right"] = "root:switch-to-right",
+    ["alt+shift+up"] = "root:switch-to-up",
+    ["alt+shift+down"] = "root:switch-to-down",
 
     ["ctrl+w"] = "root:close",
     ["ctrl+tab"] = "root:switch-to-next-tab",
@@ -142,6 +142,7 @@ keymap.add {
     ["ctrl+shift+delete"] = "doc:delete-to-next-word-end",
     ["return"] = { "command:submit", "doc:newline" },
     ["keypad enter"] = { "command:submit", "doc:newline" },
+
     ["ctrl+return"] = "doc:newline-below",
     ["ctrl+shift+return"] = "doc:newline-above",
     ["ctrl+j"] = "doc:join-lines",
@@ -149,10 +150,13 @@ keymap.add {
     ["ctrl+d"] = { "find-replace:select-next", "doc:select-word" },
     ["ctrl+l"] = "doc:select-lines",
     ["ctrl+/"] = "doc:toggle-line-comments",
+
     ["alt+up"] = "doc:move-lines-up",
     ["alt+down"] = "doc:move-lines-down",
-    ["alt+shift+up"] = { "doc:duplicate-lines", "command:select-previous", "doc:move-to-previous-line" },
-    ["alt+shift+down"] = "doc:duplicate-lines",
+
+--     ["alt+shift+up"] = { "doc:duplicate-lines", "command:select-previous", "doc:move-to-previous-line" },
+--     ["alt+shift+down"] = "doc:duplicate-lines",
+
     ["ctrl+shift+d"] = "doc:duplicate-lines",
     ["ctrl+shift+k"] = "doc:delete-lines",
 
@@ -175,10 +179,12 @@ keymap.add {
     ["shift+right"] = "doc:select-to-next-char",
     ["shift+up"] = "doc:select-to-previous-line",
     ["shift+down"] = "doc:select-to-next-line",
+
     ["ctrl+shift+left"] = "doc:select-to-previous-word-start",
     ["ctrl+shift+right"] = "doc:select-to-next-word-end",
     ["ctrl+shift+up"] = "doc:select-to-previous-block-start",
     ["ctrl+shift+down"] = "doc:select-to-next-block-end",
+
     ["shift+home"] = "doc:select-to-start-of-line",
     ["shift+end"] = "doc:select-to-end-of-line",
     ["ctrl+shift+home"] = "doc:select-to-start-of-doc",
