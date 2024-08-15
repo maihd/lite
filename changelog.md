@@ -41,3 +41,6 @@
 
 - Ignore folders, files (blacklist)
 - Better log and log style
+
+- Workflow:
+    - Have an fallback version when build_clang.bat failed to edit code

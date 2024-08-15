@@ -27,9 +27,6 @@ ToDo list, order by priority.
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
 
-- Workflow:
-    - Have an fallback version when build_clang.bat failed to edit code
-
 - Native Runtime:
     - Make app more robust.
     - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
