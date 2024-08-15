@@ -3,17 +3,24 @@
 :: Checking if lite.exe is running
 tasklist /fi "ImageName eq lite.exe" /fo csv 2>NUL | find /i "lite.exe">NUL
 if %ErrorLevel%==0 (
-    echo Lite is running, please close it before build, and run this script again
+    echo - Lite is running, please close it before build, and run this script again
     goto :done
 )
 
 echo - Compiling (windows - clang - x64)...
 
-:: Libs for SDL (uncomment to use)
-set PLATFORM_LIBS=-Ilibs/SDL2-2.28.3/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/SDL2-2.28.3/lib/x64
+set WINDOW_SYSTEM=%1
 
-:: Libs for Win32 (uncomment to use)
-:: set PLATFORM_LIBS=
+if "%WINDOW_SYSTEM%"=="win32" (
+    echo - Selected Native Win32 API for window system
+    :: Libs for Win32 (uncomment to use)
+    set PLATFORM_LIBS=
+) else (
+    echo - Selected SDL2 for window system
+    :: Libs for SDL (uncomment to use)
+    set SDL_VERSION=SDL2-2.28.3
+    set PLATFORM_LIBS=-Ilibs/%SDL_VERSION%/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/%SDL_VERSION%/lib/x64
+)
 
 if not exist .build (
     mkdir .build

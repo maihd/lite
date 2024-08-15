@@ -216,7 +216,7 @@ function TitleBar:get_items()
         style.titlebar_font, style.titlebar_icon, "",
 
         -- Maximize Button
-        style.titlebar_font, style.titlebar_icon, system.is_window_maximized and "" or "",
+        style.titlebar_font, style.titlebar_icon, system.is_window_maximized() and "" or "",
 
         -- Close button
         style.titlebar_font, style.titlebar_icon, "",

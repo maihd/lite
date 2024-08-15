@@ -26,6 +26,10 @@ ToDo list, order by priority.
     - MarkDown language
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
+    - Fix maximize wrong size
+    - Add window border
+    - Resizing window
+    - Corecting moving window when holding titlebar
 
 - Native Runtime:
     - Make app more robust.

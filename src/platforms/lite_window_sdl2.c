@@ -20,7 +20,14 @@
 #include "lite_log.h"
 #include "lite_window.h"
 
-SDL_Window* window;
+SDL_Window*     s_window;
+LiteWindowMode  s_current_window_mode;
+
+int32_t         s_window_x_before_maximize;
+int32_t         s_window_y_before_maximize;
+
+int32_t         s_window_width_before_maximize;
+int32_t         s_window_height_before_maximize;
 
 static void lite_window_load_icon(void)
 {
@@ -30,7 +37,7 @@ static void lite_window_load_icon(void)
     SDL_Surface* surf =
         SDL_CreateRGBSurfaceFrom(icon_rgba, 64, 64, 32, 64 * 4, 0x000000ff,
                                  0x0000ff00, 0x00ff0000, 0xff000000);
-    SDL_SetWindowIcon(window, surf);
+    SDL_SetWindowIcon(s_window, surf);
     SDL_FreeSurface(surf);
 #endif
 }
@@ -69,6 +76,7 @@ bool lite_clipboard_set(LiteStringView text)
 {
     return SDL_SetClipboardText(text.buffer) == 0;
 }
+
 
 void lite_console_open(void)
 {
@@ -125,26 +133,25 @@ void lite_window_open(void)
   SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
 #endif
 #if SDL_VERSION_ATLEAST(2, 0, 12)
-  /* This hint tells SDL to allow the user to resize a borderless windoow.
+  /* This hint tells SDL to allow the user to resize a borderless window.
   ** It also enables aero-snap on Windows apparently. */
   SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 #endif
 
-    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
+//     SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
 
-    Uint32 window_flags = SDL_WINDOW_RESIZABLE
-                        | SDL_WINDOW_ALLOW_HIGHDPI
+    Uint32 window_flags = SDL_WINDOW_ALLOW_HIGHDPI
                         | SDL_WINDOW_HIDDEN;
 
-    window = SDL_CreateWindow("",
+    s_window = SDL_CreateWindow("",
                               SDL_WINDOWPOS_UNDEFINED,
                               SDL_WINDOWPOS_UNDEFINED,
                               (int)(dm.w * 0.8), (int)(dm.h * 0.8),
                               window_flags);
-    if (window)
+    if (s_window)
     {
         // @todo(maihd): handle error
     }
@@ -156,20 +163,20 @@ void lite_window_open(void)
 
 void lite_window_close(void)
 {
-    SDL_DestroyWindow(window);
-    window = nullptr;
+    SDL_DestroyWindow(s_window);
+    s_window = nullptr;
 }
 
 
 void* lite_window_handle(void)
 {
-    return window;
+    return s_window;
 }
 
 
 void* lite_window_surface(int32_t* width, int32_t* height)
 {
-    SDL_Surface* surface = SDL_GetWindowSurface(window);
+    SDL_Surface* surface = SDL_GetWindowSurface(s_window);
     if (width)  *width   = (int32_t)surface->w;
     if (height) *height  = (int32_t)surface->h;
     return surface->pixels;
@@ -178,87 +185,115 @@ void* lite_window_surface(int32_t* width, int32_t* height)
 
 void lite_window_show(void)
 {
-    SDL_ShowWindow(window);
+    SDL_ShowWindow(s_window);
 }
 
 
 void lite_window_hide(void)
 {
-    SDL_HideWindow(window);
+    SDL_HideWindow(s_window);
 }
 
 
 void lite_window_show_titlebar(void)
 {
     // SetWindowLong(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
-    SDL_SetWindowBordered(window, SDL_TRUE);
+    SDL_SetWindowBordered(s_window, SDL_TRUE);
 }
 
 
 void lite_window_hide_titlebar(void)
 {
     // SetWindowLong(s_window, GWL_STYLE, WS_POPUP);
-    SDL_SetWindowBordered(window, SDL_FALSE);
+    SDL_SetWindowBordered(s_window, SDL_FALSE);
 }
 
 
 void lite_window_set_position(int32_t x, int32_t y)
 {
-    SDL_SetWindowPosition(window, x, y);
+    SDL_SetWindowPosition(s_window, x, y);
 }
 
 
 void lite_window_get_position(int32_t* x, int32_t* y)
 {
-    SDL_GetWindowPosition(window, x, y);
+    SDL_GetWindowPosition(s_window, x, y);
 }
 
 
 void lite_window_minimize(void)
 {
-    SDL_MinimizeWindow(window);
+    SDL_MinimizeWindow(s_window);
 }
 
 
 void lite_window_maximize(void)
 {
-    SDL_MaximizeWindow(window);
+    if (lite_window_get_mode() == LiteWindowMode_Normal)
+    {
+//         lite_window_get_position(&s_window_x_before_maximize, &s_window_y_before_maximize);
+//         lite_window_get_size(&s_window_width_before_maximize, &s_window_height_before_maximize);
+//         s_current_window_mode = LiteWindowMode_Maximized;
+
+//         SDL_Rect display_bounds;
+//         if (SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(s_window), &display_bounds) == 0)
+//         {
+//             lite_window_set_position(display_bounds.x, display_bounds.y);
+// //             lite_window_set_size(display_bounds.w, display_bounds.h);
+//             SDL_SetWindowSize(s_window, display_bounds.w, display_bounds.h);
+//         }
+//         else
+//         {
+//             SDL_MaximizeWindow(s_window);
+//         }
+        SDL_MaximizeWindow(s_window);
+    }
 }
 
 
 bool lite_window_is_maximized(void)
 {
-    return SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED;
+    //return s_current_window_mode == LiteWindowMode_Maximized;
+    return SDL_GetWindowFlags(s_window) & SDL_WINDOW_MAXIMIZED;
 }
 
 
 void lite_window_toggle_maximize(void)
 {
-    if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)
+    if (lite_window_is_maximized())
     {
-        SDL_RestoreWindow(window);
+        lite_window_restore_maximize();
     }
     else
     {
-        SDL_MaximizeWindow(window);
+        lite_window_maximize();
     }
 }
 
 
 void lite_window_restore_maximize(void)
 {
-    SDL_RestoreWindow(window);
+    SDL_RestoreWindow(s_window);
+//     if (lite_window_is_maximized())
+//     {
+//         s_current_window_mode = LiteWindowMode_Normal;
+//         lite_window_set_position(s_window_x_before_maximize, s_window_y_before_maximize);
+//         lite_window_set_size(s_window_width_before_maximize, s_window_height_before_maximize);
+
+//         SDL_SetWindowSize(s_window, s_window_width_before_maximize, s_window_height_before_maximize);
+//     }
 }
 
 
 LiteWindowMode lite_window_get_mode(void)
 {
-    Uint32 flags = SDL_GetWindowFlags(window);
+    Uint32 flags = SDL_GetWindowFlags(s_window);
     if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
     {
         return LiteWindowMode_FullScreen;
     }
 
+//     return s_current_window_mode;
     if (flags & SDL_WINDOW_MAXIMIZED)
     {
         return LiteWindowMode_Maximized;
@@ -273,26 +308,26 @@ void lite_window_set_mode(LiteWindowMode mode)
     // @note(maihd):
     //      when mode != fullscreen,
     //      must be remove SDL_WINDOW_FULLSCREEN_DESKTOP flag from window
-    SDL_SetWindowFullscreen(window,
+    SDL_SetWindowFullscreen(s_window,
         mode == LiteWindowMode_FullScreen
         ? SDL_WINDOW_FULLSCREEN_DESKTOP
         : 0);
 
     if (mode == LiteWindowMode_Normal)
     {
-        SDL_RestoreWindow(window);
+        SDL_RestoreWindow(s_window);
     }
 
     if (mode == LiteWindowMode_Maximized)
     {
-        SDL_MaximizeWindow(window);
+        SDL_MaximizeWindow(s_window);
     }
 }
 
 
 void lite_window_set_title(const char* title)
 {
-    SDL_SetWindowTitle(window, title);
+    SDL_SetWindowTitle(s_window, title);
 }
 
 
@@ -334,20 +369,20 @@ void lite_window_get_global_mouse_position(int32_t* x, int32_t* y)
 float lite_window_get_opacity(void)
 {
     float opacity = 1.0f;
-    SDL_GetWindowOpacity(window, &opacity);
+    SDL_GetWindowOpacity(s_window, &opacity);
     return opacity;
 }
 
 
 void lite_window_set_opacity(float opacity)
 {
-    SDL_SetWindowOpacity(window, opacity);
+    SDL_SetWindowOpacity(s_window, opacity);
 }
 
 
 void lite_window_get_size(int32_t* width, int32_t* height)
 {
-    SDL_GetWindowSize(window, width, height);
+    SDL_GetWindowSize(s_window, width, height);
 }
 
 
@@ -361,20 +396,20 @@ float lite_window_dpi(void)
 
 bool lite_window_has_focus(void)
 {
-    Uint32 flags = SDL_GetWindowFlags(window);
+    Uint32 flags = SDL_GetWindowFlags(s_window);
     return flags & SDL_WINDOW_INPUT_FOCUS;
 }
 
 
 void lite_window_update_rects(struct LiteRect* rects, uint32_t count)
 {
-    SDL_UpdateWindowSurfaceRects(window, (const SDL_Rect*)rects, (int)count);
+    SDL_UpdateWindowSurfaceRects(s_window, (const SDL_Rect*)rects, (int)count);
 }
 
 
 void lite_window_message_box(const char* title, const char* message)
 {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, window);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, message, s_window);
 }
 
 
@@ -384,15 +419,18 @@ bool lite_window_confirm_dialog(const char* title, const char* message)
         {SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "Yes"},
         {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "No" },
     };
+
     SDL_MessageBoxData data = {
         .title = title,
         .message = message,
         .numbuttons = 2,
         .buttons = buttons,
     };
-    int buttonid;
-    SDL_ShowMessageBox(&data, &buttonid);
-    return buttonid == 1;
+
+    int button_id;
+    SDL_ShowMessageBox(&data, &button_id);
+
+    return button_id == 1;
 }
 
 
@@ -406,6 +444,7 @@ static LiteStringView lite_button_name(Uint8 button)
         lite_string_lit("x1"),
         lite_string_lit("x2"),
     };
+
     return button_names[button];
 }
 
@@ -467,7 +506,7 @@ LiteEvent lite_window_poll_event(void)
         {
             int mx, my, wx, wy;
             SDL_GetGlobalMouseState(&mx, &my);
-            SDL_GetWindowPosition(window, &wx, &wy);
+            SDL_GetWindowPosition(s_window, &wx, &wy);
             LiteStringView text = lite_string_temp(e.drop.file);
             SDL_free(e.drop.file);
             return (LiteEvent){

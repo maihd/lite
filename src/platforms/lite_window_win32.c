@@ -1,5 +1,4 @@
 #include <ctype.h>
-#include <libloaderapi.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

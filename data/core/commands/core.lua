@@ -21,6 +21,18 @@ command.add(nil, {
         system.set_window_mode(fullscreen and "fullscreen" or "normal")
     end,
 
+    ["core:maximize-window"] = function ()
+        system.maximize_window()
+    end,
+
+    ["core:restore-or-minimize-window"] = function ()
+        if not system.is_window_maximized() then
+            system.minimize_window()
+        else
+            system.maximize_window()
+        end
+    end,
+
     ["core:reload-module"] = function()
         core.command_view:enter("Reload Module",
             function(text, item)

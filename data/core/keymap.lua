@@ -12,6 +12,8 @@ local modkey_map = {
     ["right shift"] = "shift",
     ["left alt"]    = "alt",
     ["right alt"]   = "altgr",
+    ["left windows"]    = "windows",
+    ["right windows"]   = "windows",
 }
 
 local modkeys = { "ctrl", "alt", "altgr", "shift" }
