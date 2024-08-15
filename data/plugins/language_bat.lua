@@ -43,6 +43,8 @@ syntax.add {
         ["for"]         = "keyword",
         ["in"]          = "keyword2",
         ["do"]          = "keyword2",
+        ["pause"]       = "keyword",
+        ["exit"]        = "keyword",
     },
 }
 
