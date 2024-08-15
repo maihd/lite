@@ -16,6 +16,7 @@ StatusView.separator2 = " | "
 
 function StatusView:new()
     StatusView.super.new(self)
+    self.focusable = false
     self.message_timeout = 0
     self.message = {}
 end
@@ -26,9 +27,11 @@ function StatusView:on_mouse_pressed(button, x, y, clicks)
         return
     end
 
-    core.set_active_view(core.last_active_view)
+--     core.set_active_view(core.last_active_view)
+
     if system.get_time() < self.message_timeout
-    and not core.active_view:is(LogView) then
+        and not core.active_view:is(LogView)
+    then
         command.perform "core:open-log"
     end
 end

@@ -7,6 +7,7 @@ local keymap
 local RootView
 local StatusView
 local CommandView
+local TitleBar
 local Doc
 
 local core = {}
@@ -94,6 +95,7 @@ function core.init()
     RootView = require "core.root_view"
     StatusView = require "core.status_view"
     CommandView = require "core.command_view"
+    TitleBar = require "core.titlebar"
     Doc = require "core.doc"
 
     local project_dir = EXEDIR
@@ -107,6 +109,10 @@ function core.init()
         elseif info.type == "dir" then
             project_dir = system.absolute_path(ARGS[i])
         end
+    end
+
+    if string.sub(project_dir, #project_dir):match("[/\\]") then
+        project_dir = string.sub(project_dir, 1, #project_dir - 1)
     end
 
     system.chdir(project_dir)
@@ -127,10 +133,13 @@ function core.init()
     core.root_view = RootView()
     core.command_view = CommandView()
     core.status_view = StatusView()
+    core.titlebar = TitleBar()
 
 --     core.log(core.project_dir)
 
     core.root_view.root_node:split("down", core.command_view, true)
+
+    core.root_view.root_node.a:split("up", core.titlebar, true)
     core.root_view.root_node.b:split("down", core.status_view, true)
 
     command.add_defaults()
@@ -334,18 +343,23 @@ end
 
 
 function core.log(...)
-    return log("i", style.text, ...)
+    return log("i", style.info, ...)
 end
 
 
 function core.log_quiet(...)
-    -- return log("!", style.text, ...)
+--     return log("i", style.text, ...)
     return log(nil, nil, ...)
 end
 
 
+function core.warn(...)
+    return log("!", style.warn, ...)
+end
+
+
 function core.error(...)
-    return log("!", style.accent, ...)
+    return log("!", style.error, ...)
 end
 
 
@@ -468,7 +482,7 @@ function core.step()
 
     -- update window title
     local name = core.active_view:get_name()
-    local title_root = core.project_dir_name .. " - lite"
+    local title_root = core.project_dir_name .. " - Lite"
     local title = (name ~= "---") and (name .. " - " .. title_root) or title_root
     if title ~= core.window_title then
         system.set_window_title(title)

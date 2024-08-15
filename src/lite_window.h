@@ -55,10 +55,13 @@ void            lite_window_get_position(int32_t* x, int32_t* y);
 
 void            lite_window_minimize(void);
 void            lite_window_maximize(void);
+bool            lite_window_is_maximized(void);
 void            lite_window_toggle_maximize(void);
 void            lite_window_restore_maximize(void);
 
+LiteWindowMode  lite_window_get_mode(void);
 void            lite_window_set_mode(LiteWindowMode mode);
+
 void            lite_window_set_title(const char* title);
 void            lite_window_set_cursor(LiteCursor cursor);
 

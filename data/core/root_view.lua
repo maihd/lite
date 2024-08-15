@@ -105,11 +105,13 @@ local type_map = { up = "vsplit", down = "vsplit", left = "hsplit", right = "hsp
 
 function Node:split(dir, view, locked)
     assert(self.type == "leaf", "Tried to split non-leaf node")
+
     local type = assert(type_map[dir], "Invalid direction")
     local last_active = core.active_view
     local child = Node()
     child:consume(self)
     self:consume(Node(type))
+
     self.a = child
     self.b = Node()
     if view then self.b:add_view(view) end
@@ -117,9 +119,11 @@ function Node:split(dir, view, locked)
         self.b.locked = locked
         core.set_active_view(last_active)
     end
+
     if dir == "up" or dir == "left" then
         self.a, self.b = self.b, self.a
     end
+
     return child
 end
 
@@ -146,8 +150,10 @@ function Node:close_active_view(root)
                 p:set_active_view(p.active_view)
             end
         end
+
         core.last_active_view = nil
     end
+
     self.active_view:try_close(do_close)
 end
 
@@ -155,9 +161,11 @@ end
 function Node:add_view(view)
     assert(self.type == "leaf", "Tried to add view to non-leaf node")
     assert(not self.locked, "Tried to add view to locked node")
+
     if self.views[1] and self.views[1]:is(EmptyView) then
         table.remove(self.views)
     end
+
     table.insert(self.views, view)
     self:set_active_view(view)
 end
@@ -366,7 +374,7 @@ function Node:draw_tabs()
         if i == self.hovered_tab then
             color = style.text
         end
-        
+
         core.push_clip_rect(x, y, w, h)
         x, w = x + style.padding.x, w - style.padding.x * 2
         local align = style.font:get_width(text) > w and "left" or "center"
@@ -425,6 +433,8 @@ function RootView:open_doc(doc)
         core.set_active_view(core.last_active_view)
         node = self:get_active_node()
     end
+
+    -- @todo(maihd): support open doc to node, which is not locked
     assert(not node.locked, "Cannot open doc on locked node")
     for i, view in ipairs(node.views) do
         if view.doc == doc then
@@ -432,6 +442,7 @@ function RootView:open_doc(doc)
             return view
         end
     end
+
     local view = DocView(doc)
     node:add_view(view)
     self.root_node:update_layout()
@@ -446,15 +457,23 @@ function RootView:on_mouse_pressed(button, x, y, clicks)
         self.dragged_divider = div
         return
     end
+
     local node = self.root_node:get_child_overlapping_point(x, y)
     local idx = node:get_tab_overlapping_point(x, y)
     if idx then
-        node:set_active_view(node.views[idx])
+        local view = node.views[idx]
+        if view.focusable then
+            node:set_active_view(view)
+        end
+
         if button == "middle" then
             node:close_active_view(self.root_node)
         end
     else
-        core.set_active_view(node.active_view)
+        if node.active_view.focusable then
+            core.set_active_view(node.active_view)
+        end
+
         node.active_view:on_mouse_pressed(button, x, y, clicks)
     end
 end
@@ -485,10 +504,17 @@ function RootView:on_mouse_moved(x, y, dx, dy)
 
     local node = self.root_node:get_child_overlapping_point(x, y)
     local div = self.root_node:get_divider_overlapping_point(x, y)
-    if div then
-        system.set_cursor(div.type == "hsplit" and "sizeh" or "sizev")
-    elseif node:get_tab_overlapping_point(x, y) then
-        system.set_cursor("arrow")
+    if div then                                         -- Hovering sizing split
+        if div.locked
+            or (div.a and div.a.locked)
+            or (div.b and div.b.locked)
+        then
+            system.set_cursor("arrow")
+        else
+            system.set_cursor(div.type == "hsplit" and "sizeh" or "sizev")
+        end
+    elseif node:get_tab_overlapping_point(x, y) then    -- Hovering tab
+        system.set_cursor("hand")
     else
         system.set_cursor(node.active_view.cursor)
     end

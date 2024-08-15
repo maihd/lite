@@ -150,13 +150,22 @@ static int f_set_window_title(lua_State* L)
 }
 
 
+static const char* window_opts[] = {"normal", "maximized", "fullscreen", 0};
+static LiteWindowMode window_modes[] = {LiteWindowMode_Normal,
+                                        LiteWindowMode_Maximized,
+                                        LiteWindowMode_FullScreen, 0};
+
+static int f_get_window_mode(lua_State* L)
+{
+    LiteWindowMode mode = lite_window_get_mode();
+    lua_pushstring(L, window_opts[mode]);
+    return 1;
+}
+
+
 static int f_set_window_mode(lua_State* L)
 {
-    static const char* window_opts[] = {"normal", "maximized", "fullscreen", 0};
-    static LiteWindowMode window_modes[] = {LiteWindowMode_Normal,
-                                            LiteWindowMode_Maximized,
-                                            LiteWindowMode_FullScreen, 0};
-    int                   n = luaL_checkoption(L, 1, "normal", window_opts);
+    int n = luaL_checkoption(L, 1, "normal", window_opts);
     lite_window_set_mode(window_modes[n]);
     return 0;
 }
@@ -577,6 +586,14 @@ static int f_maximize_window(lua_State* L)
 }
 
 
+static int f_is_window_maximized(lua_State* L)
+{
+    bool is_maximized = lite_window_is_maximized();
+    lua_pushboolean(L, is_maximized);
+    return 1;
+}
+
+
 static int f_toggle_maximize_window(lua_State* L)
 {
     lite_window_toggle_maximize();
@@ -650,7 +667,7 @@ static const luaL_Reg lib_funcs[] = {
     {"wait_event",              f_wait_event            },
     {"set_cursor",              f_set_cursor            },
     {"set_window_title",        f_set_window_title      },
-    {"set_window_mode",         f_set_window_mode       },
+
     {"get_window_size",         f_get_window_size       },
     {"show_window_titlebar",    f_show_window_titlebar  },
     {"hide_window_titlebar",    f_hide_window_titlebar  },
@@ -673,11 +690,15 @@ static const luaL_Reg lib_funcs[] = {
     {"begin_frame",             f_begin_frame           },
     {"end_frame",               f_end_frame             },
 
+    {"get_window_mode",         f_get_window_mode       },
+    {"set_window_mode",         f_set_window_mode       },
+
     {"set_window_position",     f_set_window_position   },
     {"get_window_position",     f_get_window_position   },
-    
+
     {"minimize_window",         f_minimize_window       },
     {"maximize_window",         f_maximize_window       },
+    {"is_window_maximized",     f_is_window_maximized       },
     {"toggle_maximize_window",  f_toggle_maximize_window    },
     {"restore_maximize_window", f_restore_maximize_window   },
 

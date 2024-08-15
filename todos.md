@@ -6,7 +6,6 @@ ToDo list, order by priority.
     - Multi cursors
     - Next/Previous find with arrow keys
     - Utf8
-    - Custom titlebar
     - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.

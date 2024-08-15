@@ -113,8 +113,24 @@ void lite_window_open(void)
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 #endif
     SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "175");
-    // SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
-    // SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
+
+#if SDL_VERSION_ATLEAST(2, 0, 9)
+  SDL_SetHint("SDL_MOUSE_DOUBLE_CLICK_RADIUS", "4");
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 8)
+  /* This hint tells SDL to respect borderless window as a normal window.
+  ** For example, the window will sit right on top of the taskbar instead
+  ** of obscuring it. */
+  SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+  /* This hint tells SDL to allow the user to resize a borderless windoow.
+  ** It also enables aero-snap on Windows apparently. */
+  SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
+#endif
+
+    SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
@@ -210,6 +226,12 @@ void lite_window_maximize(void)
 }
 
 
+bool lite_window_is_maximized(void)
+{
+    return SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED;
+}
+
+
 void lite_window_toggle_maximize(void)
 {
     if (SDL_GetWindowFlags(window) & SDL_WINDOW_MAXIMIZED)
@@ -229,8 +251,28 @@ void lite_window_restore_maximize(void)
 }
 
 
+LiteWindowMode lite_window_get_mode(void)
+{
+    Uint32 flags = SDL_GetWindowFlags(window);
+    if (flags & SDL_WINDOW_FULLSCREEN_DESKTOP)
+    {
+        return LiteWindowMode_FullScreen;
+    }
+
+    if (flags & SDL_WINDOW_MAXIMIZED)
+    {
+        return LiteWindowMode_Maximized;
+    }
+
+    return LiteWindowMode_Normal;
+}
+
+
 void lite_window_set_mode(LiteWindowMode mode)
 {
+    // @note(maihd):
+    //      when mode != fullscreen,
+    //      must be remove SDL_WINDOW_FULLSCREEN_DESKTOP flag from window
     SDL_SetWindowFullscreen(window,
         mode == LiteWindowMode_FullScreen
         ? SDL_WINDOW_FULLSCREEN_DESKTOP

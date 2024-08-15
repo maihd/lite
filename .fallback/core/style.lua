@@ -6,6 +6,8 @@ local style = {}
 -- Size
 
 style.padding           = { x = common.round(14 * SCALE), y = common.round(7 * SCALE) }
+style.titlebar_padding  = { x = common.round(14 * SCALE), y = common.round(12 * SCALE) }
+
 style.divider_size      = common.round(1 * SCALE)
 style.scrollbar_size    = common.round(4 * SCALE)
 style.caret_width       = common.round(2 * SCALE)
@@ -18,6 +20,7 @@ style.font      = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFo
 style.big_font  = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 24 * SCALE) -- renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", 34 * SCALE)
 style.icon_font = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 15 * SCALE)
 style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 14 * SCALE)
+style.titlebar_font = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 20 * SCALE)
 
 
 -- Colors
@@ -42,10 +45,17 @@ style.scope_line        = { common.color "#494950" }
 
 -- MaiHD custom colors
 
+style.info              = { common.color "#97979c" }
+style.warn              = { common.color "#f7c95c" }
+style.error             = { common.color "#F77483" }
+
 style.file              = { common.color "#93DDFA" }
 style.file_dirty        = { common.color "#F77483" }
-style.titlebar          = { common.color "#111111", common.color "#000000" }
 
+style.titlebar              = { common.color "#111111" }
+style.titlebar_icon         = { common.color "#e1e1e6" }
+style.titlebar_icon_hover   = { common.color "#ff2b44" }
+style.titlebar_background   = { common.color "#111113" }
 
 -- Common syntax colors
 

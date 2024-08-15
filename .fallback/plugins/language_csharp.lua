@@ -2,21 +2,25 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "C#",
+    version = "v0.0.3",
     files = { "%.cs$" },
+
     comment = "//",
+
     patterns = {
-        { pattern = "//.-\n",               type = "comment"  },
-        { pattern = { "/%*", "%*/" },       type = "comment"  },
+        { pattern = "//.-\n",                   type = "comment"  },
+        { pattern = { "/%*", "%*/" },           type = "comment"  },
         --     { pattern = "[^\\]\n",              type = "comment"  },
-        { pattern = { '"', '"', '\\' },     type = "string"   },
-        { pattern = { "'", "'", '\\' },     type = "string"   },
-        { pattern = "-?0x%x+",              type = "number"   },
-        { pattern = "-?%d+[%d%.eE]*f?",     type = "number"   },
-        { pattern = "-?%.?%d+f?",           type = "number"   },
-        { pattern = "[%+%-=/%*%^%%<>!~|&]", type = "operator" },
-        { pattern = "[%a_][%w_]*%f[(]",     type = "function" },
-        { pattern = "[%a_][%w_]*",          type = "symbol"   },
+        { pattern = { '"', '"', '\\' },         type = "string"   },
+        { pattern = { "'", "'", '\\' },         type = "string"   },
+        { pattern = "-?0x%x+",                  type = "number"   },
+        { pattern = "-?%d+[%d%.eE]*f?",         type = "number"   },
+        { pattern = "-?%.?%d+f?",               type = "number"   },
+        { pattern = "[%+%-=/%*%^%%<>!~|&$]",    type = "operator" },
+        { pattern = "[%a_][%w_]*%f[(]",         type = "function" },
+        { pattern = "[%a_][%w_]*",              type = "symbol"   },
     },
+
     symbols = {
         ["if"]              = "keyword",
         ["else"]            = "keyword",
@@ -46,16 +50,31 @@ syntax.add {
         ["readonly"]        = "keyword",
 
         ["var"]             = "keyword",
+        ["new"]             = "keyword",
 
         ["try"]             = "keyword",
         ["catch"]           = "keyword",
         ["finally"]         = "keyword",
 
+        ["lock"]            = "keyword",
+        ["unchecked"]       = "keyword",
+
         ["public"]          = "keyword",
         ["private"]         = "keyword",
-        ["partial"]         = "keyword",
         ["internal"]        = "keyword",
         ["protected"]       = "keyword",
+
+        ["get"]             = "keyword",
+        ["set"]             = "keyword",
+
+        ["sealed"]          = "keyword",
+        ["partial"]         = "keyword",
+        ["virtual"]         = "keyword",
+        ["abstract"]        = "keyword",
+        ["override"]        = "keyword",
+
+        ["async"]           = "keyword",
+        ["await"]           = "keyword",
 
         ["int"]             = "keyword2",
         ["byte"]            = "keyword2",
@@ -70,6 +89,7 @@ syntax.add {
         ["ulong"]           = "keyword2",
         ["bool"]            = "keyword2",
         ["string"]          = "keyword2",
+        ["object"]          = "keyword2",
         ["decimal"]         = "keyword2",
 
         ["true"]            = "literal",

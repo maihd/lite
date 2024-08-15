@@ -43,7 +43,7 @@ local function find(label, search_fn)
             previous_finds = {}
             push_previous_find(dv.doc, sel)
         else
-            core.error("Couldn't find %q", text)
+            core.warn("Couldn't find %q", text)
             dv.doc:set_selection(unpack(sel))
             dv:scroll_to_make_visible(sel[1], sel[2])
         end
@@ -119,7 +119,7 @@ command.add("core.doc_view", {
 
     ["find-replace:repeat-find"] = function()
         if not last_fn then
-            core.error("No find to continue from")
+            core.warn("No find to continue from")
         else
             local line, col = doc():get_selection()
             local line1, col1, line2, col2 = last_fn(doc(), line, col, last_text)
@@ -134,7 +134,7 @@ command.add("core.doc_view", {
     ["find-replace:previous-find"] = function()
         local sel = table.remove(previous_finds)
         if not sel or doc() ~= last_doc then
-            core.error("No previous finds")
+            core.warn("No previous finds")
             return
         end
 
