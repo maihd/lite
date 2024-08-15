@@ -27,6 +27,7 @@
     - Some time single mouse click cause select token, line.
     - Extra space for end of file is too large
     - TreeView have no scroll rect
+    - Project directory end with '\' or '/' resulting empty project directory name
 
 - Better mouse interacting.
 - Fallback version for fixing scripts (safe mode).

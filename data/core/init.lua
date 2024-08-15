@@ -111,6 +111,10 @@ function core.init()
         end
     end
 
+    if string.sub(project_dir, #project_dir):match("[/\\]") then
+        project_dir = string.sub(project_dir, 1, #project_dir - 1)
+    end
+
     system.chdir(project_dir)
     core.project_dir = project_dir
     core.project_dir_name = project_dir:sub(#project_dir:match("(.*[/\\])") + 1)
