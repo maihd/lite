@@ -27,12 +27,12 @@ Production ready Lite forks (recommended):
 - Pragtical Editor: https://pragtical.dev/
 
 ## Install and Update
-- Run install.bat to install. Which contains theses steps: 
+- Run install.bat to install. Which contains theses steps:
     - Building with clang
     - Add edit with lite to OS context menu
     - Add path to environment
 
-- Run update.bat to update. Which contains theses steps: 
+- Run update.bat to update. Which contains theses steps:
     - Pulling from github repo
     - Building with clang
 

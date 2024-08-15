@@ -34,3 +34,8 @@ Have you ever hard to find string.find/string.gmatch (used in language plugins) 
          -- with a small [] class
          local date, time = string.match(line, "(%a+ %d+, %d%d%d%d )(%d+:%d+[ap]m)")
          print("19" .. y)  --> 1964
+
+
+FURTHER READING
+---------------
+- Understand Lua Patterns: https://www.fhug.org.uk/kb/kb-article/understanding-lua-patterns/
