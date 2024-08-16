@@ -197,6 +197,18 @@ static int f_hide_window_titlebar(lua_State* L)
 }
 
 
+static int f_config_window_hit_test(lua_State* L)
+{
+    const int32_t title_height      = (int32_t)luaL_checknumber(L, 1);
+    const int32_t controls_width    = (int32_t)luaL_checknumber(L, 2);
+    const int32_t resize_border     = (int32_t)luaL_checknumber(L, 3);
+
+    lite_window_config_hit_test(title_height, controls_width, resize_border);
+
+    return 0;
+}
+
+
 static int f_window_has_focus(lua_State* L)
 {
     lua_pushboolean(L, lite_window_has_focus());
@@ -671,6 +683,8 @@ static const luaL_Reg lib_funcs[] = {
     {"get_window_size",         f_get_window_size       },
     {"show_window_titlebar",    f_show_window_titlebar  },
     {"hide_window_titlebar",    f_hide_window_titlebar  },
+    {"config_window_hit_test",  f_config_window_hit_test},
+
     {"get_window_opacity",      f_get_window_opacity    },
     {"set_window_opacity",      f_set_window_opacity    },
     {"window_has_focus",        f_window_has_focus      },

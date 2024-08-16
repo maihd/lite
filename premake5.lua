@@ -134,20 +134,20 @@ do
         }
 
         includedirs {
-            path.join(LIBS_DIR, "SDL2-2.28.3/include"),
+            path.join(LIBS_DIR, "SDL2-2.30.6/include"),
         }
 
         filter { "platforms:x86" }
         do
             libdirs {
-                path.join(LIBS_DIR, "SDL2-2.28.3/lib/x86"),
+                path.join(LIBS_DIR, "SDL2-2.30.6/lib/x86"),
             }
         end
 
         filter { "platforms:x64" }
         do
             libdirs {
-                path.join(LIBS_DIR, "SDL2-2.28.3/lib/x64"),
+                path.join(LIBS_DIR, "SDL2-2.30.6/lib/x64"),
             }
         end
 

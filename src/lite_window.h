@@ -49,6 +49,7 @@ void            lite_window_hide(void);
 
 void            lite_window_show_titlebar(void);
 void            lite_window_hide_titlebar(void);
+void            lite_window_config_hit_test(int32_t title_height, int32_t controls_width, int32_t resize_border); // Need this to make titlebar worked!
 
 void            lite_window_set_position(int32_t x, int32_t y);
 void            lite_window_get_position(int32_t* x, int32_t* y);

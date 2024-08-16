@@ -20,6 +20,7 @@
 #include "lite_log.h"
 #include "lite_window.h"
 
+
 SDL_Window*     s_window;
 LiteWindowMode  s_current_window_mode;
 
@@ -28,6 +29,7 @@ int32_t         s_window_y_before_maximize;
 
 int32_t         s_window_width_before_maximize;
 int32_t         s_window_height_before_maximize;
+
 
 static void lite_window_load_icon(void)
 {
@@ -42,20 +44,24 @@ static void lite_window_load_icon(void)
 #endif
 }
 
+
 void lite_sleep(uint64_t ms)
 {
     SDL_Delay((Uint32)ms);
 }
+
 
 void lite_usleep(uint64_t us)
 {
     SDL_Delay((Uint32)(us / 1000));
 }
 
+
 uint64_t lite_cpu_ticks(void)
 {
     return SDL_GetPerformanceCounter();
 }
+
 
 uint64_t lite_cpu_frequency(void)
 {
@@ -117,33 +123,26 @@ void lite_window_open(void)
 #ifdef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR /* Available since 2.0.8 */
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
 #endif
-#if SDL_VERSION_ATLEAST(2, 0, 5)
+
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
-#endif
     SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "175");
+	SDL_SetHint("SDL_MOUSE_DOUBLE_CLICK_RADIUS", "4");
 
-#if SDL_VERSION_ATLEAST(2, 0, 9)
-  SDL_SetHint("SDL_MOUSE_DOUBLE_CLICK_RADIUS", "4");
-#endif
+	// This hint tells SDL to respect borderless window as a normal window.
+	// For example, the window will sit right on top of the taskbar instead
+	// of obscuring it.
+	SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
 
-#if SDL_VERSION_ATLEAST(2, 0, 8)
-  /* This hint tells SDL to respect borderless window as a normal window.
-  ** For example, the window will sit right on top of the taskbar instead
-  ** of obscuring it. */
-  SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
-#endif
-#if SDL_VERSION_ATLEAST(2, 0, 12)
-  /* This hint tells SDL to allow the user to resize a borderless window.
-  ** It also enables aero-snap on Windows apparently. */
-  SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
-#endif
+	// This hint tells SDL to allow the user to resize a borderless window.
+	// It also enables aero-snap on Windows apparently.
+	SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
-//     SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_WARP_MOTION, "1");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
 
-    Uint32 window_flags = SDL_WINDOW_ALLOW_HIGHDPI
+    Uint32 window_flags = SDL_WINDOW_RESIZABLE
+                        | SDL_WINDOW_ALLOW_HIGHDPI
                         | SDL_WINDOW_HIDDEN;
 
     s_window = SDL_CreateWindow("",
@@ -163,8 +162,12 @@ void lite_window_open(void)
 
 void lite_window_close(void)
 {
-    SDL_DestroyWindow(s_window);
-    s_window = nullptr;
+    SDL_Event ev;
+    ev.type = SDL_QUIT;
+    SDL_PushEvent(&ev);
+
+    //SDL_DestroyWindow(s_window);
+    //s_window = nullptr;
 }
 
 
@@ -177,9 +180,16 @@ void* lite_window_handle(void)
 void* lite_window_surface(int32_t* width, int32_t* height)
 {
     SDL_Surface* surface = SDL_GetWindowSurface(s_window);
-    if (width)  *width   = (int32_t)surface->w;
-    if (height) *height  = (int32_t)surface->h;
-    return surface->pixels;
+    if (surface)
+    {
+        if (width)  *width    = (int32_t)surface->w;
+        if (height) *height = (int32_t)surface->h;
+        return surface->pixels;
+    }
+
+    if (width)  *width    = 0;
+    if (height) *height = 0;
+    return nullptr;
 }
 
 
@@ -195,17 +205,89 @@ void lite_window_hide(void)
 }
 
 
+typedef struct LiteHitTestInfo
+{
+    int32_t title_height;
+    int32_t controls_width;
+    int32_t resize_border;
+} LiteHitTestInfo;
+
+static SDL_HitTestResult SDLCALL lite_window_hit_test(SDL_Window* window, const SDL_Point* pt, void* data)
+{
+    const LiteHitTestInfo*  hit_info        = (LiteHitTestInfo*)data;
+    const int32_t           resize_border   = hit_info->resize_border;
+    const int32_t           controls_width  = hit_info->controls_width;
+
+    int32_t w, h;
+    SDL_GetWindowSize(window, &w, &h);
+
+    if (pt->y < hit_info->title_height 
+		&& pt->y > hit_info->resize_border 
+		&& pt->x > resize_border 
+		&& pt->x < w - controls_width)
+    {
+        return SDL_HITTEST_DRAGGABLE;
+    }
+
+    #define REPORT_RESIZE_HIT(name) return SDL_HITTEST_RESIZE_##name
+
+    if (pt->x < resize_border && pt->y < resize_border)
+    {
+        REPORT_RESIZE_HIT(TOPLEFT);
+    }
+    else if (pt->x > resize_border && pt->x < w - controls_width && pt->y < resize_border)
+    {
+        REPORT_RESIZE_HIT(TOP);
+    }
+    else if (pt->x > w - resize_border && pt->y < resize_border)
+    {
+        REPORT_RESIZE_HIT(TOPRIGHT);
+    }
+    else if (pt->x > w - resize_border && pt->y > resize_border && pt->y < h - resize_border)
+    {
+        REPORT_RESIZE_HIT(RIGHT);
+    }
+    else if (pt->x > w - resize_border && pt->y > h - resize_border)
+    {
+        REPORT_RESIZE_HIT(BOTTOMRIGHT);
+    }
+    else if (pt->x < w - resize_border && pt->x > resize_border && pt->y > h - resize_border)
+    {
+        REPORT_RESIZE_HIT(BOTTOM);
+    }
+    else if (pt->x < resize_border && pt->y > h - resize_border)
+    {
+        REPORT_RESIZE_HIT(BOTTOMLEFT);
+    }
+    else if (pt->x < resize_border && pt->y < h - resize_border && pt->y > resize_border)
+    {
+        REPORT_RESIZE_HIT(LEFT);
+    }
+
+    return SDL_HITTEST_NORMAL;
+}
+
+
 void lite_window_show_titlebar(void)
 {
-    // SetWindowLong(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
     SDL_SetWindowBordered(s_window, SDL_TRUE);
+    SDL_SetWindowHitTest(s_window, nullptr, nullptr);
 }
 
 
 void lite_window_hide_titlebar(void)
 {
-    // SetWindowLong(s_window, GWL_STYLE, WS_POPUP);
     SDL_SetWindowBordered(s_window, SDL_FALSE);
+}
+
+
+void lite_window_config_hit_test(int32_t title_height, int32_t controls_width, int32_t resize_border)
+{
+    static LiteHitTestInfo window_hit_info;
+    window_hit_info.title_height   = title_height;
+    window_hit_info.controls_width = controls_width;
+    window_hit_info.resize_border  = resize_border;
+    SDL_SetWindowHitTest(s_window, lite_window_hit_test, &window_hit_info);
 }
 
 
@@ -475,7 +557,8 @@ LiteEvent lite_window_poll_event(void)
             };
 
         case SDL_WINDOWEVENT:
-            if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+            if (e.window.event == SDL_WINDOWEVENT_RESIZED
+				|| e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
                 return (LiteEvent){
                     .type = LiteEventType_Resized,

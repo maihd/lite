@@ -406,6 +406,12 @@ function core.on_event(type, ...)
                 core.root_view:open_doc(doc)
             end
         end
+        -- @note(maihd): not worked, because when sizing main thread is pause
+--     elseif type == "resized" or type == "exposed" then
+--         core.redraw = true
+--         core.draw()
+
+--         core.log("resized")
     elseif type == "quit" then
         core.quit()
     end
@@ -462,14 +468,14 @@ function core.step()
     -- end
 
     local width, height = renderer.get_size()
-    local titlebar_width, titlebar_height = 0, 0
 
     -- update
-    core.root_view.position.x, core.root_view.position.y = 0, titlebar_height
-    core.root_view.size.x, core.root_view.size.y = width, height - titlebar_height
+    core.root_view.position.x, core.root_view.position.y = 0, 0
+    core.root_view.size.x, core.root_view.size.y = width, height
     core.root_view:update()
-    if not core.redraw then return false end
-    core.redraw = false
+
+    -- if not core.redraw then return false end
+    -- core.redraw = false
 
     -- close unreferenced docs
     for i = #core.docs, 1, -1 do
@@ -489,24 +495,29 @@ function core.step()
         core.window_title = title
     end
 
-    -- draw
+    -- Drawing
+    core.draw()
+
+    return true
+end
+
+
+function core.draw()
+    local width, height = renderer.get_size()
+
     renderer.begin_frame()
 
-    -- Draw titlebar
-    local text_width, text_height = style.code_font:get_width("X"), style.code_font:get_height("X")
-    local text_x, text_y = width - titlebar_width + (titlebar_width - text_width) * 0.5, (titlebar_height - text_height) * 0.5
-    renderer.draw_rect(0, 0, width, titlebar_height, { common.color "#000000" })
-    renderer.draw_text(style.code_font, "X", text_x, text_y, { common.color "#ffffff" })
-    renderer.draw_text(style.code_font, "+", text_x - titlebar_width, text_y, { common.color "#ffffff" })
-    renderer.draw_text(style.code_font, "-", text_x - titlebar_width * 2, text_y, { common.color "#ffffff" })
-
-    -- Draw root view
+    -- Draw root
     core.clip_rect_stack[1] = { 0, 0, width, height }
     renderer.set_clip_rect(unpack(core.clip_rect_stack[1]))
     core.root_view:draw()
 
+    -- Draw border
+    renderer.draw_rect(0, 0, 1, height, style.titlebar_background)
+    renderer.draw_rect(width - 1, 0, 1, height, style.titlebar_background)
+    renderer.draw_rect(0, height - 1, width, 1, style.titlebar_background)
+
     renderer.end_frame()
-    return true
 end
 
 

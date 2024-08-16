@@ -13,11 +13,24 @@ local TitleBar = View:extend()
 TitleBar.separator  = "  "
 TitleBar.separator2 = " | "
 
+local turn_off = false -- Temporary turn titlebar off
 
 function TitleBar:new()
     TitleBar.super.new(self)
     self.focusable = false
     self.item_size = 60
+
+    if turn_off then
+        system.show_window_titlebar()
+    else
+        system.hide_window_titlebar()
+        system.config_window_hit_test(self:get_height(), 3 * self.item_size, style.icon_font:get_width("_"))
+    end
+end
+
+
+function TitleBar:get_height()
+    return style.font:get_height() + style.titlebar_padding.y * 2
 end
 
 
@@ -26,19 +39,28 @@ end
 
 
 function TitleBar:update()
-    self.size.y = style.font:get_height() + style.titlebar_padding.y * 2
+    self.size.y = self:get_height()
     self.scroll.to.y = 0
 
     local turn_off = false -- Temporary turn titlebar off
     if turn_off then
         self.size.y = 0
-        system.show_window_titlebar()
     else
-        system.hide_window_titlebar()
-
         -- Hide titlebar when fullscreen
         if system.get_window_mode() == "fullscreen" then
             self.size.y = 0
+        end
+
+        -- Update hover item
+        local wx, wy = system.get_window_position()
+        local mx, my = system.get_global_mouse_position()
+        if mx < wx or mx > wx + self.size.x
+            or my < wy or my > wy + self.size.y
+        then
+            self.hover_index = nil
+        else
+            local mx, my = system.get_mouse_position()
+            self:hover_right_item(mx, my)
         end
     end
 
@@ -90,17 +112,7 @@ local function text_width(font, _, text, _, x)
 end
 
 
-function TitleBar:on_mouse_moved(x, y, dx, dy)
-    -- Handle moving window
-
-    if self.moving then
-        local mx, my = system.get_global_mouse_position()
-        system.set_window_position(mx - self.mouse_dx, my - self.mouse_dy)
-        return
-    end
-
-    -- Handle hover buttons
-
+function TitleBar:hover_right_item(x, y)
     local items = self:get_items()
     local pos_x, pos_y = self:get_content_offset()
 
@@ -124,10 +136,18 @@ function TitleBar:on_mouse_moved(x, y, dx, dy)
 end
 
 
+function TitleBar:on_mouse_moved(x, y, dx, dy)
+    self:hover_right_item(x, y)
+end
+
+
 function TitleBar:on_mouse_pressed(button, x, y, clicks)
     if button ~= "left" then
         return
     end
+
+    -- Make sure hover item is right
+    self:hover_right_item(x, y)
 
     -- Minimize
     if self.hover_index == 0 then
@@ -143,32 +163,13 @@ function TitleBar:on_mouse_pressed(button, x, y, clicks)
 
     -- Close
     if self.hover_index == 2 then
-        system.close_window()
+        core.quit()
         return
     end
-
-    -- Maximize by multiple clicks
-    if clicks >= 2 then
-        system.toggle_maximize_window()
-        return
-    end
-
-    -- Start moving
-
-    self.moving = true
-
-    local mx, my = system.get_global_mouse_position()
-    local wx, wy = system.get_window_position()
-
-    self.mouse_dx = mx - wx
-    self.mouse_dy = my - wy
 end
 
 
 function TitleBar:on_mouse_released(button, x, y, clicks)
-    if self.moving then
-        self.moving = false
-    end
 end
 
 

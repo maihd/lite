@@ -13,8 +13,8 @@ lua51.dll
 error.txt
 /test.c
 
-/build
-/project
+/.build
+/.project
 
 edit-with-lite-dll.reg
 __edit_with_lite.reg

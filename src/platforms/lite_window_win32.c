@@ -22,6 +22,7 @@
 enum { LITE_EVENT_QUEUE_SIZE = 64 };
 
 static HWND             s_window;
+static LiteWindowMode	s_current_mode;
 
 static HDC              s_hDC;
 static HDC              s_hSurface;
@@ -1288,7 +1289,6 @@ static LRESULT WINAPI lite_win32_window_proc(
     {
     case WM_SIZE:
     {
-        //ReleaseDC(s_window, s_hSurface);
         UINT width = LOWORD(lParam);
         UINT height = HIWORD(lParam);
 
@@ -1311,13 +1311,117 @@ static LRESULT WINAPI lite_win32_window_proc(
         s_hSurfaceBitmap = CreateDIBSection(s_hDC, &bmi, DIB_RGB_COLORS, (void**)(&s_surface_pixels), nullptr, 0);
         SelectObject(s_hSurface, s_hSurfaceBitmap);
 
+		// @note(maihd): from lua must be handle this event to repaint
+
         lite_push_event((LiteEvent){
             .type = LiteEventType_Resized,
             .resized.width = (int32_t)width,
             .resized.height = (int32_t)height,
         });
+
         return 0;
     }
+
+	case WM_NCCALCSIZE:
+	{
+		if (wParam)
+		{
+			NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)lParam;
+
+			if (s_current_mode == LiteWindowMode_Maximized)
+			{
+				///BOOL SystemParametersInfoA(
+				///	[in]      UINT  uiAction,
+				///	[in]      UINT  uiParam,
+				///	[in, out] PVOID pvParam,
+				///	[in]      UINT  fWinIni
+				///);
+				RECT rect;
+				if (SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0))
+				{
+					//params->rgrc[0] = rect;
+					//params->rgrc[1] = rect;
+					//params->rgrc[2] = rect;
+					MoveWindow(hwnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, true);
+				}
+			}
+
+			InflateRect(&params->rgrc[0], -1, -1);
+		}
+		else
+		{
+			RECT* rect = (RECT*)lParam;
+			InflateRect(rect, -1, -1);
+		}
+
+		return 0;// DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+
+#if 0
+	case WM_NCHITTEST:
+	{
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+		POINT pos = { xPos, yPos };
+		ScreenToClient(s_window, &pos);
+
+		RECT rect;
+		GetClientRect(s_window, &rect);
+		int width = rect.right - rect.left;
+		int height = rect.bottom - rect.top;
+
+		xPos = pos.x;
+		yPos = pos.y;
+
+		if (xPos < 0)
+		{
+			if (yPos < 0)
+			{
+				return HTTOPLEFT;
+			}
+
+			if (yPos > height)
+			{
+				return HTBOTTOMLEFT;
+			}
+			
+			return HTLEFT;
+		}
+
+		if (xPos > width)
+		{
+			if (yPos < 0)
+			{
+				return HTTOPRIGHT;
+			}
+
+			if (yPos > height)
+			{
+				return HTBOTTOMRIGHT;
+			}
+
+			return HTLEFT;
+		}
+		
+		if (yPos < 0)
+		{
+			return HTTOP;
+		}
+
+		if (yPos > height)
+		{
+			return HTBOTTOM;
+		}
+
+		if (xPos >= 0 && xPos <= width
+			|| yPos >= 0 && yPos <= height)
+		{
+			return HTCLIENT;
+		}
+
+		return 0;
+	}
+#endif
 
     //case WM_EXPOSED:
     //    return 0;
@@ -1692,12 +1796,12 @@ void lite_window_open(void)
     DWORD monitor_height = GetSystemMetrics(SM_CYSCREEN);
 #endif
 
-    const char* window_class = "lite_window_class";
-    WNDCLASSA wc = {0};
+    LPTSTR window_class = TEXT("lite_window_class");
+    WNDCLASS wc = {0};
     wc.lpfnWndProc    = lite_win32_window_proc;
     wc.hInstance      = GetModuleHandle(nullptr);
     wc.lpszClassName  = window_class;
-    if (!RegisterClassA(&wc))
+    if (!RegisterClass(&wc))
     {
         assert(0);
         return;
@@ -1712,11 +1816,11 @@ void lite_window_open(void)
     DWORD window_x = (monitor_width - window_width) / 2;
     DWORD window_y = (monitor_height - window_height) / 2;
 
-    s_window = CreateWindowA(
+    s_window = CreateWindow(
         window_class,
-        "",
+        TEXT(""),
         //WS_POPUP,
-        WS_OVERLAPPEDWINDOW,
+		WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         window_x, window_y,
         window_width, window_height,
         nullptr,
@@ -1731,8 +1835,6 @@ void lite_window_open(void)
     }
 
     s_hDC = GetDC(s_window);
-
-    ShowWindow(s_window, true);
 }
 
 
@@ -1775,37 +1877,50 @@ void lite_window_hide(void)
 
 void lite_window_show_titlebar(void)
 {
-    SetWindowLongA(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+	SetWindowLong(s_window, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 }
 
 
 void lite_window_hide_titlebar(void)
 {
-    SetWindowLongA(s_window, GWL_STYLE, WS_POPUP);
+    SetWindowLong(s_window, GWL_STYLE, WS_BORDER | WS_POPUP | WS_MINIMIZEBOX);
 }
 
 
 void lite_window_set_position(int32_t x, int32_t y)
 {
-
+	RECT rect;
+	GetWindowRect(s_window, &rect);
+	MoveWindow(s_window, x, y, rect.right - rect.left, rect.bottom - rect.top, true);
 }
 
 
 void lite_window_get_position(int32_t* x, int32_t* y)
 {
+	RECT rect;
+	GetWindowRect(s_window, &rect);
 
+	if (x) *x = rect.left;
+	if (y) *y = rect.top;
 }
 
 
 void lite_window_maximize(void)
 {
-
+	s_current_mode = LiteWindowMode_Maximized;
+	ShowWindow(s_window, SW_MAXIMIZE);
 }
 
 
 void lite_window_minimize(void)
 {
+	ShowWindow(s_window, SW_MINIMIZE);
+}
 
+
+bool lite_window_is_maximized(void)
+{
+	return s_current_mode == LiteWindowMode_Maximized;
 }
 
 
@@ -1814,23 +1929,28 @@ void lite_window_toggle_maximize(void)
     int32_t w, h;
     int32_t max_w, max_h;
 
-    // SDL_GetWindowSize(window, &w, &h);
-    // SDL_GetWindowSize(window, &max_w, &max_h);
-
-    // if (w == max_w && h == max_h)
-    // {
-    //     SDL_RestoreWindow(window);
-    // }
-    // else
-    // {
-    //     SDL_MaximizeWindow(window);
-    // }
+	if (lite_window_is_maximized())
+	{
+		lite_window_restore_maximize();
+	}
+	else
+	{
+		lite_window_maximize();
+	}
 }
 
 
 void lite_window_restore_maximize(void)
 {
     // SDL_RestoreWindow(window);
+	s_current_mode = LiteWindowMode_Normal;
+	PostMessage(s_window, WM_SYSCOMMAND, SC_RESTORE, 0);
+}
+
+
+LiteWindowMode lite_window_get_mode(void)
+{
+	return s_current_mode;
 }
 
 
@@ -1839,11 +1959,11 @@ void lite_window_set_mode(LiteWindowMode mode)
     switch (mode)
     {
     case LiteWindowMode_Normal:
-        PostMessageA(s_window, WM_SYSCOMMAND, SC_RESTORE, 0);
+		lite_window_restore_maximize();
         break;
 
     case LiteWindowMode_Maximized:
-        PostMessageA(s_window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+		lite_window_maximize();
         break;
 
     case LiteWindowMode_FullScreen:
@@ -1880,6 +2000,39 @@ void lite_window_set_cursor(LiteCursor cursor)
 }
 
 
+void lite_window_get_mouse_position(int32_t* x, int32_t* y)
+{
+	RECT rect;
+	POINT pos;
+	if (GetCursorPos(&pos) && GetWindowRect(s_window, &rect))
+	{
+		if (x) *x = pos.x - rect.left;
+		if (y) *y = pos.y - rect.top;
+	}
+	else
+	{
+		if (x) *x = 0;
+		if (y) *y = 0;
+	}
+}
+
+
+void lite_window_get_global_mouse_position(int32_t* x, int32_t* y)
+{
+	POINT pos;
+	if (GetCursorPos(&pos))
+	{
+		if (x) *x = pos.x;
+		if (y) *y = pos.y;
+	}
+	else
+	{
+		if (x) *x = 0;
+		if (y) *y = 0;
+	}
+}
+
+
 float lite_window_get_opacity(void)
 {
     return 1.0f;
@@ -1891,6 +2044,21 @@ void lite_window_set_opacity(float opacity)
 
 }
 
+
+void lite_window_get_size(int32_t* width, int32_t* height)
+{
+	RECT rect;
+	if (GetClientRect(s_window, &rect))
+	{
+		if (width)	*width	= rect.right - rect.left;
+		if (height) *height = rect.bottom - rect.top;
+	}
+	else
+	{
+		if (width)	*width	= 0;
+		if (height) *height = 0;
+	}
+}
 
 
 float lite_window_dpi(void)

@@ -43,7 +43,11 @@
 
 - Ignore folders, files (blacklist)
 - Better log and log style
-- Custom titlebar, borderless window
+- Custom titlebar, borderless window:
+    - Fix maximize wrong size
+    - Add window border
+    - Resizing window
+    - Corecting moving window when holding titlebar
 
 - Workflow:
     - Have an fallback version when build_clang.bat failed to edit code
