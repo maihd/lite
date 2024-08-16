@@ -29,6 +29,9 @@
     - Extra space for end of file is too large
     - TreeView have no scroll rect
     - Project directory end with '\' or '/' resulting empty project directory name
+    - Toggle comment not work when:
+        - Prefix have no space between content
+        - Prefix does not start at begin of the line
 
 - Better mouse interacting.
 - Fallback version for fixing scripts (safe mode).

@@ -11,6 +11,9 @@ echo - Compiling (windows - clang - x64)...
 
 set WINDOW_SYSTEM=%1
 
+:: Define here to prevent first build failed
+set SDL_VERSION=SDL2-2.30.6
+
 if "%WINDOW_SYSTEM%"=="win32" (
     echo - Selected Native Win32 API for window system
     :: Libs for Win32 (uncomment to use)
@@ -18,7 +21,6 @@ if "%WINDOW_SYSTEM%"=="win32" (
 ) else (
     echo - Selected SDL2 for window system
     :: Libs for SDL (uncomment to use)
-    set SDL_VERSION=SDL2-2.30.6
     set PLATFORM_LIBS=-Ilibs/%SDL_VERSION%/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/%SDL_VERSION%/lib/x64
 )
 

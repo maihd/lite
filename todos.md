@@ -2,6 +2,7 @@
 ToDo list, order by priority.
 
 - Features (add when needed):
+    - Select empty space
     - Line wrapping
     - Multi cursors
     - Next/Previous find with arrow keys
@@ -16,9 +17,6 @@ ToDo list, order by priority.
     - VCS status display
 
 - Fix bugs:
-    - Toggle comment not work when:
-        - Prefix have no space between content
-        - Prefix does not start at begin of the line
     - Cannot open file with command when focus TreeView (or locked view)
     - Cannot return from TreeView to DocView
     - Modal tabbing (Vi-like) does not trim
