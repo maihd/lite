@@ -21,15 +21,15 @@ end
 project "lite"
 do
     kind "WindowedApp"
-    -- filter { "configurations:Debug"}
-    -- do
-    --     kind "ConsoleApp"
-    -- end
+    filter { "configurations:Debug"}
+    do
+        kind "ConsoleApp"
+    end
 
-    -- filter { "configurations:Release"}
-    -- do
-    --     kind "WindowedApp"
-    -- end
+    filter { "configurations:Release"}
+    do
+        kind "WindowedApp"
+    end
 
     files {
         path.join(ROOT_DIR, "src/*.h"),

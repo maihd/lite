@@ -52,9 +52,8 @@ local function insert_at_start_of_selected_lines(text, skip_empty)
     local line1, col1, line2, col2, swap = doc():get_selection(true)
     for line = line1, line2 do
         local line_text = doc().lines[line]
-        local first_char_idx = line_text:find("%S")
         if (not skip_empty or line_text:find("%S")) then
-            doc():insert(line, first_char_idx, text)
+            doc():insert(line, 1, text)
         end
     end
 
@@ -66,10 +65,56 @@ local function remove_from_start_of_selected_lines(text, skip_empty)
     local line1, col1, line2, col2, swap = doc():get_selection(true)
     for line = line1, line2 do
         local line_text = doc().lines[line]
-        local first_char_idx = line_text:find("%S")
-        if line_text:sub(first_char_idx, first_char_idx + #text - 1) == text
---             and (not skip_empty or line_text:find("%S"))
+        if line_text:sub(1, #text) == text
+            and (not skip_empty or line_text:find("%S"))
         then
+            doc():remove(line, 1, line, #text + 1)
+        end
+    end
+
+    doc():set_selection(line1, col1 - #text, line2, col2 - #text, swap)
+end
+
+
+local function insert_comment_to_selected_lines(text)
+    local line1, col1, line2, col2, swap = doc():get_selection(true)
+
+    local first_char_idx
+    for line = line1, line2 do
+        for line = line1, line2 do
+            local line_text = doc().lines[line]
+            local cur_first_char_idx = line_text:find("%S")
+            if cur_first_char_idx then
+                if first_char_idx then
+                    first_char_idx = math.min(first_char_idx, cur_first_char_idx)
+                else
+                    first_char_idx = cur_first_char_idx
+                end
+            end
+        end
+    end
+
+    if not first_char_idx then
+        first_char_idx = 1
+    end
+
+    for line = line1, line2 do
+        local line_text = doc().lines[line]
+        if line_text:find("%S") then
+            doc():insert(line, first_char_idx, text)
+        end
+    end
+
+    doc():set_selection(line1, col1 + #text, line2, col2 + #text, swap)
+end
+
+
+local function remove_comment_from_selected_lines(text)
+    local line1, col1, line2, col2, swap = doc():get_selection(true)
+    for line = line1, line2 do
+        local line_text = doc().lines[line]
+        local first_char_idx = line_text:find("%S")
+        if first_char_idx and line_text:sub(first_char_idx, first_char_idx + #text - 1) == text then
             local last_char_idx = first_char_idx + #text
 
             local next_char = line_text:sub(last_char_idx, last_char_idx)
@@ -214,8 +259,9 @@ local commands = {
 
         doc():insert(line1, 1, text)
         doc():remove(line1, #text + 1, line2, math.huge)
+
         if doc():has_selection() then
-        doc():set_selection(line1, math.huge)
+            doc():set_selection(line1, math.huge)
         end
     end,
 
@@ -303,9 +349,9 @@ local commands = {
         end
 
         if uncomment then
-            remove_from_start_of_selected_lines(comment_text)
+            remove_comment_from_selected_lines(comment_text)
         else
-            insert_at_start_of_selected_lines(comment_text .. " ")
+            insert_comment_to_selected_lines(comment_text .. " ")
         end
     end,
 

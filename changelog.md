@@ -8,7 +8,6 @@
 - Add clang-format.
 - Skip opening binary file.
 - Fix BOM on Unicode files.
-- Soft tab VSCode-like.
 - Languages: `Batch`, `C#`, `C`.
 - Double click log line to open file.
 - Refactory C sources.
@@ -55,4 +54,10 @@
     - Corecting moving window when holding titlebar
 
 - Workflow:
-    - Have an fallback version when build_clang.bat failed to edit code
+    - Have an fallback version when `build_clang.bat` failed to edit code
+
+- VSCode features (what I feel its' good):
+    - Select empty space with double clicks
+    - Soft tab VSCode-like
+    - Toggle comment with right indent
+    - Add indent should jump to next level indent

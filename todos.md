@@ -2,12 +2,10 @@
 ToDo list, order by priority.
 
 - Features (add when needed):
-    - Select empty space
     - Line wrapping
     - Multi cursors
     - Next/Previous find with arrow keys
     - Utf8
-    - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
     - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.
     - Use fast string algorithms (code editing are working on string heavily)
@@ -15,6 +13,10 @@ ToDo list, order by priority.
     - Recent files in `Open File From Project` command view
     - Mouse next/previous button (good for reading code)
     - VCS status display
+    - Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
+        - Not reliable anymore, LiteXL use Lua54
+        - But can use old Lite plugins
+        - Maybe Pragtical plugins (it use LuaJIT by default)
 
 - Fix bugs:
     - Scope line wrong position (should be have the position of the first non-space char)

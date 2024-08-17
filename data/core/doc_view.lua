@@ -206,18 +206,36 @@ local function mouse_selection(doc, clicks, line1, col1, line2, col2)
     if swap then
         line1, col1, line2, col2 = line2, col2, line1, col1
     end
+
     if clicks == 2 then
         line1, col1 = translate.start_of_word(doc, line1, col1)
         line2, col2 = translate.end_of_word(doc, line2, col2)
+
+        -- Select space
+        if line1 == line2 and col1 == col2 then
+            local line_text = doc.lines[line1]
+
+            -- Move previous
+            while line_text:sub(col1 - 1, col1 - 1) == " " do
+                col1 = col1 - 1
+            end
+
+            -- Move next
+            while line_text:sub(col2, col2) == " " do
+                col2 = col2 + 1
+            end
+        end
     elseif clicks == 3 then
         if line2 == #doc.lines and doc.lines[#doc.lines] ~= "\n" then
             doc:insert(math.huge, math.huge, "\n")
         end
         line1, col1, line2, col2 = line1, 1, line2 + 1, 1
     end
+
     if swap then
         return line2, col2, line1, col1
     end
+
     return line1, col1, line2, col2
 end
 
