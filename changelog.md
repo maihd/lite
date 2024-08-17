@@ -32,6 +32,8 @@
     - Toggle comment not work when:
         - Prefix have no space between content
         - Prefix does not start at begin of the line
+    - Cannot open file with command when focus TreeView (or locked view) -> fix with TreeView cannot focus
+    - Cannot return from TreeView to DocView -> fix with TreeView cannot focus
 
 - Better mouse interacting.
 - Fallback version for fixing scripts (safe mode).
