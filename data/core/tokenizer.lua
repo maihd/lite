@@ -47,6 +47,7 @@ end
 function tokenizer.tokenize(syntax, text, state)
     local res = {}
     local begin_scopes, end_scopes, scope_align = 0, 0, 0
+    local begin_scope_token, end_scope_token = nil, nil
     local i = 1
 
     if #syntax.patterns == 0 then
@@ -95,6 +96,7 @@ function tokenizer.tokenize(syntax, text, state)
                     for _, x in pairs(syntax.scope_begin) do
                         if x == t then
                             begin_scopes = begin_scopes + 1
+                            begin_scope_token = x
                             break
                         end
                     end
@@ -102,6 +104,7 @@ function tokenizer.tokenize(syntax, text, state)
                     for _, x in pairs(syntax.scope_end) do
                         if x == t then
                             end_scopes = end_scopes + 1
+                            end_scope_token = x
                             break
                         end
                     end
@@ -130,6 +133,7 @@ function tokenizer.tokenize(syntax, text, state)
                 for _, x in pairs(syntax.scope_begin) do
                     if x == t then
                         begin_scopes = begin_scopes + 1
+                        begin_scope_token = x
                         break
                     end
                 end
@@ -137,6 +141,7 @@ function tokenizer.tokenize(syntax, text, state)
                 for _, x in pairs(syntax.scope_end) do
                     if x == t then
                         end_scopes = end_scopes + 1
+                        end_scope_token = x
                         break
                     end
                 end
@@ -144,7 +149,7 @@ function tokenizer.tokenize(syntax, text, state)
         end
     end
 
-    return res, state, begin_scopes, end_scopes, scope_align
+    return res, state, begin_scopes, end_scopes, scope_align, begin_scope_token, end_scope_token
 end
 
 

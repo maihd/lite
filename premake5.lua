@@ -21,12 +21,12 @@ end
 project "lite"
 do
     kind "WindowedApp"
-    filter { "configurations:Debug"}
+    filter { "configurations:Debug" }
     do
         kind "ConsoleApp"
     end
 
-    filter { "configurations:Release"}
+    filter { "configurations:Release" }
     do
         kind "WindowedApp"
     end

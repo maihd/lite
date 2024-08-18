@@ -15,12 +15,10 @@ ToDo list, order by priority.
     - VCS status display
 
 - Fix bugs:
-    - Scope line wrong position (should be have the position of the first non-space char)
-    - MarkDown language highlight
-    - Modal tabbing (Vi-like) does not trim. Does it should trim?
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
         - Reason: `load_glyphset` return dangling pointer
+    - MarkDown language highlight
 
 - Native Runtime:
     - Make app more robust.

@@ -474,7 +474,7 @@ function DocView:draw()
                     local sx, sy = self:get_line_screen_position(begin_draw_line)
 
                     local lh = self:get_line_height()
-                    local indent = scope.nest * config.indent_size
+                    local indent = scope.scope_position
                     local w = font:get_width(string.rep(" ", indent))
 
                     sx = sx + w

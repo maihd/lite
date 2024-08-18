@@ -161,7 +161,10 @@ end
 
 function Doc:set_selection(line1, col1, line2, col2, swap)
     assert(not line2 == not col2, "expected 2 or 4 arguments")
-    if swap then line1, col1, line2, col2 = line2, col2, line1, col1 end
+    if swap then
+        line1, col1, line2, col2 = line2, col2, line1, col1
+    end
+
     line1, col1 = self:sanitize_position(line1, col1)
     line2, col2 = self:sanitize_position(line2 or line1, col2 or col1)
     self.selection.a.line, self.selection.a.col = line1, col1
@@ -183,6 +186,7 @@ function Doc:get_selection(sort)
     if sort then
         return sort_positions(a.line, a.col, b.line, b.col)
     end
+
     return a.line, a.col, b.line, b.col
 end
 
@@ -393,12 +397,14 @@ end
 
 function Doc:replace(fn)
     local line1, col1, line2, col2, swap
+
     local had_selection = self:has_selection()
     if had_selection then
         line1, col1, line2, col2, swap = self:get_selection(true)
     else
         line1, col1, line2, col2 = 1, 1, #self.lines, #self.lines[#self.lines]
     end
+
     local old_text = self:get_text(line1, col1, line2, col2)
     local new_text, n = fn(old_text)
     if old_text ~= new_text then
@@ -409,6 +415,7 @@ function Doc:replace(fn)
             self:set_selection(line1, col1, line2, col2, swap)
         end
     end
+    
     return n
 end
 

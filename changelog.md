@@ -33,6 +33,8 @@
         - Prefix does not start at begin of the line
     - Cannot open file with command when focus TreeView (or locked view) -> fix with TreeView cannot focus
     - Cannot return from TreeView to DocView -> fix with TreeView cannot focus
+    - Scope line wrong position (should be have the position of the first non-space char)
+    - Modal tabbing (Vi-like) does not trim. Does it should trim?
 
 - Better mouse interacting.
 - Fallback version for fixing scripts (safe mode).
