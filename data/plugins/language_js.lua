@@ -38,6 +38,7 @@ syntax.add {
         ["function"]   = "keyword",
         ["get"]        = "keyword",
         ["if"]         = "keyword",
+        ["of"]         = "keyword",
         ["import"]     = "keyword",
         ["in"]         = "keyword",
         ["instanceof"] = "keyword",

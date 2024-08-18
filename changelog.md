@@ -61,3 +61,8 @@
     - Soft tab VSCode-like
     - Toggle comment with right indent
     - Add indent should jump to next level indent
+
+- Add polyfill `table.unpack`. (Lua52 compat, may help work with other plugins)
+    - Not reliable anymore, LiteXL use Lua54
+    - But can use old Lite plugins
+    - Maybe Pragtical plugins (it use LuaJIT by default)
