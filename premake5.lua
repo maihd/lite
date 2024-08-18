@@ -9,10 +9,11 @@ do
     location (PROJECT_DIR)
 
     configurations {
-        "Debug", "Release",
-        "DebugSDL2", "ReleaseSDL2",
-        "DebugSDL2OpenGL", "ReleaseSDL2OpenGL",
+       "Debug", "Release",
+       "DebugSDL2", "ReleaseSDL2",
+       "DebugSDL2OpenGL", "ReleaseSDL2OpenGL",
     }
+
     platforms { "x86", "x64" }
 
     filter {}

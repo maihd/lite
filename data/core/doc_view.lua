@@ -4,8 +4,72 @@ local config = require "core.config"
 local style = require "core.style"
 local keymap = require "core.keymap"
 local translate = require "core.doc.translate"
-local View = require "core.view"
 
+local View = require "core.view"
+local Object = require "core.object"
+
+-- Caret
+
+local Caret = Object:extend()
+
+
+function Caret:new(doc_view)
+    self.doc_view = doc_view
+
+    self.x = 0
+    self.y = 0
+    self.shadow_x = 0
+    self.shadow_y = 0
+
+    self.active = false
+
+    self.blink_timer = 0
+    self.blink_period = 0.8
+end
+
+
+function Caret:update()
+    if not self.active then
+        return
+    end
+
+    local lh = self.doc_view:get_line_height()
+    local ox, oy = self.doc_view:get_line_screen_position(line)
+    local x = ox + self.doc_view:get_col_x_offset(line, col)
+    local y = oy
+    self.doc_view::move_towards(self, "x", x, 0.75)
+    self.doc_view::move_towards(self, "y", y, 0.75)
+    self.doc_view::move_towards(self, "shadow_x", x, 0.35)
+    self.doc_view:move_towards(self, "shadow_y", y, 0.35)
+end
+
+
+function Caret:draw()
+    if not self.active then
+        return
+    end
+    
+    -- draw caret if it overlaps this line
+    local line = self.line
+    if line >= minline and line <= maxline
+        and core.active_view == self.doc_view
+        and self.blink_timer < blink_period / 2
+        and system.window_has_focus()
+    then
+        local lh = self.doc_view:get_line_height()
+
+        local x1 = self.shadow_x
+        local y1 = self.shadow_y
+        renderer.draw_rect(x1, y1, style.caret_width, lh, style.caret2)
+
+        local x2 = self.x
+        local y2 = self.y
+        renderer.draw_rect(x2, y2, style.caret_width, lh, style.caret)
+    end
+end
+
+
+-- DocView
 
 local DocView = View:extend()
 
@@ -467,7 +531,7 @@ function DocView:draw()
             local indent = 0
             for _, scope in pairs(self.doc.highlighter.scopes) do
                 if scope.end_line ~= scope.begin_line
---                     and not (scope.end_line < minline or scope.begin_line > maxline)
+                    -- and not (scope.end_line < minline or scope.begin_line > maxline)
                 then
                     local begin_draw_line = math.max(minline, scope.begin_line + 1)
                     local end_draw_line = math.min(maxline, scope.end_line - 1)
@@ -478,7 +542,7 @@ function DocView:draw()
                     local w = font:get_width(string.rep(" ", indent))
 
                     sx = sx + w
---                     renderer.draw_rect(sx, sy, 1, lh * (end_draw_line - begin_draw_line + 1), style.scope_line)
+                    -- renderer.draw_rect(sx, sy, 1, lh * (end_draw_line - begin_draw_line + 1), style.scope_line)
                     for i = begin_draw_line, end_draw_line do
                         local line_text = self.doc.lines[i]
                         if indent >= #line_text
