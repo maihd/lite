@@ -11,6 +11,7 @@ echo:
 call build_clang.bat
 
 :done
+
 echo:
 echo - All progression of update done!
 echo - Please sync_fallback.bat manually if you find new version is good for you!

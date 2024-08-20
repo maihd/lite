@@ -1,3 +1,4 @@
+
 local core = require "core"
 local common = require "core.common"
 local config = require "core.config"
@@ -37,9 +38,9 @@ function Caret:update()
     local ox, oy = self.doc_view:get_line_screen_position(line)
     local x = ox + self.doc_view:get_col_x_offset(line, col)
     local y = oy
-    self.doc_view::move_towards(self, "x", x, 0.75)
-    self.doc_view::move_towards(self, "y", y, 0.75)
-    self.doc_view::move_towards(self, "shadow_x", x, 0.35)
+    self.doc_view:move_towards(self, "x", x, 0.75)
+    self.doc_view:move_towards(self, "y", y, 0.75)
+    self.doc_view:move_towards(self, "shadow_x", x, 0.35)
     self.doc_view:move_towards(self, "shadow_y", y, 0.35)
 end
 
@@ -48,7 +49,7 @@ function Caret:draw()
     if not self.active then
         return
     end
-    
+
     -- draw caret if it overlaps this line
     local line = self.line
     if line >= minline and line <= maxline
