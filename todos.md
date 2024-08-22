@@ -2,17 +2,35 @@
 ToDo list, order by priority.
 
 - Features (add when needed):
+    - Make typing work with UniKey (Vietnamese typing method).
     - Line wrapping
     - Multi cursors
     - Next/Previous find with arrow keys
     - Utf8
-    - Make typing work with UniKey (Vietnamese typing method).
     - Open binary file in preview-mode.
     - Use fast string algorithms (code editing are working on string heavily)
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
     - Recent files in `Open File From Project` command view
     - Mouse next/previous button (good for reading code)
     - VCS status display
+    - Remake all Lite Editor with LiteFx+Fennel -> MaiMacs
+
+- Practices:
+    - More productivity with Lite
+    - Familiar with keybinds
+    - Create some utils tools
+    - Practice mode or tutorials
+
+- Improvement:
+    - New default theme (MaiBlue -> MaiAoi/MaiSora)
+    - Background and animations (because I'm a gamer/gamedev, animations are big concern)
+    - Refactory syntax definition
+    - TreeView:
+        - Resizable
+        - File type icon based on extensions/languages
+        - Icon color
+        - Text color
+        - Display file status
 
 - Fix bugs:
     - Crash when long searching progress (commonly with Project Search)
@@ -20,7 +38,7 @@ ToDo list, order by priority.
         - Reason: `load_glyphset` return dangling pointer
     - MarkDown language highlight
 
-- Native Runtime:
+- Native Runtime (will move to LiteFx soon):
     - Make app more robust.
     - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
     - Display launching message box with style and helper.
@@ -28,9 +46,9 @@ ToDo list, order by priority.
     - Better font rendering: FreeType, SDF, advance usage of `stb_truetype`
     - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
         - Simple and robust C framework
-        - Can be customize Lua runtime: Lua52 (or 53, 54), LuaJIT, Luau
+        - Lua runtime selections: Lua52 (or 53, 54), LuaJIT, Luau
         - Fennel simple showcase for Emacs-like scripting experience
-        - Can run LiteXL Lua data (Use Lua54, but there are no compat layer for LuaJIT)
+        - Can run LiteXL Lua data (LiteXL use Lua54, but there are no compat layer for LuaJIT)
         - Can run Pragtical Lua data
 
 - Syntax highlights:
