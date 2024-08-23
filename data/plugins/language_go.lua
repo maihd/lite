@@ -4,7 +4,7 @@ syntax.add {
     name = "Go",
     files = "%.go$",
     headers = "^#!.*[ /]go",
-    version = "0.0.1-dev"
+    version = "0.0.1-dev",
     comment = "//",
     scope_begin = { "{" },
     scope_end = { "}" },
