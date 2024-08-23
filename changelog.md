@@ -68,3 +68,7 @@
     - Not reliable anymore, LiteXL use Lua54
     - But can use old Lite plugins
     - Maybe Pragtical plugins (it use LuaJIT by default)
+
+- Improvements:
+    - Reload syntax when syntax module is reloaded
+    - Default space size for language

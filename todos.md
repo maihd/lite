@@ -2,18 +2,17 @@
 ToDo list, order by priority.
 
 - Features (add when needed):
-    - Tab size detection
-    - Default space size for language
     - Make typing work with UniKey (Vietnamese typing method).
     - Line wrapping
     - Multi cursors
     - Next/Previous find with arrow keys
     - Utf8
     - Open binary file in preview-mode.
-    - Use fast string algorithms (code editing are working on string heavily)
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
     - Recent files in `Open File From Project` command view
     - Mouse next/previous button (good for reading code)
+    - Windows OS: Recent projects from Start Menu, Task Bar
+    - Open project with command. Also support recents.
     - VCS status display
     - Remake all Lite Editor with LiteFx+Fennel -> MaiMacs
 
@@ -22,11 +21,15 @@ ToDo list, order by priority.
     - Familiar with keybinds
     - Create some utils tools
     - Practice mode or tutorials
+    - Review this project sources, memorize and gain knowledges
 
-- Improvement:
+- Improvements:
     - New default theme (MaiBlue -> MaiAoi/MaiSora)
-    - Background and animations (because I'm a gamer/gamedev, animations are big concern)
+    - Background and animations (because I'm a gamer/gamedev, theses are big concerns)
     - Refactory syntax definition
+    - Tab size detection
+    - Ergonomics mouse interactions
+    - Use fast string algorithms (code editing are working on string heavily)
     - TreeView:
         - Resizable
         - File type icon based on extensions/languages
@@ -35,6 +38,9 @@ ToDo list, order by priority.
         - Display file status
 
 - Fix bugs:
+    - Unindent wrong or not work in some cases,
+        specially when the file have different indent size with config
+    - Mouse over in titlebar can be fallthrough from other window
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
         - Reason: `load_glyphset` return dangling pointer

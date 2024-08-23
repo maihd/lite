@@ -48,12 +48,16 @@ end
 
 function Doc:reset()
     self.lines = { "\n" }
+
     self.selection = { a = { line = 1, col = 1 }, b = { line = 1, col = 1 } }
     self.selections = {} -- @todo(maihd): multiple selections to make multiple cursors work
+
     self.undo_stack = { idx = 1 }
     self.redo_stack = { idx = 1 }
+
     self.clean_change_id = 1
     self.highlighter = Highlighter(self)
+
     self:reset_syntax()
 end
 
@@ -63,6 +67,8 @@ function Doc:reset_syntax()
     local syn = syntax.get(self.filename or "", header)
     if self.syntax ~= syn then
         self.syntax = syn
+        self.indent_size = syn.indent_size or config.indent_size
+
         self.highlighter:reset()
     end
 end
@@ -70,6 +76,7 @@ end
 
 function Doc:load(filename)
     local fp = assert(io.open(filename, "rb"))
+
     self:reset()
     self.filename = filename
     self.lines = {}
@@ -97,7 +104,7 @@ function Doc:load(filename)
 
         -- Convert tab to space
         if config.tab_type == "soft" then
-            line = line:gsub("\t", string.rep(" ", config.indent_size))
+            line = line:gsub("\t", string.rep(" ", self.indent_size))
         end
 
         table.insert(self.lines, line .. "\n")
@@ -161,6 +168,7 @@ end
 
 function Doc:set_selection(line1, col1, line2, col2, swap)
     assert(not line2 == not col2, "expected 2 or 4 arguments")
+
     if swap then
         line1, col1, line2, col2 = line2, col2, line1, col1
     end
@@ -177,6 +185,7 @@ local function sort_positions(line1, col1, line2, col2)
         or line1 == line2 and col1 > col2 then
         return line2, col2, line1, col1, true
     end
+    
     return line1, col1, line2, col2, false
 end
 
@@ -252,13 +261,18 @@ function Doc:get_text(line1, col1, line2, col2)
     line1, col1 = self:sanitize_position(line1, col1)
     line2, col2 = self:sanitize_position(line2, col2)
     line1, col1, line2, col2 = sort_positions(line1, col1, line2, col2)
+
+    -- Text from single line selection
     if line1 == line2 then
         return self.lines[line1]:sub(col1, col2 - 1)
     end
+
+    -- Text from multi line selection
     local lines = { self.lines[line1]:sub(col1) }
     for i = line1 + 1, line2 - 1 do
         table.insert(lines, self.lines[i])
     end
+
     table.insert(lines, self.lines[line2]:sub(1, col2 - 1))
     return table.concat(lines)
 end
@@ -415,7 +429,7 @@ function Doc:replace(fn)
             self:set_selection(line1, col1, line2, col2, swap)
         end
     end
-    
+
     return n
 end
 

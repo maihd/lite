@@ -22,17 +22,41 @@ end
 
 
 
-local function get_indent_string(cursor)
+local function get_indent_string(column, doc)
     if config.tab_type == "hard" then
         return "\t"
     end
 
-    if cursor then
-        cursor = cursor or 0
-        return string.rep(" ", config.indent_size - ((cursor - 1) % config.indent_size))
+    local indent_size = (doc and doc.indent_size) or config.indent_size
+
+    if column then
+        column = column or 1
+        return string.rep(" ", indent_size - ((column - 1) % indent_size))
     end
 
-    return string.rep(" ", config.indent_size)
+    return string.rep(" ", indent_size)
+end
+
+
+local function get_unindent_string(indent_size)
+    if config.tab_type == "hard" then
+        return "\t"
+    end
+
+    local indent_size = (doc and doc.indent_size) or config.indent_size
+
+    if column then
+        column = column or 1
+
+        local indent = ((column - 1) % indent_size)
+        if indent == 0 then
+            indent = indent_size
+        end
+
+        return string.rep(" ", indent)
+    end
+
+    return string.rep(" ", indent_size)
 end
 
 
@@ -41,7 +65,8 @@ local function indent_line(doc, line)
 
     local highlight_line = doc.highlighter.lines[line]
     if highlight_line then
-        line_text = string.rep(" ", highlight_line.scope_nest * config.indent_size) .. common.trim(line_text) .. "\n"
+        local indent_size = doc.indent_size or config.indent_size
+        line_text = string.rep(" ", highlight_line.scope_nest * indent_size) .. common.trim(line_text) .. "\n"
     end
 
     doc.lines[line] = line_text
@@ -62,6 +87,8 @@ end
 
 
 local function remove_from_start_of_selected_lines(text, skip_empty)
+    local result = false
+
     local line1, col1, line2, col2, swap = doc():get_selection(true)
     for line = line1, line2 do
         local line_text = doc().lines[line]
@@ -69,10 +96,12 @@ local function remove_from_start_of_selected_lines(text, skip_empty)
             and (not skip_empty or line_text:find("%S"))
         then
             doc():remove(line, 1, line, #text + 1)
+            result = true
         end
     end
 
     doc():set_selection(line1, col1 - #text, line2, col2 - #text, swap)
+    return result
 end
 
 
@@ -181,7 +210,7 @@ local commands = {
         if config.indent_newline then
             local highlight_line = doc().highlighter.lines[line]
             if highlight_line and highlight_line.begin_scope then
-                indent = indent .. string.rep(" ", config.indent_size)
+                indent = indent .. string.rep(" ", doc().indent_size or config.indent_size)
             end
         else
             if col <= #indent then
@@ -219,8 +248,9 @@ local commands = {
         local line, col = doc():get_selection()
         if not doc():has_selection() then
             local text = doc():get_text(line, 1, line, col)
-            if #text >= config.indent_size and text:find("^ *$") then
-                doc():delete_to(0, -config.indent_size)
+            local indent_size = doc().indent_size or config.indent_size
+            if #text >= indent_size and text:find("^ *$") then
+                doc():delete_to(0, -indent_size)
                 return
             end
         end
@@ -268,16 +298,17 @@ local commands = {
     ["doc:indent"] = function()
         if not config.auto_indent then
             if doc():has_selection() then
-                local text = get_indent_string()
+                local text = get_indent_string(nil, doc())
                 insert_at_start_of_selected_lines(text)
             else
-                local _, cursor = doc():get_selection(false)
-                local text = get_indent_string(cursor)
+                local _, column = doc():get_selection(false)
+                local text = get_indent_string(column, doc())
                 doc():text_input(text)
             end
         else
             -- @todo(maihd): make it work with multi cursor
             -- for _, cursor in pair(doc().cursors) do
+
             local line1, col1, line2, col2 = doc():get_selection(true)
             for line = line1, line2 do
                 indent_line(doc(), line)
@@ -288,8 +319,15 @@ local commands = {
     end,
 
     ["doc:unindent"] = function()
-        local text = get_indent_string()
-        remove_from_start_of_selected_lines(text)
+        if config.auto_indent then
+            return
+        end
+
+        local line, column = doc():get_selection(true)
+        local text = get_unindent_string(column, doc())
+        if not remove_from_start_of_selected_lines(text) then
+            -- doc().lines[]
+        end
     end,
 
     ["doc:duplicate-lines"] = function()
