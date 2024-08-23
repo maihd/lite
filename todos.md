@@ -2,6 +2,8 @@
 ToDo list, order by priority.
 
 - Features (add when needed):
+    - Tab size detection
+    - Default space size for language
     - Make typing work with UniKey (Vietnamese typing method).
     - Line wrapping
     - Multi cursors
