@@ -160,6 +160,71 @@ function StatusView:get_items()
 end
 
 
+-- When status view have small width
+function StatusView:get_short_items()
+    -- Status of doc
+    if getmetatable(core.active_view) == DocView then
+        local dv = core.active_view
+        local line, col = dv.doc:get_selection()
+        local dirty = dv.doc:is_dirty()
+
+        return {
+            dirty and style.file_dirty or style.file, style.icon_font, style.icons.file,
+            style.dim, style.font, self.separator2, style.text,
+            dv.doc.filename and style.text or style.dim, dv.doc:get_name(),
+            style.text,
+            self.separator,
+            "L: ", line,
+            self.separator,
+            col > config.line_limit and style.accent or style.text, "C: ", col,
+            style.text,
+            self.separator,
+            "S: ", string.format("%d%%", line / #dv.doc.lines * 100),
+        }, {
+            -- FPS
+            style.font, "FPS",
+            style.font, style.dim, self.separator2, style.text,
+            style.font, tostring(core.fps):sub(1, 3),
+            self.separator,
+
+            -- Language
+            style.icon_font, style.icons.proglang,
+            style.font, style.dim, self.separator2, style.text,
+            style.font, dv.doc:get_language_name(),
+            self.separator,
+
+            -- Lines
+            style.icon_font, style.icons.graph,
+            style.font, style.dim, self.separator2, style.text,
+            #dv.doc.lines, -- " Lines",
+            self.separator,
+
+            -- Line ending
+            dv.doc.crlf and "CRLF" or "LF"
+        }
+    end
+
+    -- Status of project
+    return {
+        style.file, style.icon_font, style.icons.folder,
+        style.accent, style.font, style.dim, self.separator2,
+        style.accent, style.font, core.project_dir_name
+    }, {
+        -- FPS (no FPS when short width)
+        -- style.font, "FPS",
+        -- style.font, style.dim, self.separator2, style.text,
+        -- style.font, tostring(core.fps):sub(1, 3),
+        -- self.separator,
+
+        -- Files
+        style.icon_font, style.icons.graph,
+        style.font, style.dim, self.separator2,
+        #core.docs, style.text, " / ",
+        #core.project_files, " Files"
+    }
+end
+
+
 function StatusView:draw()
     self:draw_background(style.background2)
 
@@ -168,6 +233,14 @@ function StatusView:draw()
     end
 
     local left, right = self:get_items()
+
+    -- Calculate widths
+    local left_width = draw_items(self, left, 0, 0, text_width)
+    local right_width = draw_items(self, right, 0, 0, text_width)
+    if left_width + style.padding.x > self.size.x - style.padding.x - right_width then
+        left, right = self:get_short_items()
+    end
+
     self:draw_items(left)
     self:draw_items(right, true)
 end

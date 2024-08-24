@@ -174,18 +174,13 @@ function StatusView:get_short_items()
             dv.doc.filename and style.text or style.dim, dv.doc:get_name(),
             style.text,
             self.separator,
-            "L: ", line,
-            self.separator,
-            col > config.line_limit and style.accent or style.text, "C: ", col,
-            style.text,
-            self.separator,
-            "S: ", string.format("%d%%", line / #dv.doc.lines * 100),
+            line, ":", col, " - ", string.format("%d%%", line / #dv.doc.lines * 100)
         }, {
-            -- FPS
-            style.font, "FPS",
-            style.font, style.dim, self.separator2, style.text,
-            style.font, tostring(core.fps):sub(1, 3),
-            self.separator,
+            -- FPS (No FPS in short status view)
+            -- style.font, "FPS",
+            -- style.font, style.dim, self.separator2, style.text,
+            -- style.font, tostring(core.fps):sub(1, 3),
+            -- self.separator,
 
             -- Language
             style.icon_font, style.icons.proglang,
@@ -196,7 +191,7 @@ function StatusView:get_short_items()
             -- Lines
             style.icon_font, style.icons.graph,
             style.font, style.dim, self.separator2, style.text,
-            #dv.doc.lines, -- " Lines",
+            #dv.doc.lines, " Lines",
             self.separator,
 
             -- Line ending

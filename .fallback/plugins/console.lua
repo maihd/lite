@@ -11,10 +11,10 @@ config.max_console_lines = 200
 config.autoscroll_console = true
 
 local files = {
-  script   = core.temp_filename(PLATFORM == "Windows" and ".bat"),
-  script2  = core.temp_filename(PLATFORM == "Windows" and ".bat"),
-  output   = core.temp_filename(),
-  complete = core.temp_filename(),
+    script   = core.temp_filename(PLATFORM == "Windows" and ".bat"),
+    script2  = core.temp_filename(PLATFORM == "Windows" and ".bat"),
+    output   = core.temp_filename(),
+    complete = core.temp_filename(),
 }
 
 local console = {}
