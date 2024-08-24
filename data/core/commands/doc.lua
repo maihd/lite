@@ -38,7 +38,7 @@ local function get_indent_string(column, doc)
 end
 
 
-local function get_unindent_string(indent_size)
+local function get_unindent_string(column, doc)
     if config.tab_type == "hard" then
         return "\t"
     end
@@ -323,10 +323,14 @@ local commands = {
             return
         end
 
-        local line, column = doc():get_selection(true)
-        local text = get_unindent_string(column, doc())
+        local line = doc():get_selection(true)
+        local _, column = doc().lines[line]:find("^%s*")
+        local text = get_unindent_string(column + 1, doc())
         if not remove_from_start_of_selected_lines(text) then
-            -- doc().lines[]
+            text = " "
+            while remove_from_start_of_selected_lines(text) do
+                -- no-op
+            end
         end
     end,
 

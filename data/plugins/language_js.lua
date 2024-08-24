@@ -4,6 +4,9 @@ syntax.add {
     name = "JavaScript",
     files = { "%.js$" },
     comment = "//",
+    scope_begin = { "{" },
+    scope_end = { "}" },
+    scope_align = { "}" },
     patterns = {
         { pattern = "//.-\n",               type = "comment" },
         { pattern = { "/%*", "%*/" },       type = "comment" },

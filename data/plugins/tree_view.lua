@@ -236,11 +236,12 @@ command.add(nil, {
 
     ["treeview:toggle-focus"] = function()
         view.visible = not view.visible
-        if view.visible then
-            core.set_active_view(view)
-        else
-            core.set_active_view(core.last_active_view)
-        end
+        -- TreeView cannot focus now
+        -- if view.visible then
+        --     core.set_active_view(view)
+        -- else
+        --     core.set_active_view(core.last_active_view)
+        -- end
     end
 })
 
