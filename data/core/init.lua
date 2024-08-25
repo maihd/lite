@@ -187,6 +187,7 @@ function core.quit(force)
         delete_temp_files()
         os.exit()
     end
+
     local dirty_count = 0
     local dirty_name
     for _, doc in ipairs(core.docs) do
@@ -195,6 +196,7 @@ function core.quit(force)
             dirty_name = doc:get_name()
         end
     end
+
     if dirty_count > 0 then
         local text
         if dirty_count == 1 then
@@ -205,6 +207,7 @@ function core.quit(force)
         local confirm = system.show_confirm_dialog("Unsaved Changes", text)
         if not confirm then return end
     end
+
     core.quit(true)
 end
 
@@ -229,6 +232,7 @@ end
 
 function core.load_project_module()
     local filename = ".lite_project.lua"
+
     if system.get_file_info(filename) then
         return core.try(function()
             local fn, err = loadfile(filename)
@@ -237,6 +241,7 @@ function core.load_project_module()
             core.log_quiet("Loaded project module")
         end)
     end
+
     return true
 end
 
@@ -244,6 +249,7 @@ end
 function core.reload_module(name)
     local old = package.loaded[name]
     package.loaded[name] = nil
+
     local new = require(name)
     if type(old) == "table" then
         for k, v in pairs(new) do old[k] = v end
@@ -254,6 +260,7 @@ end
 
 function core.set_active_view(view)
     assert(view, "Tried to set active view to nil")
+
     if view ~= core.active_view then
         core.last_active_view = core.active_view
         core.active_view = view
@@ -281,6 +288,7 @@ end
 
 function core.pop_clip_rect()
     table.remove(core.clip_rect_stack)
+
     local x, y, w, h = unpack(core.clip_rect_stack[#core.clip_rect_stack])
     renderer.set_clip_rect(x, y, w, h)
 end
@@ -565,9 +573,7 @@ function core.run()
         core.frame_start = system.get_time()
         local did_redraw = core.step()
         run_threads()
-        --     if not did_redraw and not system.window_has_focus() then
-        --       system.wait_event(0.25)
-        --     end
+
         local elapsed = system.get_time() - core.frame_start
         local frame = 1 / config.fps
 
@@ -575,7 +581,6 @@ function core.run()
         if frame > elapsed then
             -- Do GC every seconds
             if time - math.floor(time) <= frame then
-                -- core.log("Cleaning up memory...")
                 collectgarbage("collect")
             end
 
@@ -583,23 +588,17 @@ function core.run()
             elapsed = system.get_time() - core.frame_start
         end
 
+        -- Calculate delta
         local delta = 0
         if frame > elapsed then
             system.sleep(frame - elapsed)
             delta = frame
         else
             delta = elapsed
-
-            -- Do GC every seconds (2nd attempt)
-            -- @note(maihd): call here to avoid missing GC call
-            if time - math.floor(time) <= frame then
-                -- core.log("Cleaning up memory...")
-                collectgarbage("collect")
-            end
         end
 
         time = time + delta
-        core.fps = math.min(60, 1 / delta)
+        core.fps = math.min(config.fps, 1 / delta)
 
         system_end_frame()
     end
@@ -607,12 +606,13 @@ end
 
 
 function core.on_error(err)
-    -- write error to file
+    -- Write error to file
     local fp = io.open(EXEDIR .. "/error.txt", "wb")
     fp:write("Error: " .. tostring(err) .. "\n")
     fp:write(debug.traceback(nil, 4))
     fp:close()
-    -- save copy of all unsaved documents
+
+    -- Save copy of all unsaved documents
     for _, doc in ipairs(core.docs) do
         if doc:is_dirty() and doc.filename then
             doc:save(doc.filename .. "~")
@@ -649,5 +649,6 @@ function core.is_ignore(file)
 
     return common.match_pattern(file, core.ignore_files)
 end
+
 
 return core

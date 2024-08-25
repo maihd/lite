@@ -2,12 +2,12 @@ local strict = {}
 strict.defined = {}
 
 -- Polyfill
-if type(pack) == "function" then
-    table.pack = pack
+if type(_G.pack) == "function" then
+    table.pack = _G.pack
 end
 
-if type(unpack) == "function" then
-    table.unpack = unpack
+if type(_G.unpack) == "function" then
+    table.unpack = _G.unpack
 end
 
 -- used to define a global variable
