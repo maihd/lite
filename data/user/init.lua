@@ -11,8 +11,3 @@ local style = require("core.style")
 -- key binding:
 keymap.add { ["ctrl+e"] = "core:find-file" }
 -- keymap.add { ["ctrl+b"] = "treeview:toggle" }
-
--- fennel
---local fennel = require("user.fennel")
---table.insert(package.loaders or package.searchers, fennel.searcher)
---fennel.dofile("data/user/config.fnl")
