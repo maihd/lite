@@ -38,6 +38,14 @@ ToDo list, order by priority.
         - Display file status
 
 - Fix bugs:
+    - When do cmd "Root: Close All". Reproduce steps:
+        - Unsaved docs
+        - Request saving docs or force close
+        - Focus to unsaved docs
+        - Cannot return to CommandView, do some weird key stroke to return CommandView
+        - Cannot close CommandView, even after choose "Save and Close"
+        - After that, cannot close CommandView, even refocus CommandView
+
     - Unindent wrong or not work in some cases,
         specially when the file have different indent size with config
     - Mouse over in titlebar can be fallthrough from other window
