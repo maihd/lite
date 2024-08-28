@@ -36,6 +36,10 @@ Production ready Lite forks (recommended):
     - Pulling from github repo
     - Building with clang
 
+## ROADMAP
+Different from todos. This docs describe flow to make Lite better, the road to convert from Lite -> MaiMacs.
+See [roadmap.md](/roadmap.md)
+
 ## Changes
 See [changelog.md](/changelog.md)
 
