@@ -33,7 +33,9 @@ end
 local function find_non_escaped(text, pattern, offset, esc)
     while true do
         local s, e = text:find(pattern, offset)
-        if not s then break end
+        if not s then
+            break
+        end
 
         if esc and is_escaped(text, s, esc) then
             offset = e + 1

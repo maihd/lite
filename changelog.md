@@ -72,3 +72,6 @@
 - Improvements:
     - Reload syntax when syntax module is reloaded
     - Default space size for language
+
+- Auto indent:
+    - Simple auto indent base on block

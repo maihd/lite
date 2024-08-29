@@ -19,11 +19,12 @@ config.line_limit = 80
 config.draw_space_dot = false -- for testing
 config.scope_highlight = true
 
-config.auto_indent = false
-config.indent_newline = false
+-- MaiHD customs
+
+config.auto_indent              = true
+config.indent_newline           = false
 config.prevent_open_binary_file = true
 
-config.window_opacity = 1.0
--- config.window_opacity = 0.925
+config.window_opacity           = 1.0
 
 return config

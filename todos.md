@@ -3,10 +3,12 @@ ToDo list, order by priority.
 
 - Features (add when needed):
     - Make typing work with UniKey (Vietnamese typing method).
+    - Rendering Utf8 text
+    - Auto indent like Emacs, which based on scope/block nesting
+    - Smart indent for Lisp-like languages (different from above)
     - Line wrapping
     - Multi cursors
     - Next/Previous find with arrow keys
-    - Utf8
     - Open binary file in preview-mode.
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
     - Recent files in `Open File From Project` command view
@@ -26,7 +28,7 @@ ToDo list, order by priority.
 - Improvements:
     - New default theme (MaiBlue -> MaiAoi/MaiSora)
     - Background and animations (because I'm a gamer/gamedev, theses are big concerns)
-    - Refactory syntax definition
+    - Refactory syntax definition, better handle scope
     - Tab size detection
     - Ergonomics mouse interactions
     - Use fast string algorithms (code editing are working on string heavily)

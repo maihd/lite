@@ -16,11 +16,6 @@ local function doc()
 end
 
 
-local function trim(s)
-    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
-end
-
-
 
 local function get_indent_string(column, doc)
     if config.tab_type == "hard" then
@@ -63,13 +58,22 @@ end
 local function indent_line(doc, line)
     local line_text = doc.lines[line]
 
+    local pos = nil
+
     local highlight_line = doc.highlighter.lines[line]
     if highlight_line then
         local indent_size = doc.indent_size or config.indent_size
-        line_text = string.rep(" ", highlight_line.scope_nest * indent_size) .. common.trim(line_text) .. "\n"
+        line_text =
+            string.rep(" ", highlight_line.scope_nest * indent_size)
+            .. common.trim(line_text) .. "\n"
+
+        pos = highlight_line.scope_nest * indent_size + 1
     end
 
     doc.lines[line] = line_text
+
+    -- Return new position for caret
+    return pos
 end
 
 
@@ -169,6 +173,14 @@ end
 local function save(filename)
     doc():save(filename)
     core.log("Saved \"%s\"", doc().filename)
+end
+
+
+local function use_auto_indent()
+    return config.auto_indent
+        and doc():has_selection()
+        and doc().syntax.scope_begin    -- @note(maihd): cannot auto indent without knowledges of scopes
+        and doc().syntax.scope_end      -- @note(maihd): cannot auto indent without knowledges of scopes
 end
 
 
@@ -296,7 +308,7 @@ local commands = {
     end,
 
     ["doc:indent"] = function()
-        if not config.auto_indent then
+        if not use_auto_indent() then
             if doc():has_selection() then
                 local text = get_indent_string(nil, doc())
                 insert_at_start_of_selected_lines(text)
@@ -309,9 +321,16 @@ local commands = {
             -- @todo(maihd): make it work with multi cursor
             -- for _, cursor in pair(doc().cursors) do
 
-            local line1, col1, line2, col2 = doc():get_selection(true)
+            local line1, col1, line2, col2 = doc():get_selection(false)
             for line = line1, line2 do
-                indent_line(doc(), line)
+                local new_col1 = indent_line(doc(), line)
+                if new_col1 and line == line1 then
+                    if line1 == line2 then
+                        doc():set_selection(line1, new_col1)
+                    else
+                        doc():set_selection(line1, new_col1, line2, col2)
+                    end
+                end
             end
 
             doc().highlighter:reset()
@@ -319,7 +338,7 @@ local commands = {
     end,
 
     ["doc:unindent"] = function()
-        if config.auto_indent then
+        if use_auto_indent() then
             return
         end
 
@@ -384,7 +403,7 @@ local commands = {
         local uncomment = true
         for line = line1, line2 do
             local text = doc().lines[line]
-            local text_trim = trim(text)
+            local text_trim = common.trim(text)
             if text_trim:find("%S") and text_trim:find(comment_text, 1, true) ~= 1 then
                 uncomment = false
             end

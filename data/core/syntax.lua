@@ -27,9 +27,8 @@ function syntax.add(t)
     local old_syntax, idx = find_by_name(t.name)
     if old_syntax then
         syntax.items[idx] = t
-
-        -- Do reload syntax for all open docs
-        local core = require("core")
+         -- Do reload syntax for all open docs
+        local core = require("core") -- @note: I think we should not require("core") from top level to avoid recycle require
         for _, doc in ipairs(core.docs) do
             if doc.syntax == old_syntax then
                 doc:reset_syntax()
