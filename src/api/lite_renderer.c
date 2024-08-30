@@ -2,7 +2,8 @@
 #include "lite_api.h"
 #include "lite_rencache.h"
 
-static LiteColor checkcolor(lua_State* L, int idx, int def)
+
+static LiteColor luaL_checkcolor(lua_State* L, int idx, int def)
 {
     LiteColor color;
     if (lua_isnoneornil(L, idx))
@@ -22,12 +23,14 @@ static LiteColor checkcolor(lua_State* L, int idx, int def)
     return color;
 }
 
+
 static int f_show_debug(lua_State* L)
 {
     luaL_checkany(L, 1);
     lite_rencache_show_debug(lua_toboolean(L, 1));
     return 0;
 }
+
 
 static int f_get_size(lua_State* L)
 {
@@ -38,17 +41,20 @@ static int f_get_size(lua_State* L)
     return 2;
 }
 
+
 static int f_begin_frame(lua_State* L)
 {
     lite_rencache_begin_frame();
     return 0;
 }
 
+
 static int f_end_frame(lua_State* L)
 {
     lite_rencache_end_frame();
     return 0;
 }
+
 
 static int f_set_clip_rect(lua_State* L)
 {
@@ -61,6 +67,7 @@ static int f_set_clip_rect(lua_State* L)
     return 0;
 }
 
+
 static int f_draw_rect(lua_State* L)
 {
     LiteRect rect;
@@ -68,22 +75,24 @@ static int f_draw_rect(lua_State* L)
     rect.y          = (int32_t)luaL_checknumber(L, 2);
     rect.width      = (int32_t)luaL_checknumber(L, 3);
     rect.height     = (int32_t)luaL_checknumber(L, 4);
-    LiteColor color = checkcolor(L, 5, 255);
+    LiteColor color = luaL_checkcolor(L, 5, 255);
     lite_rencache_draw_rect(rect, color);
     return 0;
 }
 
+
 static int f_draw_text(lua_State* L)
 {
-    LiteFont**		font   = luaL_checkudata(L, 1, API_TYPE_FONT);
-    LiteStringView	text   = lua_checkstringview(L, 2);
-    int				x      = (int)luaL_checknumber(L, 3);
-    int				y      = (int)luaL_checknumber(L, 4);
-    LiteColor		color  = checkcolor(L, 5, 255);
-    int				next_x = lite_rencache_draw_text(*font, text, x, y, color);
+    LiteFont**        font   = luaL_checkudata(L, 1, API_TYPE_FONT);
+    LiteStringView    text   = lua_checkstringview(L, 2);
+    int32_t           x      = (int32_t)luaL_checknumber(L, 3);
+    int32_t           y      = (int32_t)luaL_checknumber(L, 4);
+    LiteColor         color  = luaL_checkcolor(L, 5, 255);
+    int32_t           next_x = lite_rencache_draw_text(*font, text, x, y, color);
     lua_pushnumber(L, next_x);
     return 1;
 }
+
 
 static const luaL_Reg lib[] = {
     {"show_debug",    f_show_debug   },
@@ -96,12 +105,16 @@ static const luaL_Reg lib[] = {
     {NULL,            NULL           }
 };
 
-int luaopen_renderer_font(lua_State* L);
 
 int luaopen_renderer(lua_State* L)
 {
+    extern int luaopen_renderer_font(lua_State* L);
+    
     luaL_newlib(L, lib);
     luaopen_renderer_font(L);
     lua_setfield(L, -2, "font");
     return 1;
 }
+
+
+//! EOF
