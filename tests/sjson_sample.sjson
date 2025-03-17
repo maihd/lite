@@ -1,0 +1,9 @@
+// User profile
+name = "John"
+age = 30
+isStudent = false
+hobbies = ["reading", "swimming"]
+address = {
+    city = "New York"
+    zip = "10001"
+}

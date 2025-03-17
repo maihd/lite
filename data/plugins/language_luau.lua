@@ -27,7 +27,7 @@ syntax.add {
         { pattern = "<%a+>",                  type = "keyword2" },
         { pattern = "%.%.%.?",                type = "operator" },
         { pattern = "[<>~=]=",                type = "operator" },
-        { pattern = "[%+%-=/%*%^%%#<>]",      type = "operator" },
+        { pattern = "[%+%-=/%*%^%%#<>:]",     type = "operator" }, -- @note(maihd): Add ':' to highlight type declaration
         { pattern = "[%a_][%w_]*%s*%f[(\"{]", type = "function" },
         { pattern = "[%a_][%w_]*",            type = "symbol"   },
         { pattern = "::[%a_][%w_]*::",        type = "function" }, -- @todo(maihd): label highlight
@@ -52,6 +52,8 @@ syntax.add {
         ["and"]      = "keyword",
         ["or"]       = "keyword",
         ["goto"]     = "keyword",
+        ["type"]     = "keyword",
+        ["continue"] = "keyword",
         ["self"]     = "keyword2",
         ["true"]     = "literal",
         ["false"]    = "literal",

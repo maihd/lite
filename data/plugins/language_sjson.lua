@@ -1,8 +1,8 @@
 local syntax = require "core.syntax"
 
 syntax.add {
-    name = "JSON",
-    files = { "%.json$", "%.cson$" },
+    name = "SimpJSON",
+    files = { "%.sjson$" },
     comment = "//",
     scope_begin = { "{", "[", },
     scope_end = { "}", "[", },
@@ -16,7 +16,7 @@ syntax.add {
         { pattern = "0x[%da-fA-F]+",        type = "number"   },
         { pattern = "-?%d+[%d%.eE]*",       type = "number"   },
         { pattern = "-?%.?%d+",             type = "number"   },
-        { pattern = "[:]",                  type = "operator" },
+        { pattern = "[=]",                  type = "operator" },
         { pattern = "[%a_][%w_]*",          type = "symbol"   },
     },
     symbols = {
