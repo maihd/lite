@@ -2,7 +2,7 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "Batch",
-    version = "v0.0.4",
+    version = "v0.0.5",
     files = "%.bat$",
     headers = "^#!.*[ /]batch",
     comment = "::",
@@ -38,6 +38,8 @@ syntax.add {
         ["echo"]        = "keyword",
         ["goto"]        = "keyword",
         ["call"]        = "keyword",
+        ["ren"]         = "keyword",
+        ["rename"]      = "keyword",
         ["not"]         = "keyword2",
         ["exist"]       = "keyword2",
         ["for"]         = "keyword",
