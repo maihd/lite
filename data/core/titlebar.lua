@@ -34,10 +34,6 @@ function TitleBar:get_height()
 end
 
 
-function TitleBar:show_message(icon, icon_color, text)
-end
-
-
 function TitleBar:update()
     self.size.y = self:get_height()
     self.scroll.to.y = 0
@@ -122,17 +118,30 @@ function TitleBar:hover_right_item(x, y)
 
     if x < pos_x or x > self.size.x then
         self.hover_index = nil
+        self:update_mouse_cursor()
         return
     end
 
     if y < pos_y or y > self.size.y then
         self.hover_index = nil
+        self:update_mouse_cursor()
         return
     end
 
     local dx = x - pos_x
     local i = math.floor(dx / item_size)
     self.hover_index = i
+    self:update_mouse_cursor()
+end
+
+
+function TitleBar:update_mouse_cursor()
+    -- note(maihd): on Windows, when hovering control buttons, does not changing mouse cursor
+    -- if self.hover_index ~= nil then
+    --     self.cursor = "arrow"
+    -- else
+    --     self.cursor = "ibeam"
+    -- end
 end
 
 
@@ -209,9 +218,9 @@ end
 
 function TitleBar:get_items()
     return {
-        style.file, style.titlebar_font, "{L}",
-        style.accent, style.font, style.dim, self.separator2,
-        style.accent, style.font, core.window_title,
+        style.file, style.titlebar_font, "{L}",                 -- Rendering Lite logo
+        style.accent, style.font, style.dim, self.separator2,   -- Rendering seperator from logo and title
+        style.accent, style.font, core.window_title,            -- Rendering title (current edit file name + project folder)
     }, {
         -- Minimize Button
         style.titlebar_font, style.titlebar_icon, "",
@@ -227,10 +236,6 @@ end
 
 function TitleBar:draw()
     self:draw_background(style.titlebar_background)
-
---     if self.message then
---         self:draw_items(self.message, false, self.size.y)
---     end
 
     local left, right = self:get_items()
     self:draw_items(left)
