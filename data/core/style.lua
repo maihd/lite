@@ -20,8 +20,8 @@ style.font      = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFo
 style.big_font  = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 24 * SCALE) -- renderer.font.load(EXEDIR .. "/data/fonts/font.ttf", 34 * SCALE)
 style.icon_font = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 15 * SCALE)
 -- style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/RobotoMono-Medium.ttf", 15 * SCALE) -- For multi language text rendering support
-style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/CascadiaCode.ttf", 14 * SCALE) -- For multi language text rendering support
--- style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 14 * SCALE)
+-- style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/CascadiaCode.ttf", 14 * SCALE) -- For multi language text rendering support
+style.code_font = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 14 * SCALE)
 style.titlebar_font = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 20 * SCALE)
 
 
