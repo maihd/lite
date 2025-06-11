@@ -1,8 +1,7 @@
 #pragma once
 
+#include <litelua.h>
 #include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
 
 #include "lite_string.h"
 

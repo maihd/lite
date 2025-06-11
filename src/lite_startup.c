@@ -35,36 +35,39 @@ static void lite_get_exe_filename(char* buf, int sz)
 #endif
 }
 
-static lua_State* lite_create_lua(uint32_t argc, const char** argv)
+static LiteLua lite_create_lua(uint32_t argc, const char** argv)
 {
-    lua_State* L = luaL_newstate();
-    luaL_openlibs(L);
-    lite_api_load_libs(L);
+    LiteLuaIO io = {0};
+    LiteLuaGC gc = {0};
 
-    lua_newtable(L);
+    LiteLua lua = litelua_create(&io, &gc);
+    luaL_openlibs(lua.L);
+    lite_api_load_libs(lua.L);
+
+    lua_newtable(lua.L);
     for (int i = 0; i < argc; i++)
     {
-        lua_pushstring(L, argv[i]);
-        lua_rawseti(L, -2, i + 1);
+        lua_pushstring(lua.L, argv[i]);
+        lua_rawseti(lua.L, -2, i + 1);
     }
-    lua_setglobal(L, "ARGS");
+    lua_setglobal(lua.L, "ARGS");
 
-    lua_pushstring(L, "1.11");
-    lua_setglobal(L, "VERSION");
+    lua_pushstring(lua.L, "1.11");
+    lua_setglobal(lua.L, "VERSION");
 
-    lua_pushstring(L, "Windows");
-    lua_setglobal(L, "PLATFORM");
+    lua_pushstring(lua.L, "Windows");
+    lua_setglobal(lua.L, "PLATFORM");
 
-    lua_pushnumber(L, lite_get_scale());
-    lua_setglobal(L, "SCALE");
+    lua_pushnumber(lua.L, lite_get_scale());
+    lua_setglobal(lua.L, "SCALE");
 
     char exename[128];
     lite_get_exe_filename(exename, sizeof(exename));
 
-    lua_pushstring(L, exename);
-    lua_setglobal(L, "EXEFILE");
+    lua_pushstring(lua.L, exename);
+    lua_setglobal(lua.L, "EXEFILE");
 
-    return L;
+    return lua;
 }
 
 void lite_startup(const LiteStartupParams params)
@@ -72,10 +75,10 @@ void lite_startup(const LiteStartupParams params)
     uint32_t     argc = params.argc;
     const char** argv = params.argv;
 
-    lua_State* L = lite_create_lua(argc, argv);
+    LiteLua lua = lite_create_lua(argc, argv);
 
-    int errcode = luaL_dostring(
-        L,
+    LiteLuaResult result = litelua_execute_safe(
+        &lua,
         "local core, err\n"
         "xpcall(function()\n"
         "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
@@ -99,11 +102,11 @@ void lite_startup(const LiteStartupParams params)
         "  print('Error: ' .. tostring(err))\n"
         "  print(debug.traceback(nil, 2))\n"
         "  error(err)\n"
-        "end\n");
-    if (errcode != 0)
+        "end\n", 0);
+    if (result.error != LiteLuaError_None)
     {
         const char* title  = params.title;
-        const char* errmsg = lua_tostring(L, -1);
+        const char* errmsg = result.message;
         if (errmsg == NULL)
         {
             errmsg = "Unknown error!";
@@ -113,12 +116,12 @@ void lite_startup(const LiteStartupParams params)
         sprintf(dialog_message, "Cannot launch application. Error:\n%s\n\nLaunch application with safe mode?", errmsg);
         if (lite_window_confirm_dialog(title, dialog_message))
         {
-            lua_close(L);
+            litelua_destroy(&lua);
 
-            L = lite_create_lua(argc, argv);
+            lua = lite_create_lua(argc, argv);
 
-            errcode = luaL_dostring(
-                L,
+            result = litelua_execute_safe(
+                &lua,
                 "local core, err\n"
                 "xpcall(function()\n"
                 "  SCALE = tonumber(os.getenv(\"LITE_SCALE\")) or SCALE\n"
@@ -142,11 +145,11 @@ void lite_startup(const LiteStartupParams params)
                 "  print('Error: ' .. tostring(err))\n"
                 "  print(debug.traceback(nil, 2))\n"
                 "  error(err)\n"
-                "end\n");
-            if (errcode != 0)
+                "end\n", 0);
+            if (result.error != LiteLuaError_None)
             {
                 title  = params.title;
-                errmsg = lua_tostring(L, -1);
+                errmsg = result.message;
                 if (errmsg == NULL)
                 {
                     errmsg = "Unknown error!";
@@ -159,7 +162,7 @@ void lite_startup(const LiteStartupParams params)
         }
     }
 
-    lua_close(L);
+    litelua_destroy(&lua);
 }
 
 //! EOF

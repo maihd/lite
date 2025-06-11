@@ -35,10 +35,13 @@ clang src/*.c src/api/*.c src/lib/stb/*.c ^
     -lKernel32 -lUser32 -lGdi32 -lShell32 -lWinmm -lOle32 -lVersion ^
     -lCfgMgr32 -lImm32 -lSetupapi -lAdvapi32 -lOleAut32 ^
     %PLATFORM_LIBS% ^
-    -Ilibs/luajit_2.1.0-beta3/src ^
-    -llua51_static -Llibs/luajit_2.1.0-beta3/prebuilt/x64 ^
+    -Ilibs/litelua_luajit_2.1.0-rolling_04302025/include ^
+    -llitelua_luajit.lib -Llibs/litelua_luajit_2.1.0-rolling_04302025/prebuilt/x64 ^
     -mwindows res/res.res^
     -o .build/lite.exe
+
+:: -Ilibs/luajit_2.1.0-beta3/src ^
+:: -llua51_static -Llibs/luajit_2.1.0-beta3/prebuilt/x64 ^
 
 if not %ErrorLevel%==0 (
     echo Build failed, maybe lite still running, please close and recompile with build_clang.bat
