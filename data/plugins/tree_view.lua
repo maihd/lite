@@ -22,6 +22,7 @@ local TreeView = View:extend()
 
 function TreeView:new()
     TreeView.super.new(self)
+
     self.focusable = false
     self.scrollable = true
     self.visible = true
