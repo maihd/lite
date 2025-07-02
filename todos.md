@@ -39,7 +39,7 @@ ToDo list, order by priority.
     - New default theme (MaiBlue -> MaiAoi/MaiSora)
     - Background and animations (because I'm a gamer/gamedev, theses are big concerns)
     - Refactory syntax definition, better handle scope, lpeg for complex syntax
-    - Tab size detection
+    - Tab size detection (good for long names)
     - Ergonomics mouse interactions
     - Use fast string algorithms (code editing are working on string heavily)
     - TreeView:
@@ -48,6 +48,10 @@ ToDo list, order by priority.
         - Icon color
         - Text color
         - Display file status
+        - Focusable with keyboard
+    - Console:
+        - Clear
+    - LogView
 
 - Fix bugs:
     - When do cmd "Root: Close All". Reproduce steps:
@@ -67,6 +71,8 @@ ToDo list, order by priority.
     - MarkDown language highlight
 
 - Native Runtime (will move to LiteFx soon):
+    - Build for MacOS with clang (Mai mainly compiler now)
+    - `build.bat` is commonly export to global terminal space -> rename to other scripts
     - Make app more robust.
     - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
 
