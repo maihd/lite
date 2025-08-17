@@ -71,6 +71,7 @@ ToDo list, order by priority.
     - MarkDown language highlight
 
 - Native Runtime (will move to LiteFx soon):
+    - Use SDL3, and https://github.com/septag/dmon for better backends
     - Build for MacOS with clang (Mai mainly compiler now)
     - `build.bat` is commonly export to global terminal space -> rename to other scripts
     - Make app more robust.

@@ -15,6 +15,7 @@ error.txt
 
 /.build
 /.project
+/.vendored_libs
 
 edit-with-lite-dll.reg
 __edit_with_lite.reg
