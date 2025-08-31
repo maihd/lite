@@ -3,6 +3,8 @@
 #include "lite_startup.h"
 #include "lite_window.h"
 
+#include <stdio.h>
+
 #ifdef _WIN32
 #   ifdef NDEBUG
 #       define USE_TERMINAL_CONSOLE 0
@@ -35,10 +37,15 @@ int main(int argc, char** argv)
     lite_console_open();
 #endif
 
+    printf("Open lite systems\n");
     lite_window_open();
+
+    printf("Create lite renderer\n");
     lite_renderer_init();
+    printf("Create lite rencache\n");
     lite_rencache_init();
 
+    printf("Startup\n");
     const LiteStartupParams startup_params = {
         .argc = (uint32_t)argc,
         .argv = (const char**)argv,
@@ -56,7 +63,7 @@ int main(int argc, char** argv)
     lite_console_close();
 #endif
 
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 //! EOF

@@ -83,10 +83,10 @@
 /// @note(maihd): polyfill for multiple compiler to make sure will inline even
 /// on optimize off (unsure)
 #if !defined(_MSC_VER) && !defined(__forceinline)
-#   if defined(__GNUC__)
-#       define __forceinline __attribute__((always_inline))
+#   if defined(__GNUC__) || defined(__clang__)
+#       define __forceinline static inline __attribute__((always_inline))
 #   else
-#       define __forceinline inline
+#       define __forceinline static inline
 #   endif
 #endif
 

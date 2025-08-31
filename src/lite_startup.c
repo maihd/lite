@@ -3,6 +3,13 @@
 #include <Windows.h>
 #endif
 
+#if __APPLE__
+#include <mach-o/dyld.h>
+#include <SDL2/SDL.h>
+#endif
+
+#include <string.h>
+
 #include "api/lite_api.h"
 #include "lite_startup.h"
 #include "lite_window.h"
@@ -12,6 +19,10 @@ static double lite_get_scale(void)
 {
 #if _WIN32
     return (double)lite_window_dpi() / 96.0;
+#elif __APPLE__
+    float ddpi;
+    SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
+    return (double)ddpi / 96.0 * 0.5;
 #else
     return 1.0;
 #endif
