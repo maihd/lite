@@ -20,9 +20,13 @@ static double lite_get_scale(void)
 #if _WIN32
     return (double)lite_window_dpi() / 96.0;
 #elif __APPLE__
-    float ddpi;
-    SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
-    return (double)ddpi / 96.0 * 0.5;
+    // float ddpi;
+    // SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
+    // return (double)ddpi / 144.0;
+
+    // return SDL_GetDisplayContentScale();
+
+    return 2.0;
 #else
     return 1.0;
 #endif

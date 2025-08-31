@@ -138,19 +138,20 @@ void lite_window_open(void)
 	// It also enables aero-snap on Windows apparently.
 	SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
-
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
+    printf("DisplayMode width: %d\n", dm.w);
+    printf("DisplayMode height: %d\n", dm.h);
 
     Uint32 window_flags = SDL_WINDOW_RESIZABLE
                         | SDL_WINDOW_ALLOW_HIGHDPI
                         | SDL_WINDOW_HIDDEN;
 
     s_window = SDL_CreateWindow("",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              (int)(dm.w * 0.8), (int)(dm.h * 0.8),
-                              window_flags);
+                                SDL_WINDOWPOS_UNDEFINED,
+                                SDL_WINDOWPOS_UNDEFINED,
+                                (int)(dm.w * 0.8), (int)(dm.h * 0.8),
+                                window_flags);
     if (s_window)
     {
         // @todo(maihd): handle error
