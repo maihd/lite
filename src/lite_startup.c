@@ -8,6 +8,11 @@
 #include <SDL2/SDL.h>
 #endif
 
+#if __linux__
+#include <unistd.h>
+#include <SDL2/SDL.h>
+#endif
+
 #include <string.h>
 
 #include "api/lite_api.h"

@@ -2,9 +2,11 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 
 uint64_t lite_file_write_time(LiteStringView string)
@@ -12,7 +14,12 @@ uint64_t lite_file_write_time(LiteStringView string)
     struct stat sb;
     lstat(string.buffer, &sb);
 
+#if defined(__APPLE__) || defined(__FreeBSD__)
     return (uint64_t)sb.st_mtimespec.tv_sec + (uint64_t)sb.st_mtimespec.tv_nsec / 1000000000;
+#else
+    // Linux and other POSIX compliant systems
+    return (uint64_t)sb.st_mtim.tv_sec + (uint64_t)sb.st_mtim.tv_nsec / 1000000000;
+#endif
 }
 
 
