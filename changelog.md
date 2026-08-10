@@ -8,7 +8,7 @@
 - Add clang-format.
 - Skip opening binary file.
 - Fix BOM on Unicode files.
-- Languages: `Batch`, `C#`, `C`.
+- Languages: `Batch`, `C#`, `C`, `Odin`.
 - Double click log line to open file.
 - Refactory C sources.
 - Align line numbers near code.
