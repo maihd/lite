@@ -1,0 +1,111 @@
+local syntax = require "core.syntax"
+
+syntax.add {
+    name = "Odin",
+    files = { "%.odin$" },
+    comment = "//",
+    scope_begin = { "{" },
+    scope_end = { "}" },
+    patterns = {
+        { pattern = "//.-\n",               type = "comment"  },
+        { pattern = { "/%*", "%*/" },       type = "comment"  },
+        { pattern = { "#", "[ \n]" },       type = "keyword2" },
+        { pattern = { '"', '"', '\\' },     type = "string"   },
+        { pattern = { "'", "'", '\\' },     type = "string"   },
+        { pattern = { "`", "`", '\\' },     type = "string"   },
+        { pattern = "-?0x%x+",              type = "number"   },
+        { pattern = "-?%d+[%d%.eE]*f?",     type = "number"   },
+        { pattern = "-?%.?%d+f?",           type = "number"   },
+        { pattern = "[%+%-=/%*%^%%<>!~|&:]", type = "operator" },
+        { pattern = "[%a_][%w_]*%f[(]",     type = "function" },
+        { pattern = "[%a_][%w_]*%f[:]%f[:]%f[proc]%f[(]",     type = "function" },
+        { pattern = "[%a_][%w_]*",          type = "symbol"   },
+    },
+    symbols = {
+        -- Basic keywords
+        ["proc"]        = "keyword",
+        ["defer"]       = "keyword",
+        ["if"]          = "keyword",
+        ["else"]        = "keyword",
+        ["do"]          = "keyword",
+        ["for"]         = "keyword",
+        ["when"]        = "keyword",
+        ["where"]       = "keyword",
+        ["break"]       = "keyword",
+        ["continue"]    = "keyword",
+        ["fallthrough"] = "keyword",
+        ["or_else"]     = "keyword",
+        ["or_break"]    = "keyword",
+        ["or_continue"] = "keyword",
+        ["or_return"]   = "keyword",
+        ["return"]      = "keyword",
+        ["struct"]      = "keyword",
+        ["union"]       = "keyword",
+        ["enum"]        = "keyword",
+        ["bit_set"]     = "keyword",
+        ["bit_field"]   = "keyword",
+        ["foreign"]     = "keyword",
+        ["import"]      = "keyword",
+        ["switch"]      = "keyword",
+        ["case"]        = "keyword",
+        ["cast"]        = "keyword",
+        ["transmute"]   = "keyword",
+        ["auto_cast"]   = "keyword",
+        ["using"]       = "keyword",
+        ["package"]     = "keyword",
+
+        ["map"]         = "keyword",
+        ["dynamic"]     = "keyword",
+        ["matrix"]      = "keyword",
+
+        ["context"]     = "keyword",
+
+        -- Primitive types
+        ["any"]     = "keyword2",
+        ["byte"]     = "keyword2",
+        ["typeid"]  = "keyword2",
+        ["rawptr"]  = "keyword",
+
+        ["f16"]     = "keyword2",
+        ["f32"]     = "keyword2",
+        ["f64"]     = "keyword2",
+
+        ["rune"]    = "keyword2",
+        ["string"]  = "keyword2",
+        ["cstring"] = "keyword2",
+
+        ["bool"]    = "keyword2",
+        ["b8"]      = "keyword2",
+        ["b16"]     = "keyword2",
+        ["b32"]     = "keyword2",
+
+        ["int"]     = "keyword2",
+        ["uint"]    = "keyword2",
+        ["uintptr"] = "keyword2",
+
+        ["i8"]      = "keyword2",
+        ["i16"]     = "keyword2",
+        ["i32"]     = "keyword2",
+        ["i64"]     = "keyword2",
+        ["i128"]    = "keyword2",
+        ["u8"]      = "keyword2",
+        ["u16"]     = "keyword2",
+        ["u32"]     = "keyword2",
+        ["u64"]     = "keyword2",
+        ["u128"]    = "keyword2",
+
+        ["complex32"]   = "keyword2",
+        ["complex64"]   = "keyword2",
+        ["complex128"]  = "keyword2",
+
+        ["quaternion64"]    = "keyword2",
+        ["quaternion128"]   = "keyword2",
+        ["quaternion256"]   = "keyword2",
+
+        -- Literal, a.k.a untyped values
+        ["true"]     = "literal",
+        ["false"]    = "literal",
+        ["nil"]      = "literal",
+    },
+}
+
