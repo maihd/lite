@@ -5,9 +5,9 @@
 
 static int f_load(lua_State* L)
 {
-    LiteStringView	filename = lua_checkstringview(L, 1);
-    float			size     = (float)luaL_checknumber(L, 2);
-    LiteFont**		self     = lua_newuserdata(L, sizeof(*self));
+    LiteStringView      filename = lua_checkstringview(L, 1);
+    float               size     = (float)luaL_checknumber(L, 2);
+    LiteFont**          self     = lua_newuserdata(L, sizeof(*self));
     luaL_setmetatable(L, API_TYPE_FONT);
     *self = lite_load_font(filename, size);
     if (!*self)
@@ -40,8 +40,8 @@ static int f_gc(lua_State* L)
 
 static int f_get_width(lua_State* L)
 {
-    LiteFont**		self = luaL_checkudata(L, 1, API_TYPE_FONT);
-    LiteStringView	text = lua_checkstringview(L, 2);
+    LiteFont**        self = luaL_checkudata(L, 1, API_TYPE_FONT);
+    LiteStringView    text = lua_checkstringview(L, 2);
     lua_pushinteger(L, lite_get_font_width(*self, text));
     return 1;
 }

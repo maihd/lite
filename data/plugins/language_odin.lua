@@ -10,6 +10,8 @@ syntax.add {
         { pattern = "//.-\n",               type = "comment"  },
         { pattern = { "/%*", "%*/" },       type = "comment"  },
         { pattern = { "#", "[ \n]" },       type = "keyword2" },
+        { pattern = { "@", "[ \n]" },       type = "keyword2" },
+        { pattern = { "@%f[(]", "[ \n]" },  type = "keyword2" },
         { pattern = { '"', '"', '\\' },     type = "string"   },
         { pattern = { "'", "'", '\\' },     type = "string"   },
         { pattern = { "`", "`", '\\' },     type = "string"   },
@@ -53,6 +55,7 @@ syntax.add {
         ["auto_cast"]   = "keyword",
         ["using"]       = "keyword",
         ["package"]     = "keyword",
+        ["distinct"]    = "keyword",
 
         ["map"]         = "keyword",
         ["dynamic"]     = "keyword",
