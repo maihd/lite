@@ -24,27 +24,32 @@ if "%WINDOW_SYSTEM%"=="win32" (
     set PLATFORM_LIBS=-Ilibs/%SDL_VERSION%/include -DLITE_SYSTEM_SDL2 -lSDL2-static -Llibs/%SDL_VERSION%/lib/x64
 )
 
+set NATIVE_LIBS=^
+    -lKernel32 -lUser32 -lGdi32 -lShell32 -lWinmm -lOle32 -lVersion ^
+    -lCfgMgr32 -lImm32 -lSetupapi -lAdvapi32 -lOleAut32
+
 if not exist .build (
     mkdir .build
 )
 
 clang src/*.c src/api/*.c src/lib/stb/*.c ^
-    -Ofast -std=c11 -fno-strict-aliasing ^
+    -O3 -ffast-math -std=c11 -fno-strict-aliasing ^
     -Isrc -DNDEBUG ^
-    -DLUA_USE_POPEN -D_CRT_SECURE_NO_WARNINGS ^
-    -lKernel32 -lUser32 -lGdi32 -lShell32 -lWinmm -lOle32 -lVersion ^
-    -lCfgMgr32 -lImm32 -lSetupapi -lAdvapi32 -lOleAut32 ^
+    -D_CRT_SECURE_NO_WARNINGS ^
+    %NATIVE_LIBS% ^
     %PLATFORM_LIBS% ^
     -Ilibs/litelua_luajit_2.1.0-rolling_04302025/include ^
     -llitelua_luajit.lib -Llibs/litelua_luajit_2.1.0-rolling_04302025/prebuilt/x64 ^
-    -mwindows res/res.res^
+    res/res.res^
     -o .build/lite.exe
 
 :: -Ilibs/luajit_2.1.0-beta3/src ^
 :: -llua51_static -Llibs/luajit_2.1.0-beta3/prebuilt/x64 ^
 
-if not %ErrorLevel%==0 (
+:: if %ErrorLevel% neq 0 (
+if not exist .build\lite.exe (
     echo Build failed, maybe lite still running, please close and recompile with build_clang.bat
+    echo Error code: %ErrorLevel%
     goto :done
 )
 
