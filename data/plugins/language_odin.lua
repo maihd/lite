@@ -65,9 +65,9 @@ syntax.add {
 
         -- Primitive types
         ["any"]     = "keyword2",
-        ["byte"]     = "keyword2",
+        ["byte"]    = "keyword2",
         ["typeid"]  = "keyword2",
-        ["rawptr"]  = "keyword",
+        ["rawptr"]  = "keyword2",
 
         ["f16"]     = "keyword2",
         ["f32"]     = "keyword2",
