@@ -12,6 +12,7 @@ syntax.add {
         { pattern = { "#", "[ \n]" },       type = "keyword2" },
         { pattern = { "@", "[ \n]" },       type = "keyword2" },
         { pattern = { "@%f[(]", "[ \n]" },  type = "keyword2" },
+        { pattern = { "\\", "[ \n]" },      type = "keyword2" },
         { pattern = { '"', '"', '\\' },     type = "string"   },
         { pattern = { "'", "'", '\\' },     type = "string"   },
         { pattern = { "`", "`", '\\' },     type = "string"   },
@@ -62,6 +63,9 @@ syntax.add {
         ["matrix"]      = "keyword",
 
         ["context"]     = "keyword",
+
+        ["in"]          = "keyword",
+        ["not_in"]      = "keyword",
 
         -- Primitive types
         ["any"]     = "keyword2",
