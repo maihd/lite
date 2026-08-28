@@ -67,10 +67,13 @@ syntax.add {
         ["in"]          = "keyword",
         ["not_in"]      = "keyword",
 
+        ["typeid"]      = "keyword",
+
+        ["asm"]         = "keyword",
+
         -- Primitive types
         ["any"]     = "keyword2",
         ["byte"]    = "keyword2",
-        ["typeid"]  = "keyword2",
         ["rawptr"]  = "keyword2",
 
         ["f16"]     = "keyword2",
