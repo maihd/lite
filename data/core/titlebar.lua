@@ -10,13 +10,20 @@ local View = require "core.view"
 
 local TitleBar = View:extend()
 
+
 TitleBar.separator  = "  "
 TitleBar.separator2 = " | "
 
 local turn_off = false -- Temporary turn titlebar off
 
+local HOVER_BUTTON_MINIMIZE = 0
+local HOVER_BUTTON_MAXIMIZE = 1
+local HOVER_BUTTON_CLOSE    = 2
+
+
 function TitleBar:new()
     TitleBar.super.new(self)
+
     self.focusable = false
     self.item_size = 60
 
@@ -109,11 +116,12 @@ end
 
 
 function TitleBar:hover_right_item(x, y)
-    local items = self:get_items()
-    local pos_x, pos_y = self:get_content_offset()
+    local items         = self:get_items()
+    local pos_x, pos_y  = self:get_content_offset()
 
-    local item_size = self.item_size
-    local w = draw_right_items(self, items, 0, 0, item_size, text_width)
+    local item_size     = self.item_size
+    local w             = draw_right_items(self, items, 0, 0, item_size, text_width)
+
     pos_x = pos_x + self.size.x - w
 
     if x < pos_x or x > self.size.x then
@@ -128,7 +136,19 @@ function TitleBar:hover_right_item(x, y)
         return
     end
 
-    local dx = x - pos_x
+    local dx        = x - pos_x
+    local dy        = y
+    local safe_zone = 4
+    if dx < safe_zone
+        or dx > w - safe_zone
+        or dy < safe_zone
+        or dy > self:get_height() - safe_zone
+    then
+        self.hover_index = nil
+        self:update_mouse_cursor()
+        return
+    end
+
     local i = math.floor(dx / item_size)
     self.hover_index = i
     self:update_mouse_cursor()
@@ -142,6 +162,8 @@ function TitleBar:update_mouse_cursor()
     -- else
     --     self.cursor = "ibeam"
     -- end
+
+    -- system.set_cursor(self.cursor)
 end
 
 
@@ -151,6 +173,10 @@ end
 
 
 function TitleBar:on_mouse_pressed(button, x, y, clicks)
+end
+
+
+function TitleBar:on_mouse_released(button, x, y, clicks)
     if button ~= "left" then
         return
     end
@@ -159,26 +185,22 @@ function TitleBar:on_mouse_pressed(button, x, y, clicks)
     self:hover_right_item(x, y)
 
     -- Minimize
-    if self.hover_index == 0 then
+    if self.hover_index == HOVER_BUTTON_MINIMIZE then
         system.minimize_window()
         return
     end
 
     -- Maximize
-    if self.hover_index == 1 then
+    if self.hover_index == HOVER_BUTTON_MAXIMIZE then
         system.toggle_maximize_window()
         return
     end
 
     -- Close
-    if self.hover_index == 2 then
+    if self.hover_index == HOVER_BUTTON_CLOSE then
         core.quit()
         return
     end
-end
-
-
-function TitleBar:on_mouse_released(button, x, y, clicks)
 end
 
 
@@ -205,7 +227,7 @@ function TitleBar:draw_right_items(items, yoffset)
 
     if self.hover_index then
         local hover_color = style.line_highlight
-        if self.hover_index == 2 then -- Close button
+        if self.hover_index == HOVER_BUTTON_CLOSE then
             hover_color = style.titlebar_icon_hover
         end
 

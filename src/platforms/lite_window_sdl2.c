@@ -127,16 +127,16 @@ void lite_window_open(void)
 
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
     SDL_SetHint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, "175");
-	SDL_SetHint("SDL_MOUSE_DOUBLE_CLICK_RADIUS", "4");
+    SDL_SetHint("SDL_MOUSE_DOUBLE_CLICK_RADIUS", "4");
 
-	// This hint tells SDL to respect borderless window as a normal window.
-	// For example, the window will sit right on top of the taskbar instead
-	// of obscuring it.
-	SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
+    // This hint tells SDL to respect borderless window as a normal window.
+    // For example, the window will sit right on top of the taskbar instead
+    // of obscuring it.
+    SDL_SetHint("SDL_BORDERLESS_WINDOWED_STYLE", "1");
 
-	// This hint tells SDL to allow the user to resize a borderless window.
-	// It also enables aero-snap on Windows apparently.
-	SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
+    // This hint tells SDL to allow the user to resize a borderless window.
+    // It also enables aero-snap on Windows apparently.
+    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
     SDL_DisplayMode dm;
     SDL_GetCurrentDisplayMode(0, &dm);
@@ -217,56 +217,76 @@ typedef struct LiteHitTestInfo
 static SDL_HitTestResult SDLCALL lite_window_hit_test(SDL_Window* window, const SDL_Point* pt, void* data)
 {
     const LiteHitTestInfo*  hit_info        = (LiteHitTestInfo*)data;
+    const int32_t           title_height    = hit_info->title_height;
     const int32_t           resize_border   = hit_info->resize_border;
     const int32_t           controls_width  = hit_info->controls_width;
 
     int32_t w, h;
     SDL_GetWindowSize(window, &w, &h);
 
-    if (pt->y < hit_info->title_height 
-		&& pt->y > hit_info->resize_border 
-		&& pt->x > resize_border 
-		&& pt->x < w - controls_width)
+    // Check buttons
+
+    if (pt->x >= w - controls_width && pt->y < title_height * 2)
+    {
+        return SDL_HITTEST_NORMAL;
+    }
+
+    // Check dragging
+
+    if (pt->y < title_height
+        && pt->y > resize_border
+        && pt->x > resize_border
+        && pt->x < w - controls_width)
     {
         return SDL_HITTEST_DRAGGABLE;
     }
 
-    #define REPORT_RESIZE_HIT(name) return SDL_HITTEST_RESIZE_##name
+    // Check resize border
 
     if (pt->x < resize_border && pt->y < resize_border)
     {
-        REPORT_RESIZE_HIT(TOPLEFT);
+        return SDL_HITTEST_RESIZE_TOPLEFT;
     }
     else if (pt->x > resize_border && pt->x < w - controls_width && pt->y < resize_border)
     {
-        REPORT_RESIZE_HIT(TOP);
+        return SDL_HITTEST_RESIZE_TOP;
     }
     else if (pt->x > w - resize_border && pt->y < resize_border)
     {
-        REPORT_RESIZE_HIT(TOPRIGHT);
+        return SDL_HITTEST_RESIZE_TOPRIGHT;
     }
     else if (pt->x > w - resize_border && pt->y > resize_border && pt->y < h - resize_border)
     {
-        REPORT_RESIZE_HIT(RIGHT);
+        return SDL_HITTEST_RESIZE_RIGHT;
     }
     else if (pt->x > w - resize_border && pt->y > h - resize_border)
     {
-        REPORT_RESIZE_HIT(BOTTOMRIGHT);
+        return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
     }
     else if (pt->x < w - resize_border && pt->x > resize_border && pt->y > h - resize_border)
     {
-        REPORT_RESIZE_HIT(BOTTOM);
+        return SDL_HITTEST_RESIZE_BOTTOM;
     }
     else if (pt->x < resize_border && pt->y > h - resize_border)
     {
-        REPORT_RESIZE_HIT(BOTTOMLEFT);
+        return SDL_HITTEST_RESIZE_BOTTOMLEFT;
     }
     else if (pt->x < resize_border && pt->y < h - resize_border && pt->y > resize_border)
     {
-        REPORT_RESIZE_HIT(LEFT);
+        return SDL_HITTEST_RESIZE_LEFT;
     }
 
     return SDL_HITTEST_NORMAL;
+}
+
+
+void lite_window_config_hit_test(int32_t title_height, int32_t controls_width, int32_t resize_border)
+{
+    static LiteHitTestInfo window_hit_info;
+    window_hit_info.title_height   = title_height;
+    window_hit_info.controls_width = controls_width;
+    window_hit_info.resize_border  = resize_border;
+    SDL_SetWindowHitTest(s_window, lite_window_hit_test, &window_hit_info);
 }
 
 
@@ -280,16 +300,6 @@ void lite_window_show_titlebar(void)
 void lite_window_hide_titlebar(void)
 {
     SDL_SetWindowBordered(s_window, SDL_FALSE);
-}
-
-
-void lite_window_config_hit_test(int32_t title_height, int32_t controls_width, int32_t resize_border)
-{
-    static LiteHitTestInfo window_hit_info;
-    window_hit_info.title_height   = title_height;
-    window_hit_info.controls_width = controls_width;
-    window_hit_info.resize_border  = resize_border;
-    SDL_SetWindowHitTest(s_window, lite_window_hit_test, &window_hit_info);
 }
 
 
@@ -560,7 +570,7 @@ LiteEvent lite_window_poll_event(void)
 
         case SDL_WINDOWEVENT:
             if (e.window.event == SDL_WINDOWEVENT_RESIZED
-				|| e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+                || e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
                 return (LiteEvent){
                     .type = LiteEventType_Resized,
