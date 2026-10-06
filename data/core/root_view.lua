@@ -48,7 +48,23 @@ function EmptyView:draw()
     local w, h = draw_intro(0, 0, { 0, 0, 0, 0 }) -- Calculate size
     local x = self.position.x + math.max(style.padding.x, (self.size.x - w) / 2)
     local y = self.position.y + (self.size.y - h) / 2
+
     draw_intro(x, y, style.dim, style.syntax["function"], style.syntax["keyword"])
+
+    -- local work_dir_text = "Working Directory: " .. core.project_dir
+    local dir_icon = "d"
+    local dir_icon_width = style.icon_font:get_width(dir_icon)
+
+    local work_dir_text = " " .. core.project_dir
+    local work_dir_text_width = style.font:get_width(work_dir_text)
+
+    local dir_text_x = x + w * 0.5 - (work_dir_text_width + dir_icon_width) * 0.5
+    local dir_text_y = y + h + 50 * SCALE
+
+    renderer.draw_text(style.icon_font, dir_icon, dir_text_x, dir_text_y, style.info)
+    renderer.draw_text(style.font, work_dir_text, dir_text_x + dir_icon_width, dir_text_y, style.info)
+    -- renderer.draw_text(style.font, work_dir_text, x, y + h + 12, style.dim)
+
 end
 
 
@@ -59,11 +75,13 @@ local Node = Object:extend()
 
 
 function Node:new(type)
-    self.type = type or "leaf"
-    self.position = { x = 0, y = 0 }
-    self.size = { x = 0, y = 0 }
-    self.views = {}
-    self.divider = 0.5
+    self.type       = type or "leaf"
+    self.position   = { x = 0, y = 0 }
+    self.size       = { x = 0, y = 0 }
+    self.views      = {}
+    self.divider    = 0.5
+    self.resizable  = true
+
     if self.type == "leaf" then
         self:add_view(EmptyView())
     end
@@ -103,7 +121,7 @@ end
 
 local type_map = { up = "vsplit", down = "vsplit", left = "hsplit", right = "hsplit" }
 
-function Node:split(dir, view, locked)
+function Node:split(dir, view, locked, resizable)
     assert(self.type == "leaf", "Tried to split non-leaf node")
 
     local type = assert(type_map[dir], "Invalid direction")
@@ -114,9 +132,14 @@ function Node:split(dir, view, locked)
 
     self.a = child
     self.b = Node()
-    if view then self.b:add_view(view) end
+
+    if view then
+        self.b:add_view(view)
+    end
+
     if locked then
         self.b.locked = locked
+        self.b.resizable = (resizable == nil and not locked) or resizable
         core.set_active_view(last_active)
     end
 
@@ -143,10 +166,12 @@ function Node:close_active_view(root)
                 self:add_view(EmptyView())
             else
                 parent:consume(other)
+
                 local p = parent
                 while p.type ~= "leaf" do
                     p = p[is_a and "a" or "b"]
                 end
+
                 p:set_active_view(p.active_view)
             end
         end
@@ -187,8 +212,11 @@ end
 
 function Node:get_node_for_view(view)
     for _, v in ipairs(self.views) do
-        if v == view then return self end
+        if v == view then
+            return self
+        end
     end
+
     if self.type ~= "leaf" then
         return self.a:get_node_for_view(view) or self.b:get_node_for_view(view)
     end
@@ -209,8 +237,10 @@ function Node:get_children(t)
     for _, view in ipairs(self.views) do
         table.insert(t, view)
     end
+
     if self.a then self.a:get_children(t) end
     if self.b then self.b:get_children(t) end
+
     return t
 end
 
@@ -219,11 +249,14 @@ function Node:get_divider_overlapping_point(px, py)
     if self.type ~= "leaf" then
         local p = 6
         local x, y, w, h = self:get_divider_rect()
+
         x, y = x - p, y - p
         w, h = w + p * 2, h + p * 2
+
         if px > x and py > y and px < x + w and py < y + h then
             return self
         end
+
         return self.a:get_divider_overlapping_point(px, py)
             or self.b:get_divider_overlapping_point(px, py)
     end
@@ -231,7 +264,10 @@ end
 
 
 function Node:get_tab_overlapping_point(px, py)
-    if #self.views == 1 then return nil end
+    if #self.views == 1 then
+        return nil
+    end
+
     local x, y, w, h = self:get_tab_rect(1)
     if px >= x and py >= y and px < x + w * #self.views and py < y + h then
         return math.floor((px - x) / w) + 1
@@ -271,7 +307,7 @@ end
 
 function Node:get_locked_size()
     if self.type == "leaf" then
-        if self.locked then
+        if self.locked and not self.resizable then
             local size = self.active_view.size
             return size.x, size.y
         end
@@ -305,14 +341,18 @@ local function calc_split_sizes(self, x, y, x1, x2)
     else
         n = math.floor(self.size[x] * self.divider)
     end
-    self.a.position[x] = self.position[x]
-    self.a.position[y] = self.position[y]
-    self.a.size[x] = n - ds
-    self.a.size[y] = self.size[y]
-    self.b.position[x] = self.position[x] + n
-    self.b.position[y] = self.position[y]
-    self.b.size[x] = self.size[x] - n
-    self.b.size[y] = self.size[y]
+
+    self.a.position[x]  = self.position[x]
+    self.a.position[y]  = self.position[y]
+
+    self.a.size[x]      = n - ds
+    self.a.size[y]      = self.size[y]
+
+    self.b.position[x]  = self.position[x] + n
+    self.b.position[y]  = self.position[y]
+
+    self.b.size[x]      = self.size[x] - n
+    self.b.size[y]      = self.size[y]
 end
 
 
@@ -329,11 +369,13 @@ function Node:update_layout()
     else
         local x1, y1 = self.a:get_locked_size()
         local x2, y2 = self.b:get_locked_size()
+
         if self.type == "hsplit" then
             calc_split_sizes(self, "x", "y", x1, x2)
         elseif self.type == "vsplit" then
             calc_split_sizes(self, "y", "x", y1, y2)
         end
+
         self.a:update_layout()
         self.b:update_layout()
     end
@@ -483,6 +525,7 @@ function RootView:on_mouse_released(...)
     if self.dragged_divider then
         self.dragged_divider = nil
     end
+
     self.root_node:on_mouse_released(...)
 end
 
@@ -490,11 +533,13 @@ end
 function RootView:on_mouse_moved(x, y, dx, dy)
     if self.dragged_divider then
         local node = self.dragged_divider
+
         if node.type == "hsplit" then
             node.divider = node.divider + dx / node.size.x
         else
             node.divider = node.divider + dy / node.size.y
         end
+
         node.divider = common.clamp(node.divider, 0.01, 0.99)
         return
     end
@@ -505,9 +550,9 @@ function RootView:on_mouse_moved(x, y, dx, dy)
     local node = self.root_node:get_child_overlapping_point(x, y)
     local div = self.root_node:get_divider_overlapping_point(x, y)
     if div then                                         -- Hovering sizing split
-        if div.locked
-            or (div.a and div.a.locked)
-            or (div.b and div.b.locked)
+        if (div.locked and not div.resizable)
+            or (div.a and div.a.locked and not div.a.resizable)
+            or (div.b and div.b.locked and not div.a.resizable)
         then
             system.set_cursor("arrow")
         else

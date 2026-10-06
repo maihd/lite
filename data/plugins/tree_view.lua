@@ -6,7 +6,7 @@ local keymap = require "core.keymap"
 local style = require "core.style"
 local View = require "core.view"
 
-config.treeview_size = 200 * SCALE
+config.treeview_size = 400 * SCALE
 
 local function get_depth(filename)
     local n = 0
@@ -227,7 +227,17 @@ end
 -- init
 local view = TreeView()
 local node = core.root_view:get_active_node()
-node:split("left", view, true)
+local tree_node = node:split("left", view, true, false)
+
+view.visible = false
+view.size.x = 0
+
+-- tree_node.divider = 0.23
+-- tree_node.size.x = config.treeview_size
+-- tree_node:update()
+-- tree_node:update_layout()
+
+-- core.root_view:update()
 
 -- register commands and keymap
 command.add(nil, {
