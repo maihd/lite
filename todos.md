@@ -38,6 +38,7 @@ ToDo list, order by priority.
     - Live update `.lite_project.lua`, to add more common
     - REPL for Lua?
     - Quake-like console
+    - Time for error.txt logs
 
 - Documentations:
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
