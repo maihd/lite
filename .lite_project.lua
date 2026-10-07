@@ -11,7 +11,9 @@ command.add(nil, {
         console.run {
             command = prefix .. "build" .. ext,
             file_pattern = "(.*):(%d+):(%d+): (.*)$",
-            on_complete = function() core.log "Build complete" end,
+            on_complete = function()
+                core.log "Build complete"
+            end,
         }
     end
 })
@@ -19,3 +21,6 @@ command.add(nil, {
 keymap.add { ["ctrl+shift+b"] = "project:build-project" }
 
 core.add_ignore { "^libs", "^.build", "^.project", "^.fallback", "%.exe$", "%.dll$" }
+
+-- Open todos.md for development
+core.root_view:open_doc(core.open_doc(core.project_dir .. "/todos.md"))

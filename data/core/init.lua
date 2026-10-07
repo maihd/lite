@@ -91,13 +91,13 @@ end
 
 
 function core.init()
-    command = require "core.command"
-    keymap = require "core.keymap"
-    RootView = require "core.root_view"
-    StatusView = require "core.status_view"
+    command     = require "core.command"
+    keymap      = require "core.keymap"
+    RootView    = require "core.root_view"
+    StatusView  = require "core.status_view"
     CommandView = require "core.command_view"
-    TitleBar = require "core.titlebar"
-    Doc = require "core.doc"
+    TitleBar    = require "core.titlebar"
+    Doc         = require "core.doc"
 
     local project_dir = EXEDIR
     local files = {}
@@ -416,9 +416,9 @@ function core.on_event(type, ...)
             end
         end
         -- @note(maihd): not worked, because when sizing main thread is pause
---     elseif type == "resized" or type == "exposed" then
---         core.redraw = true
---         core.draw()
+    -- elseif type == "resized" or type == "exposed" then
+        -- core.redraw = true
+        -- core.draw()
 
 --         core.log("resized")
     elseif type == "quit" then
