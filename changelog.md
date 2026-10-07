@@ -20,6 +20,7 @@
     - Draw intent guide lines. (may be need more mechanic for syntax highlight)
     - Larger TreeView, if the filename is not TreeView viewport, that mean your project organization are too complex
     - Align line numbers near code.
+    - Add tab bar for node, dynamic tab size, scrolling for tab bar
 
 - Separated mouse button events:
     - Left Click for selection

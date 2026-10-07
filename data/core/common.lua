@@ -144,4 +144,14 @@ function common.bench(name, fn, ...)
 end
 
 
+function common.move_towards(t, k, dest, rate)
+    local val = t[k]
+    if math.abs(val - dest) < 0.5 then
+        t[k] = dest
+    else
+        t[k] = common.lerp(val, dest, rate or 0.5)
+    end
+end
+
+
 return common

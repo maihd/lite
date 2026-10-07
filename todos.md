@@ -44,6 +44,7 @@ ToDo list, order by priority.
     - REPL for Lua?
     - Quake-like console
     - Time for error.txt logs
+    - New logging system: store log in native, help read log when launch failed
 
 - Documentations:
     - Key bindings docs (for Mai usage and MaiStyle). See more https://github.com/maihd/maienv/tree/main/keybinds
