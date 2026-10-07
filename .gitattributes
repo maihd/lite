@@ -1,4 +1,4 @@
-libs        linguist-vendored
-winlib/*    linguist-vendored
-src/lib/*   linguist-vendored
-icon.inl    linguist-vendored
+libs/*          linguist-vendored
+winlib/*        linguist-vendored
+src/lib/*       linguist-vendored
+res/icon.inl    linguist-vendored
