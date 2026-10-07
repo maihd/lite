@@ -15,7 +15,8 @@
 - Display icon to show log type.
 - Draw intent guide line. (may be need more mechanic for syntax highlight)
 - Display project name in title bar and status bar.
-- Convert to use native API instead of large library like SDL. (Still have fallback to SDL when native API version is buggy)
+- Convert to use Win32 API instead of large library like SDL. (Still have fallback to SDL when Win32 API version is buggy)
+- Develop Experience: Open Lite as EXEDIR will be open todos.md by default
 
 - Separated mouse button events:
     - Left Click for selection

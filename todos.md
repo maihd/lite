@@ -13,6 +13,7 @@
 ToDo list, order by priority.
 > This file will be open by default when open lite as exe folder.
 > Use Ctrl+B to open file explorer.
+> Use Ctrl+E to open file from project directory.
 
 - Features (add when needed):
     - Line wrapping
@@ -90,17 +91,18 @@ ToDo list, order by priority.
         - Reason: `load_glyphset` return dangling pointer
     - MarkDown language highlight
 
-- Native Runtime (will move to LiteFx soon):
+- Native Runtime:
     - Unity build. Simpler workflow.
-    - Building with TCC for testing purposes. Make Lite more lite, this is madness but fun.
+    - Building with TCC for testing purposes. Make Lite becoming more lite, this is madness but fun.
     - Use SDL3, and https://github.com/septag/dmon for better backends
     - `build.bat` is commonly export to global terminal space -> rename to other scripts
-    - Make app more robust.
+    - Make app more robust. Crash report.
     - Fast or flexible, friendly experience on IO operations. (Maybe add async IO)
-
     - Display launching message box with style and helper. (Sorry, Lite launching process is too fast)
-    - Better font rendering: FreeType, SDF, advance usage of `stb_truetype` -> Fonstash
+    - Better text rendering: FreeType, SDF, advance usage of `stb_truetype` -> Fonstash
     - LiteFx: Framework to make desktop application with C (or other system languages) and Lua/Luau
+        - I don't think that I will need this
+        - Because of lazy, I still don't have any motivate to move to Luau
         - Simple and robust C framework for create text tools
         - Add more render backends: SDL3, Raylib, Dear ImGui.
         - Lua runtime selections (LiteLua): Lua52 (or 53, 54), LuaJIT, Luau
