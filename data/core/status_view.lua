@@ -135,7 +135,11 @@ function StatusView:get_items()
             self.separator,
 
             -- Line ending
-            dv.doc.crlf and "CRLF" or "LF"
+            dv.doc.crlf and "CRLF" or "LF",
+            self.separator,
+
+            -- File encoding
+            dv.doc.encoding,
         }
     end
 

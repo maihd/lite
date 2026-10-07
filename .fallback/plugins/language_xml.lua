@@ -2,7 +2,8 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "XML",
-    files = { "%.xml$", "%.html?$" },
+    version = "v0.1.1",
+    files = { "%.xml$", "%.html?$", "%.csproj", "%.vcxproj" },
     headers = "<%?xml",
     patterns = {
         { pattern = { "<!%-%-", "%-%->" },     type = "comment" },

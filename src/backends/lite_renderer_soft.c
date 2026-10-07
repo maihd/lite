@@ -13,7 +13,7 @@
 #include "lite_renderer.h"
 
 
-enum { MAX_GLYPHSET = 256, GLYPHSET_CHARS = 256 };
+enum { MAX_NUM_GLYPHSET = 256, NUM_GLYPHSET_CHARS = 256 };
 
 
 struct LiteImage
@@ -26,7 +26,7 @@ struct LiteImage
 typedef struct LiteGlyphSet
 {
     LiteImage*          image;
-    stbtt_bakedchar     glyphs[GLYPHSET_CHARS];
+    stbtt_packedchar    glyphs[NUM_GLYPHSET_CHARS];
 } LiteGlyphSet;
 
 
@@ -34,9 +34,15 @@ struct LiteFont
 {
     void*               data;
     stbtt_fontinfo      stbfont;
+    
     float               size;
     int32_t             height;
-    LiteGlyphSet*       sets[MAX_GLYPHSET];
+    int32_t             sample;
+
+    bool                is_monospace;
+    float               monospace_width;
+
+    LiteGlyphSet*       sets[MAX_NUM_GLYPHSET];
 };
 
 
@@ -67,8 +73,8 @@ static void* check_alloc(void* ptr)
 
 static LiteStringView utf8_to_codepoint(LiteStringView p, uint32_t* dst)
 {
-	assert(p.buffer != nullptr);
-	assert(p.length > 0);
+    assert(p.buffer != nullptr);
+    assert(p.length > 0);
 
     uint32_t res, n;
     switch (*p.buffer & 0xf0)
@@ -97,8 +103,8 @@ static LiteStringView utf8_to_codepoint(LiteStringView p, uint32_t* dst)
 
     while (n--)
     {
-		p.buffer += 1;
-		p.length -= 1;
+        p.buffer += 1;
+        p.length -= 1;
 
         res = (res << 6) | (*p.buffer & 0x3f);
     }
@@ -106,25 +112,27 @@ static LiteStringView utf8_to_codepoint(LiteStringView p, uint32_t* dst)
     *dst = res;
 
     p.buffer += 1;
-	p.length -= 1;
-	return p;
+    p.length -= 1;
+    return p;
 }
 
 
 void lite_renderer_init(void)
 {
-    g_surface.pixels  = (LiteColor*)lite_window_surface(
+    g_surface.pixels = (LiteColor*)lite_window_surface(
         &g_surface.width, &g_surface.height
     );
 
-    lite_renderer_set_clip_rect((LiteRect){
-                                    .x = 0,
-                                    .y = 0,
-                                    .width = g_surface.width,
-                                    .height = g_surface.height
-                                });
+    lite_renderer_set_clip_rect(
+        (LiteRect){
+            .x      = 0,
+            .y      = 0,
+            .width  = g_surface.width,
+            .height = g_surface.height
+        }
+    );
 
-    g_img_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteColor));
+    g_img_arena = lite_arena_create(10 * 1024 * 1024, 100 * 1024 * 1024, alignof(LiteColor));
     g_font_arena = lite_arena_create(1 * 1024 * 1024, 20 * 1024 * 1024, alignof(LiteGlyphSet));
 }
 
@@ -176,13 +184,14 @@ LiteImage* lite_new_image(int32_t width, int32_t height)
 {
     assert(width > 0 && height > 0);
 
-    // @todo(maihd): use Arena instead of malloc
-    LiteImage* image =
-        (LiteImage*)lite_arena_acquire(g_img_arena, sizeof(LiteImage) + width * height * sizeof(LiteColor));
+    size_t      image_size  = sizeof(LiteImage) + width * height * sizeof(LiteColor);
+    LiteImage*  image       = (LiteImage*)lite_arena_acquire(g_img_arena, image_size);
     check_alloc(image);
+
     image->pixels = (LiteColor*)(image + 1);
     image->width  = width;
     image->height = height;
+
     return image;
 }
 
@@ -197,26 +206,33 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 {
     LiteGlyphSet* set = check_alloc(calloc(1, sizeof(LiteGlyphSet)));
 
-    /* init image */
+    // init image
     int32_t width  = 128;
     int32_t height = 128;
 
     for (;;)
     {
         LiteArenaTemp temp = lite_arena_begin_temp(g_img_arena);
+
         set->image = lite_new_image(width, height);
 
         /* load glyphs */
-        float s = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) / stbtt_ScaleForPixelHeight(&font->stbfont, 1);
-        int32_t res = stbtt_BakeFontBitmap(font->data, 0, font->size * s,
-                                           (void*)set->image->pixels, width,
-                                           height, idx * 256, 256, set->glyphs);
+        float scale = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) / stbtt_ScaleForPixelHeight(&font->stbfont, 1);
+
+        int32_t first_char  = idx * NUM_GLYPHSET_CHARS;
+        int32_t num_chars   = NUM_GLYPHSET_CHARS;
+
+        stbtt_pack_context pack_context;
+        stbtt_PackBegin(&pack_context, (unsigned char*)set->image->pixels, set->image->width, set->image->height, 0, 1, nullptr);
+        stbtt_PackSetOversampling(&pack_context, font->sample, font->sample);
+        int32_t res = stbtt_PackFontRange(&pack_context, font->data, 0, font->size * scale, first_char, num_chars, set->glyphs);
+        stbtt_PackEnd(&pack_context);
 
         /* retry with a larger image buffer if the buffer wasn't large enough */
-        if (res < 0)
+        if (res == 0)
         {
-            width *= 2;
-            height *= 2;
+            width   *= 2;
+            height  *= 2;
 
             lite_arena_end_temp(temp);
             continue;
@@ -228,37 +244,59 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
     /* adjust glyph yoffsets and xadvance */
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
-    float   scale = stbtt_ScaleForMappingEmToPixels(&font->stbfont, font->size);
-    int32_t scaled_ascent = (int32_t)(ascent * scale + 0.5f);
-    for (int32_t i = 0; i < 256; i++)
+
+    float   scale           = stbtt_ScaleForMappingEmToPixels(&font->stbfont, font->size);
+    int32_t scaled_ascent   = (int32_t)(ascent * scale + 0.5f);
+
+    for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
     {
-        set->glyphs[i].yoff += scaled_ascent;
-        set->glyphs[i].xadvance = floorf(set->glyphs[i].xadvance);
+        // set->glyphs[i].xadvance = floorf(set->glyphs[i].xadvance);
+
+        // set->glyphs[i].xoff     = floorf(set->glyphs[i].xoff);
+        // set->glyphs[i].xoff2    = floorf(set->glyphs[i].xoff2);
+
+        set->glyphs[i].yoff     = floorf(set->glyphs[i].yoff + scaled_ascent);
+        set->glyphs[i].yoff2    = floorf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
+    }
+
+    if (font->is_monospace)
+    {
+        for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
+        {
+            set->glyphs[i].xadvance = font->monospace_width;
+        }
     }
 
     // convert 8bit data to 32bit
-    // @todo(maihd): why must be pre-convert?
-    // @todo(maihd): why must be in reverted-order loop?
+    // @note(maihd): why must be pre-convert? -> stb_truetype bitmap only contains alpha
+    // @note(maihd): why must be in reverted-order loop? -> this will help make sure the pixels data is not overlapped
     for (int32_t i = width * height - 1; i >= 0; i--)
     {
         uint8_t n = ((uint8_t*)set->image->pixels)[i];
-        set->image->pixels[i] =
-            (LiteColor){.r = 255, .g = 255, .b = 255, .a = n};
+        set->image->pixels[i] = (LiteColor){.r = 255, .g = 255, .b = 255, .a = n};
     }
 
     return set;
 }
 
+static stbtt_packedchar* get_glyph(LiteFont* font, int32_t codepoint);
 
 static LiteGlyphSet* get_glyphset(LiteFont* font, int32_t codepoint)
 {
-    int32_t idx = (codepoint >> 8) % MAX_GLYPHSET;
+    int32_t idx = (codepoint >> 8) % MAX_NUM_GLYPHSET;
     if (font->sets[idx] == NULL)
     {
-        font->sets[idx] = load_glyphset(font, idx);
+        LiteGlyphSet* set = load_glyphset(font, idx);
+        font->sets[idx] = set;
     }
 
     return font->sets[idx];
+}
+
+
+static stbtt_packedchar* get_glyph(LiteFont* font, int32_t codepoint)
+{
+    return &get_glyphset(font, codepoint)->glyphs[codepoint];
 }
 
 
@@ -266,34 +304,34 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
 {
     LiteArenaTemp arena_temp = lite_arena_begin_temp(g_font_arena);
 
-    LiteFont* font = nullptr;
-    FILE*    fp   = nullptr;
-
-    /* init font */
-    font       = check_alloc(lite_arena_acquire(g_font_arena, sizeof(LiteFont)));
+    // init font
+    LiteFont* font = check_alloc(lite_arena_acquire(g_font_arena, sizeof(LiteFont)));
     memset(font, 0, sizeof(*font));
-    font->size = size;
 
-    /* load font into buffer */
-    fp = fopen(filename.buffer, "rb");
+    font->size      = size;
+    font->sample    = 1;
+
+    // @todo(maihd): use better IO operations
+    // load font into buffer
+    FILE* fp = fopen(filename.buffer, "rb");
     if (!fp)
     {
         return nullptr;
     }
 
-    /* get size */
+    // get size
     fseek(fp, 0, SEEK_END);
     int32_t buf_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    /* load */
+    // load
     font->data = check_alloc(lite_arena_acquire(g_font_arena, buf_size));
     size_t  _  = fread(font->data, 1, buf_size, fp);
     (void)_;
     fclose(fp);
     fp = nullptr;
 
-    /* init stbfont */
+    // init stbfont
     int32_t ok = stbtt_InitFont(&font->stbfont, font->data, 0);
     if (!ok)
     {
@@ -301,16 +339,52 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
         return nullptr;
     }
 
-    /* get height and scale */
+    // get height and scale
     int32_t ascent, descent, linegap;
     stbtt_GetFontVMetrics(&font->stbfont, &ascent, &descent, &linegap);
+
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
     font->height = (int32_t)((ascent - descent + linegap) * scale + 0.5f);
 
-    /* make tab and newline glyphs invisible */
-    stbtt_bakedchar* g = get_glyphset(font, '\n')->glyphs;
-    g['\t'].x1         = g['\t'].x0;
-    g['\n'].x1         = g['\n'].x0;
+    // make tab and newline glyphs invisible
+    stbtt_packedchar* g = get_glyphset(font, '\n')->glyphs;
+    g['\t'].x1 = g['\t'].x0;
+    g['\n'].x1 = g['\n'].x0;
+
+    // center operators (just -> now)
+    // ASCII offsets: '-' is 45, '>' is 62 (Adjust if using a custom unicode range array)
+    stbtt_packedchar* hyphen = get_glyph(font, '-');
+    stbtt_packedchar* gt     = get_glyph(font, '>');
+
+    float gt_height = gt->yoff2 - gt->yoff;
+    float gt_center = gt->yoff + (gt_height / 2.0f);
+
+    float hyphen_height = hyphen->yoff2 - hyphen->yoff;
+    hyphen->yoff  = gt_center - (hyphen_height / 2.0f);
+    hyphen->yoff2 = gt_center + (hyphen_height / 2.0f);
+
+    // Check mono font and set uniform advance for all chars
+    float monospace_width = g['M'].xadvance;
+    bool is_monospace = true;
+    for (int i = 0; i < NUM_GLYPHSET_CHARS; ++i) 
+    {
+        // Nếu có bất kỳ ký tự nào lệch chiều rộng quá 0.001f, font này không phải mono
+        if (fabsf(g[i].xadvance - monospace_width) > 0.001f) 
+        {
+            is_monospace = false;
+            break;
+        }
+    }
+
+    font->is_monospace      = is_monospace;
+    font->monospace_width   = floorf(monospace_width + 1);
+    if (is_monospace)
+    {
+        for (int i = 0; i < NUM_GLYPHSET_CHARS; ++i) 
+        {
+            g[i].xadvance = font->monospace_width;
+        }
+    }
 
     return font;
 }
@@ -318,7 +392,7 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
 
 void lite_free_font(LiteFont* font)
 {
-    for (int32_t i = 0; i < MAX_GLYPHSET; i++)
+    for (int32_t i = 0; i < MAX_NUM_GLYPHSET; i++)
     {
         LiteGlyphSet* set = font->sets[i];
         if (set)
@@ -328,7 +402,7 @@ void lite_free_font(LiteFont* font)
         }
     }
 
-	// @note(maihd): font now use LiteArena, so there no need to free
+    // @note(maihd): font now use LiteArena, so there no need to free
     //free(font->data);
     //free(font);
 }
@@ -350,17 +424,18 @@ int32_t lite_get_font_tab_width(LiteFont* font)
 
 int32_t lite_get_font_width(LiteFont* font, LiteStringView text)
 {
-    int32_t			x = 0;
-    LiteStringView	p = text;
-    unsigned		codepoint;
+    int32_t         x = 0;
+    LiteStringView  p = text;
+    unsigned        codepoint;
     while (p.length > 0)
     {
-        p                    = utf8_to_codepoint(p, &codepoint);
-        LiteGlyphSet*    set = get_glyphset(font, codepoint);
-        stbtt_bakedchar* g   = &set->glyphs[codepoint & 0xff];
+        p                       = utf8_to_codepoint(p, &codepoint);
+        LiteGlyphSet*     set   = get_glyphset(font, codepoint);
+        stbtt_packedchar* g     = &set->glyphs[codepoint & 0xff];
 
         x += (int32_t)g->xadvance;
     }
+
     return x;
 }
 
@@ -392,6 +467,8 @@ static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor col
 }
 
 
+void lite_draw_rect(LiteRect rect, LiteColor color)
+{
 #define rect_draw_loop(expr)                                                   \
     for (int32_t j = y1; j < y2; j++)                                          \
     {                                                                          \
@@ -403,9 +480,6 @@ static inline LiteColor blend_pixel2(LiteColor dst, LiteColor src, LiteColor col
         d += dr;                                                               \
     }
 
-
-void lite_draw_rect(LiteRect rect, LiteColor color)
-{
     if (color.a == 0)
     {
         return;
@@ -419,7 +493,7 @@ void lite_draw_rect(LiteRect rect, LiteColor color)
     y2         = y2 > clip.bottom ? clip.bottom : y2;
 
     // @note(maihd): trick, need to handle resize event instead
-    g_surface.pixels  = (LiteColor*)lite_window_surface(
+    g_surface.pixels = (LiteColor*)lite_window_surface(
         &g_surface.width, &g_surface.height
     );
 
@@ -435,10 +509,12 @@ void lite_draw_rect(LiteRect rect, LiteColor color)
     {
         rect_draw_loop(blend_pixel(*d, color));
     }
+
+#undef rect_draw_loop
 }
 
 
-void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, LiteColor color)
+void lite_draw_image(LiteImage* image, LiteRect sub, int32_t x, int32_t y, LiteColor color)
 {
     if (color.a == 0)
     {
@@ -449,75 +525,174 @@ void lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, Lite
     int32_t n;
     if ((n = clip.left - x) > 0)
     {
-        sub->width -= n;
-        sub->x += n;
+        sub.width -= n;
+        sub.x += n;
         x += n;
     }
     if ((n = clip.top - y) > 0)
     {
-        sub->height -= n;
-        sub->y += n;
+        sub.height -= n;
+        sub.y += n;
         y += n;
     }
-    if ((n = x + sub->width - clip.right) > 0)
+    if ((n = x + sub.width - clip.right) > 0)
     {
-        sub->width -= n;
+        sub.width -= n;
     }
-    if ((n = y + sub->height - clip.bottom) > 0)
+    if ((n = y + sub.height - clip.bottom) > 0)
     {
-        sub->height -= n;
+        sub.height -= n;
     }
 
-    if (sub->width <= 0 || sub->height <= 0)
+    if (sub.width <= 0 || sub.height <= 0)
     {
         return;
     }
 
     // @note(maihd): trick, need to handle resize event instead
-    g_surface.pixels  = (LiteColor*)lite_window_surface(
+    g_surface.pixels = (LiteColor*)lite_window_surface(
         &g_surface.width, &g_surface.height
     );
 
-    /* draw */
-    LiteColor*    s    = image->pixels;
-    LiteColor*    d    = g_surface.pixels;
-    s += sub->x + sub->y * image->width;
-    d += x + y * g_surface.width;
-    int32_t sr = image->width - sub->width;
-    int32_t dr = g_surface.width - sub->width;
+    // draw (by copy pixels from image to screen)
+    LiteColor* s = image->pixels;
+    LiteColor* d = g_surface.pixels;
 
-    for (int32_t j = 0; j < sub->height; j++)
+    int32_t sr = image->width;
+    int32_t dr = g_surface.width;
+
+    for (int32_t j = 0; j < sub.height; j++)
     {
-        for (int32_t i = 0; i < sub->width; i++)
+        int32_t dst_y = y + j;
+        int32_t src_y = sub.y + j;
+
+        for (int32_t i = 0; i < sub.width; i++)
         {
-            *d = blend_pixel2(*d, *s, color);
-            d++;
-            s++;
+            int32_t dst_x = x + i;
+            int32_t src_x = sub.x + i;
+
+            int32_t dst_idx = dst_y * dr + dst_x;
+            int32_t src_idx = src_y * sr + src_x;
+
+            LiteColor color1 = d[dst_idx];
+            LiteColor color2 = s[src_idx];
+
+            d[dst_idx] = blend_pixel2(color1, color2, color);
         }
-        d += dr;
-        s += sr;
+    }
+}
+
+
+void lite_draw_image_subpixel(LiteImage* image, LiteRect src, LiteRect dst, LiteColor color)
+{
+    if (color.a == 0)
+    {
+        return;
+    }
+
+    float scale_x = (float)src.width / (float)dst.width;
+    float scale_y = (float)src.height / (float)dst.height;
+
+    // clip src rect
+    int32_t n;
+    if ((n = clip.left - dst.x) > 0)
+    {
+        src.width -= (int32_t)(n * scale_x);
+        dst.width -= n;
+
+        src.x += n;
+        dst.x += (n * scale_x);
+    }
+    if ((n = clip.top - dst.y) > 0)
+    {
+        src.height -= (int32_t)(n * scale_y);
+        dst.height -= n;
+
+        src.y += (int32_t)(n * scale_y);
+        dst.y += n;
+    }
+    if ((n = dst.x + dst.width - clip.right) > 0)
+    {
+        src.width -= (int32_t)(n * scale_x);
+        dst.width -= n;
+    }
+    if ((n = dst.y + dst.height - clip.bottom) > 0)
+    {
+        src.height -= (int32_t)(n * scale_y);
+        dst.height -= n;
+    }
+
+    if (src.width <= 0 || src.height <= 0 || dst.width <= 0 || dst.height <= 0)
+    {
+        return;
+    }
+
+    // @note(maihd): trick, need to handle resize event instead
+    g_surface.pixels = (LiteColor*)lite_window_surface(
+        &g_surface.width, &g_surface.height
+    );
+
+    // draw (by copy pixels from image to screen)
+    LiteColor* s = image->pixels;
+    LiteColor* d = g_surface.pixels;
+
+    int32_t sr = image->width;
+    int32_t dr = g_surface.width;
+
+    for (int32_t j = 0; j < dst.height; j++)
+    {
+        int32_t dst_y = dst.y + j;
+        int32_t src_y = src.y + (j * scale_y);
+
+        for (int32_t i = 0; i < dst.width; i++)
+        {
+            int32_t dst_x = dst.x + i;
+            int32_t src_x = src.x + (i * scale_x);
+
+            int32_t dst_idx = dst_y * dr + dst_x;
+            int32_t src_idx = src_y * sr + src_x;
+
+            LiteColor color1 = d[dst_idx];
+            LiteColor color2 = s[src_idx];
+
+            d[dst_idx] = blend_pixel2(color1, color2, color);
+        }
     }
 }
 
 
 int32_t lite_draw_text(LiteFont* font, LiteStringView text, int32_t x, int32_t y, LiteColor color)
 {
-    LiteRect		rect;
-    LiteStringView	p = text; 
-    uint32_t		codepoint;
+    LiteStringView p = text;
     while (p.length > 0)
     {
-        p                    = utf8_to_codepoint(p, &codepoint);
-        LiteGlyphSet*    set = get_glyphset(font, codepoint);
-        stbtt_bakedchar* g   = &set->glyphs[codepoint & 0xff];
-        rect.x               = g->x0;
-        rect.y               = g->y0;
-        rect.width           = g->x1 - g->x0;
-        rect.height          = g->y1 - g->y0;
-        lite_draw_image(set->image, &rect, x + (int32_t)g->xoff, y + (int32_t)g->yoff, color);
+        uint32_t codepoint;
+        p = utf8_to_codepoint(p, &codepoint);
+
+        LiteGlyphSet*       set = get_glyphset(font, codepoint);
+        stbtt_packedchar*   g   = &set->glyphs[codepoint & 0xff];
+
+        LiteRect src = {
+            .x      = g->x0,
+            .y      = g->y0,
+            .width  = g->x1 - g->x0,
+            .height = g->y1 - g->y0,
+        };
+
+        // // Calculate target rectangle on screen using xoff2 and yoff2
+        LiteRect dst = {
+            .x      = x + (int32_t)g->xoff,
+            .y      = y + (int32_t)g->yoff,
+            .width  = src.width / font->sample,     // Accurate subpixel width
+            .height = src.height / font->sample,    // Accurate subpixel height
+        };
+
+        lite_draw_image(set->image, src, dst.x, dst.y, color);
+        // lite_draw_image_subpixel(set->image, src, dst, color); // Software rendering does not support AA
 
         x += (int32_t)g->xadvance;
     }
+
     return x;
 }
 

@@ -15,17 +15,22 @@ ToDo list, order by priority.
 > Use Ctrl+B to open file explorer.
 > Use Ctrl+E to open file from project directory.
 
-- Features (add when needed):
+- Quality of Life features:
     - Line wrapping
-    - Multi cursors
+    - Multi cursors (Ctrl + Alt + Up/Down)
+    - Multi cursors split (Ctrl + Alt + L)
     - Next/Previous find with arrow keys
-    - Open binary file in preview-mode.
     - Recent files in `Open File From Project` command view
     - Mouse next/previous button (good for reading code) -> create better read source code experience
+    - Smart word-expansion system (Ctrl + D)
+    - Scope-aware bracket selection (Ctrl + Shift + M)
+    - Goto anything (Ctrl + P)
+
+- Features (add when needed):
+    - Open binary file in preview-mode.
     - Windows OS: Recent projects from Start Menu, Task Bar
     - Open project with command. Also support recents.
     - VCS status display
-    - Paredit
 
 - Safety:
     - Currently use LuaJIT that support FFI
@@ -76,6 +81,7 @@ ToDo list, order by priority.
     - LogView
 
 - Fix bugs:
+    - Create docview -> save file -> use existing file name -> existing file is written without asking.
     - When do cmd "Root: Close All". Reproduce steps:
         - Unsaved docs
         - Request saving docs or force close

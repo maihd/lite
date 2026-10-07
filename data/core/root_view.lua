@@ -52,17 +52,19 @@ function EmptyView:draw()
     draw_intro(x, y, style.dim, style.syntax["function"], style.syntax["keyword"])
 
     -- local work_dir_text = "Working Directory: " .. core.project_dir
-    local dir_icon = "d"
-    local dir_icon_width = style.icon_font:get_width(dir_icon)
+    local dir_icon          = ""
+    local dir_icon_width    = style.big_font:get_width(dir_icon)
+    local dir_icon_height   = style.big_font:get_height()
 
-    local work_dir_text = " " .. core.project_dir
-    local work_dir_text_width = style.font:get_width(work_dir_text)
+    local work_dir_text         = " " .. core.project_dir
+    local work_dir_text_width   = style.font:get_width(work_dir_text)
+    local work_dir_text_height  = style.font:get_height()
 
     local dir_text_x = x + w * 0.5 - (work_dir_text_width + dir_icon_width) * 0.5
     local dir_text_y = y + h + 50 * SCALE
 
-    renderer.draw_text(style.icon_font, dir_icon, dir_text_x, dir_text_y, style.info)
-    renderer.draw_text(style.font, work_dir_text, dir_text_x + dir_icon_width, dir_text_y, style.info)
+    renderer.draw_text(style.big_font, dir_icon, dir_text_x, dir_text_y, style.info)
+    renderer.draw_text(style.font, work_dir_text, dir_text_x + dir_icon_width, dir_text_y + (dir_icon_height - work_dir_text_height) * 0.5, style.info)
     -- renderer.draw_text(style.font, work_dir_text, x, y + h + 12, style.dim)
 
 end

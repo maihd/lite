@@ -2,21 +2,24 @@
 - Important: Keybinds is difference from rxi/lite
 - Use LuaJIT-2.1.0-beta3 instead of Lua 5.2.
 - Check directory changed based on last write time instead of file diffs.
-- Add premake5 to generate Visual Studio project, for debugging purpose.
 - Add clang build script on Windows.
 - Display MessageBox when app failed to launch.
-- Add clang-format.
 - Skip opening binary file.
 - Fix BOM on Unicode files.
 - Languages: `Batch`, `C#`, `C`, `Odin`.
 - Double click log line to open file.
 - Refactory C sources.
-- Align line numbers near code.
-- Display icon to show log type.
-- Draw intent guide line. (may be need more mechanic for syntax highlight)
-- Display project name in title bar and status bar.
 - Convert to use Win32 API instead of large library like SDL. (Still have fallback to SDL when Win32 API version is buggy)
 - Develop Experience: Open Lite as EXEDIR will be open todos.md by default
+
+- Appearance:
+    - Use NotoSansMono NerdFont as default font
+    - Display icon to show log type.
+    - Better log and log style
+    - Display project name in title bar and status bar.
+    - Draw intent guide lines. (may be need more mechanic for syntax highlight)
+    - Larger TreeView, if the filename is not TreeView viewport, that mean your project organization are too complex
+    - Align line numbers near code.
 
 - Separated mouse button events:
     - Left Click for selection
@@ -49,7 +52,6 @@
     - Add sync fallback script
 
 - Ignore folders, files (blacklist)
-- Better log and log style
 - Custom titlebar, borderless window:
     - Fix maximize wrong size
     - Add window border

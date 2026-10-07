@@ -83,14 +83,37 @@ function Doc:load(filename)
 
     for line in fp:lines() do
         local start = 1
+
+        -- Encoding
         if #self.lines == 0 then
-            if line:byte(1) == 0xff or line:byte(1) == 0xbe then
+            if line:byte(1) == 0xfe or line:byte(2) == 0xff then
                 start = 3
+                self.encoding = "UTF-16-BE"
+            elseif line:byte(1) == 0xff or line:byte(2) == 0xfe then
+                start = 3
+                self.encoding = "UTF-16-LE"
             elseif line:byte(1) == 0xef
                 and line:byte(2) == 0xbb
                 and line:byte(3) == 0xbf
             then
                 start = 4
+                self.encoding = "UTF-8"
+            elseif line:byte(1) == 0x00
+                and line:byte(2) == 0x00
+                and line:byte(3) == 0xfe
+                and line:byte(4) == 0xff
+            then
+                start = 5
+                self.encoding = "UTF-32-BE"
+            elseif line:byte(1) == 0xff
+                and line:byte(2) == 0xfe
+                and line:byte(3) == 0x00
+                and line:byte(4) == 0x00
+            then
+                start = 5
+                self.encoding = "UTF-32-LE"
+            else
+                self.encoding = "UTF-8"
             end
 
             -- @todo(maihd): convert Utf16/32 to utf8 buffer

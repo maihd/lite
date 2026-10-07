@@ -20,7 +20,7 @@ command.add(nil, {
 
 keymap.add { ["ctrl+shift+b"] = "project:build-project" }
 
-core.add_ignore { "^libs", "^.build", "^.project", "^.fallback", "%.exe$", "%.dll$" }
+core.add_ignore { "^libs", "^.build", "^.project", "^.fallback", "%.exe$", "%.dll$", "%.lib", "%.pdb", "%.rdi" }
 
 -- Open todos.md for development
 core.root_view:open_doc(core.open_doc(core.project_dir .. "/todos.md"))

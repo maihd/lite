@@ -11,10 +11,10 @@ local Object = require "core.object"
 
 -- Caret
 
-local Caret = Object:extend()
+local CaretView = Object:extend()
 
 
-function Caret:new(doc_view)
+function CaretView:new(doc_view)
     self.doc_view = doc_view
 
     self.x = 0
@@ -29,7 +29,7 @@ function Caret:new(doc_view)
 end
 
 
-function Caret:update()
+function CaretView:update()
     if not self.active then
         return
     end
@@ -45,7 +45,7 @@ function Caret:update()
 end
 
 
-function Caret:draw()
+function CaretView:draw()
     if not self.active then
         return
     end

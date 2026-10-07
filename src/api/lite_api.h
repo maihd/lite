@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef LITE_USE_LITELUA
 #include <litelua.h>
+#endif // LITE_USE_LITELUA
+
+#include <lua.h>
+#include <lualib.h>
 #include <lauxlib.h>
 
 #include "lite_string.h"

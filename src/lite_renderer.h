@@ -40,8 +40,10 @@ int         lite_get_font_width(LiteFont* font, LiteStringView text);
 int         lite_get_font_height(LiteFont* font);
 
 void        lite_draw_rect(LiteRect rect, LiteColor color);
-void        lite_draw_image(LiteImage* image, LiteRect* sub, int32_t x, int32_t y, LiteColor color);
 int         lite_draw_text(LiteFont* font, LiteStringView text, int32_t x, int32_t y, LiteColor color);
+
+void        lite_draw_image(LiteImage* image, LiteRect sub, int32_t x, int32_t y, LiteColor color);
+void        lite_draw_image_subpixel(LiteImage* image, LiteRect sub, LiteRect dst, LiteColor color);
 
 //! EOF
 

@@ -3,7 +3,7 @@
 :: Checking if lite.exe is running
 tasklist /fi "ImageName eq lite.exe" /fo csv 2>NUL | find /i "lite.exe">NUL
 if %ErrorLevel%==0 (
-    echo - Lite is running, please close it before build, and run this script again
+    echo - [Error] Lite is running, please close it before build, and run this script again
     goto :done
 )
 
@@ -32,19 +32,32 @@ if not exist .build (
     mkdir .build
 )
 
-clang src/*.c src/api/*.c src/lib/stb/*.c ^
-    -O3 -ffast-math -std=c11 -fno-strict-aliasing ^
-    -Isrc -DNDEBUG ^
-    -D_CRT_SECURE_NO_WARNINGS ^
-    %NATIVE_LIBS% ^
-    %PLATFORM_LIBS% ^
-    -Ilibs/litelua_luajit_2.1.0-rolling_04302025/include ^
-    -llitelua_luajit.lib -Llibs/litelua_luajit_2.1.0-rolling_04302025/prebuilt/x64 ^
-    res/res.res^
-    -o .build/lite.exe
-
-:: -Ilibs/luajit_2.1.0-beta3/src ^
-:: -llua51_static -Llibs/luajit_2.1.0-beta3/prebuilt/x64 ^
+set DEBUG_BUILD=false
+if "%DEBUG_BUILD%"=="true" (
+    echo - Building in debug mode
+    clang -g src/*.c src/api/*.c src/lib/stb/*.c ^
+        -std=c11 ^
+        -Isrc ^
+        -D_CRT_SECURE_NO_WARNINGS ^
+        %NATIVE_LIBS% ^
+        %PLATFORM_LIBS% ^
+        -Ilibs/luajit_2.1.0-beta3/src ^
+        -llua51_static -Llibs/luajit_2.1.0-beta3/prebuilt/x64 ^
+        res/res.res^
+        -o .build/lite.exe
+) else (
+    echo - Building in release mode
+    clang src/*.c src/api/*.c src/lib/stb/*.c ^
+        -O3 -ffast-math -std=c11 -fno-strict-aliasing ^
+        -Isrc ^
+        -DNDEBUG -D_CRT_SECURE_NO_WARNINGS ^
+        %NATIVE_LIBS% ^
+        %PLATFORM_LIBS% ^
+        -Ilibs/litelua_luajit_2.1.0-rolling_04302025/include ^
+        -llitelua_luajit.lib -Llibs/litelua_luajit_2.1.0-rolling_04302025/prebuilt/x64 ^
+        res/res.res^
+        -o .build/lite.exe
+)
 
 :: if %ErrorLevel% neq 0 (
 if not exist .build\lite.exe (
@@ -57,6 +70,10 @@ if not exist .build\lite.exe (
 echo - Copying dist files...
 del lite.exe
 copy .build\lite.exe lite.exe
+
+if exist .build\lite.pdb (
+    copy .build\lite.pdb lite.pdb
+)
 
 :: Remove redundant files
 :: del lite.exp

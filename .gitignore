@@ -10,6 +10,7 @@ lite.exe
 lite.exp
 lite.pdb
 lite.lib
+lite.rdi
 
 sdl2.dll
 lua51.dll

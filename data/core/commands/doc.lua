@@ -114,15 +114,13 @@ local function insert_comment_to_selected_lines(text)
 
     local first_char_idx
     for line = line1, line2 do
-        for line = line1, line2 do
-            local line_text = doc().lines[line]
-            local cur_first_char_idx = line_text:find("%S")
-            if cur_first_char_idx then
-                if first_char_idx then
-                    first_char_idx = math.min(first_char_idx, cur_first_char_idx)
-                else
-                    first_char_idx = cur_first_char_idx
-                end
+        local line_text = doc().lines[line]
+        local cur_first_char_idx = line_text:find("%S")
+        if cur_first_char_idx then
+            if first_char_idx then
+                first_char_idx = math.min(first_char_idx, cur_first_char_idx)
+            else
+                first_char_idx = cur_first_char_idx
             end
         end
     end

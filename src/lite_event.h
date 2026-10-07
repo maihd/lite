@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <lite_string.h>
+#include "lite_string.h"
 
 typedef enum LiteEventType
 {
