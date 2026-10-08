@@ -203,14 +203,31 @@ end
 function Node:remove_view(view)
     local idx = self:get_view_idx(view)
     if idx then
-        for i = idx + 1, self.num_views do
-            self.views[i]   = self.views[i - 1]
-            self.tabs       = self.tabs[i - 1]
+        for i = idx, self.num_views - 1 do
+            self.views[i]   = self.views[i + 1]
+            self.tabs[i]    = self.tabs[i + 1]
         end
 
         self.views[self.num_views]  = nil
         self.tabs[self.num_views]   = nil
         self.num_views              = self.num_views - 1
+
+        if idx < self.num_views then
+            if idx == 1 then
+                self.tabs[idx].x = 0
+            else
+                local prev_tab = self.tabs[idx - 1]
+
+                self.tabs[idx].x = prev_tab.x + prev_tab.w
+            end
+
+            for i = idx + 1, self.num_views do
+                local tab       = self.tabs[i]
+                local prev_tab  = self.tabs[i - 1]
+
+                tab.x = prev_tab.x + prev_tab.w
+            end
+        end
 
         return idx
     end
@@ -279,6 +296,7 @@ end
 
 function Node:set_active_view(view)
     assert(self.type == "leaf", "Tried to set active view on non-leaf node")
+
     self.active_view = view
     core.set_active_view(view)
 
@@ -358,18 +376,19 @@ function Node:get_tab_overlapping_point(px, py)
 
     for idx = 1, self.num_views do
         local tab = self.tabs[idx]
+        if tab then
+            local tx = self.tab_scroll + tab.x
+            local ty = tab.y
+            local tw = tab.w
+            local th = tab.h
 
-        local tx = self.tab_scroll + tab.x
-        local ty = tab.y
-        local tw = tab.w
-        local th = tab.h
+            if tx + tab.w < 0 or tx > self.size.x then
+                goto continue
+            end
 
-        if tx + tab.w < 0 or tx > self.size.x then
-            goto continue
-        end
-
-        if not (px < tx or py < ty or px > tx + tw or py > ty + th) then
-            return idx
+            if not (px < tx or py < ty or px > tx + tw or py > ty + th) then
+                return idx
+            end
         end
 
         ::continue::
@@ -637,6 +656,8 @@ function RootView:on_mouse_pressed(button, x, y, clicks)
     local node = self.root_node:get_child_overlapping_point(x, y)
     local idx = node:get_tab_overlapping_point(x, y)
     if idx then
+        local active_view = node.active_view
+
         local view = node.views[idx]
         if view.focusable then
             node:set_active_view(view)
@@ -644,6 +665,10 @@ function RootView:on_mouse_pressed(button, x, y, clicks)
 
         if button == "middle" then
             node:close_active_view(self.root)
+
+            if active_view ~= view then
+                node:set_active_view(active_view)
+            end
         end
     else
         if node.active_view.focusable then
@@ -714,7 +739,7 @@ end
 
 function RootView:update()
     copy_position_and_size(self.root_node, self)
-    
+
     self.root_node:update()
     self.root_node:update_layout()
 end
