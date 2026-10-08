@@ -22,6 +22,13 @@ style.icon_font         = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 
 style.code_font         = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 14 * SCALE)
 style.titlebar_font     = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 30 * SCALE)
 
+
+-- style.font              = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 16 * SCALE)
+-- style.big_font          = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 30 * SCALE)
+-- style.icon_font         = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 16 * SCALE)
+-- style.code_font         = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 14 * SCALE)
+-- style.titlebar_font     = renderer.font.load(EXEDIR .. "/data/fonts/ZeitungMonoProNerdFont-Regular.ttf", 30 * SCALE)
+
 -- Colors
 
 style.background        = { common.color "#2e2e32" }

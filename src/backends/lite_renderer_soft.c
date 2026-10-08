@@ -34,7 +34,7 @@ struct LiteFont
 {
     void*               data;
     stbtt_fontinfo      stbfont;
-    
+
     float               size;
     int32_t             height;
     int32_t             sample;
@@ -216,14 +216,15 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 
         set->image = lite_new_image(width, height);
 
-        /* load glyphs */
+        // load glyphs
         float scale = stbtt_ScaleForMappingEmToPixels(&font->stbfont, 1) / stbtt_ScaleForPixelHeight(&font->stbfont, 1);
+        // float scale = stbtt_ScaleForPixelHeight(&font->stbfont, 1);
 
         int32_t first_char  = idx * NUM_GLYPHSET_CHARS;
         int32_t num_chars   = NUM_GLYPHSET_CHARS;
 
         stbtt_pack_context pack_context;
-        stbtt_PackBegin(&pack_context, (unsigned char*)set->image->pixels, set->image->width, set->image->height, 0, 1, nullptr);
+        stbtt_PackBegin(&pack_context, (unsigned char*)set->image->pixels, set->image->width, set->image->height, 0, 4, nullptr);
         stbtt_PackSetOversampling(&pack_context, font->sample, font->sample);
         int32_t res = stbtt_PackFontRange(&pack_context, font->data, 0, font->size * scale, first_char, num_chars, set->glyphs);
         stbtt_PackEnd(&pack_context);
@@ -250,20 +251,27 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 
     for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
     {
-        // set->glyphs[i].xadvance = floorf(set->glyphs[i].xadvance);
+        set->glyphs[i].xadvance = ceilf(set->glyphs[i].xadvance);
 
-        // set->glyphs[i].xoff     = floorf(set->glyphs[i].xoff);
-        // set->glyphs[i].xoff2    = floorf(set->glyphs[i].xoff2);
+        set->glyphs[i].xoff     = ceilf(set->glyphs[i].xoff);
+        set->glyphs[i].xoff2    = ceilf(set->glyphs[i].xoff2);
 
-        set->glyphs[i].yoff     = floorf(set->glyphs[i].yoff + scaled_ascent);
-        set->glyphs[i].yoff2    = floorf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
+        set->glyphs[i].yoff     = ceilf(set->glyphs[i].yoff + scaled_ascent);
+        set->glyphs[i].yoff2    = ceilf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
     }
 
     if (font->is_monospace)
     {
         for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
         {
-            set->glyphs[i].xadvance = font->monospace_width;
+            stbtt_packedchar* g = &set->glyphs[i];
+            int32_t width = g->x1 - g->x0;
+            if (width % 2 == 1)
+            {
+                // quick_exit(0);
+                g->x0 -= 1;
+                // g->x1 += 2;
+            }
         }
     }
 
@@ -346,10 +354,37 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
     float scale  = stbtt_ScaleForMappingEmToPixels(&font->stbfont, size);
     font->height = (int32_t)((ascent - descent + linegap) * scale + 0.5f);
 
+    // Check mono font and set uniform advance for all chars
+    int unscaled_mono_advance, lsb;
+    stbtt_GetCodepointHMetrics(&font->stbfont, 'M', &unscaled_mono_advance, &lsb);
+
+    bool is_monospace = true;
+    for (int i = 0; i < NUM_GLYPHSET_CHARS; i += 1)
+    {
+        int xadvance, _;
+        stbtt_GetCodepointHMetrics(&font->stbfont, i, &xadvance, &_);
+        if (xadvance == unscaled_mono_advance)
+        {
+            is_monospace = false;
+            break;
+        }
+    }
+
+    font->is_monospace = is_monospace;
+    if (is_monospace)
+    {
+        font->monospace_width = floorf((float)unscaled_mono_advance * scale);
+        if ((int)(font->monospace_width) % 2 == 1)
+        {
+            font->monospace_width += 1;
+        }
+    }
+
     // make tab and newline glyphs invisible
     stbtt_packedchar* g = get_glyphset(font, '\n')->glyphs;
     g['\t'].x1 = g['\t'].x0;
     g['\n'].x1 = g['\n'].x0;
+    g['\r'].x1 = g['\r'].x0;
 
     // center operators (just -> now)
     // ASCII offsets: '-' is 45, '>' is 62 (Adjust if using a custom unicode range array)
@@ -363,27 +398,12 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
     hyphen->yoff  = gt_center - (hyphen_height / 2.0f);
     hyphen->yoff2 = gt_center + (hyphen_height / 2.0f);
 
-    // Check mono font and set uniform advance for all chars
-    float monospace_width = g['M'].xadvance;
-    bool is_monospace = true;
-    for (int i = 0; i < NUM_GLYPHSET_CHARS; ++i) 
+    // @note(maihd): tricks to fix the 'k' padding
+    if (is_monospace) 
     {
-        // Nếu có bất kỳ ký tự nào lệch chiều rộng quá 0.001f, font này không phải mono
-        if (fabsf(g[i].xadvance - monospace_width) > 0.001f) 
-        {
-            is_monospace = false;
-            break;
-        }
-    }
-
-    font->is_monospace      = is_monospace;
-    font->monospace_width   = floorf(monospace_width + 1);
-    if (is_monospace)
-    {
-        for (int i = 0; i < NUM_GLYPHSET_CHARS; ++i) 
-        {
-            g[i].xadvance = font->monospace_width;
-        }
+        stbtt_packedchar* k = get_glyph(font, 'k');
+        k->x0 -= 1;
+        k->x1 -= 1;
     }
 
     return font;
@@ -663,6 +683,41 @@ void lite_draw_image_subpixel(LiteImage* image, LiteRect src, LiteRect dst, Lite
 
 int32_t lite_draw_text(LiteFont* font, LiteStringView text, int32_t x, int32_t y, LiteColor color)
 {
+    if (font->is_monospace)
+    {
+        LiteStringView p = text;
+        while (p.length > 0)
+        {
+            uint32_t codepoint;
+            p = utf8_to_codepoint(p, &codepoint);
+
+            LiteGlyphSet*       set = get_glyphset(font, codepoint);
+            stbtt_packedchar*   g   = &set->glyphs[codepoint & 0xff];
+
+            LiteRect src = {
+                .x      = g->x0,
+                .y      = g->y0,
+                .width  = g->x1 - g->x0,
+                .height = g->y1 - g->y0,
+            };
+
+            // Calculate target rectangle on screen using xoff2 and yoff2
+            LiteRect dst = {
+                .x      = (int32_t)(x + (font->monospace_width - (float)src.width) * 0.5f),
+                .y      = y + (int32_t)g->yoff,
+                .width  = src.width / font->sample,     // Accurate subpixel width
+                .height = src.height / font->sample,    // Accurate subpixel height
+            };
+
+            lite_draw_image(set->image, src, dst.x, dst.y, color);
+            // lite_draw_image_subpixel(set->image, src, dst, color); // Software rendering does not support AA
+
+            x += (int32_t)font->monospace_width;
+        }
+
+        return x;
+    }
+
     LiteStringView p = text;
     while (p.length > 0)
     {
@@ -679,7 +734,7 @@ int32_t lite_draw_text(LiteFont* font, LiteStringView text, int32_t x, int32_t y
             .height = g->y1 - g->y0,
         };
 
-        // // Calculate target rectangle on screen using xoff2 and yoff2
+        // Calculate target rectangle on screen using xoff2 and yoff2
         LiteRect dst = {
             .x      = x + (int32_t)g->xoff,
             .y      = y + (int32_t)g->yoff,

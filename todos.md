@@ -81,6 +81,9 @@ ToDo list, order by priority.
         - Clear
     - LogView
 
+- Issues:
+    - Ascii art
+
 - Fix bugs:
     - Create docview -> save file -> use existing file name -> existing file is written without asking.
     - When do cmd "Root: Close All". Reproduce steps:
@@ -90,9 +93,8 @@ ToDo list, order by priority.
         - Cannot return to CommandView, do some weird key stroke to return CommandView
         - Cannot close CommandView, even after choose "Save and Close"
         - After that, cannot close CommandView, even refocus CommandView
-
-    - Unindent wrong or not work in some cases,
-        specially when the file have different indent size with config
+    - Change tab name (usually occured when save as, saving unsaved file), does not changing the tab size
+    - Unindent wrong or not work in some cases, specially when the file have different indent size with config
     - Mouse over in titlebar can be fallthrough from other window
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
