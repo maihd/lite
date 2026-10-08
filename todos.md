@@ -62,12 +62,19 @@ ToDo list, order by priority.
     - Practice mode or tutorials
     - Review this project sources, memorize and gain knowledges
     - Learn more about UI/UX design to improvements this editor
+        - [x] Level 0: understand how UI/UX affect usages
+        - [x] Level 1: learn requirements of UX in coding
+        - [x] Level 2: learn what you don't need
+        - [ ] Level 3: a average good UX
+        - [ ] Level 4: a good tool is invisible
 
 - Improvements:
-    - New default theme (MaiBlue -> MaiAoi/MaiSora)
-    - Background and animations (because I'm a gamer/gamedev, theses are big concerns)
+    - Appearance:
+        - New default theme (MaiBlue -> MaiAoi/MaiSora)
+        - Background and animations (because I'm a gamer/gamedev, theses are big concerns)
+        - Add some deep effects
     - Refactory syntax definition, better handle scope, lpeg for complex syntax
-    - Tab size detection (good for long names)
+    - Better events system
     - Ergonomics mouse interactions
     - Use fast string algorithms (code editing are working on string heavily)
     - TreeView -> File Explorer:
@@ -85,6 +92,8 @@ ToDo list, order by priority.
     - Ascii art
 
 - Fix bugs:
+    - Tab selection not worked after toggle to fullscreen (use f11 to toggle fullscreen)
+    - Change tab name (usually occured when save as, saving unsaved file), does not changing the tab size
     - Create docview -> save file -> use existing file name -> existing file is written without asking.
     - When do cmd "Root: Close All". Reproduce steps:
         - Unsaved docs
@@ -93,9 +102,9 @@ ToDo list, order by priority.
         - Cannot return to CommandView, do some weird key stroke to return CommandView
         - Cannot close CommandView, even after choose "Save and Close"
         - After that, cannot close CommandView, even refocus CommandView
-    - Change tab name (usually occured when save as, saving unsaved file), does not changing the tab size
     - Unindent wrong or not work in some cases, specially when the file have different indent size with config
     - Mouse over in titlebar can be fallthrough from other window
+        - Exactly when window is not focus, they still receiving mouse events
     - Crash when long searching progress (commonly with Project Search)
         - Reproduce: search in project with `previous`
         - Reason: `load_glyphset` return dangling pointer

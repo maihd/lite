@@ -256,24 +256,24 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
         set->glyphs[i].xoff     = ceilf(set->glyphs[i].xoff);
         set->glyphs[i].xoff2    = ceilf(set->glyphs[i].xoff2);
 
-        set->glyphs[i].yoff     = ceilf(set->glyphs[i].yoff + scaled_ascent);
-        set->glyphs[i].yoff2    = ceilf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
+        set->glyphs[i].yoff     = floorf(set->glyphs[i].yoff + scaled_ascent);
+        set->glyphs[i].yoff2    = floorf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
     }
 
-    if (font->is_monospace)
-    {
-        for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
-        {
-            stbtt_packedchar* g = &set->glyphs[i];
-            int32_t width = g->x1 - g->x0;
-            if (width % 2 == 1)
-            {
-                // quick_exit(0);
-                g->x0 -= 1;
-                // g->x1 += 2;
-            }
-        }
-    }
+    // if (font->is_monospace)
+    // {
+    //     for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
+    //     {
+    //         stbtt_packedchar* g = &set->glyphs[i];
+    //         int32_t width = g->x1 - g->x0;
+    //         if (width % 2 == 1)
+    //         {
+    //             // quick_exit(0);
+    //             g->x0 -= 1;
+    //             // g->x1 += 2;
+    //         }
+    //     }
+    // }
 
     // convert 8bit data to 32bit
     // @note(maihd): why must be pre-convert? -> stb_truetype bitmap only contains alpha
@@ -373,10 +373,10 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
     font->is_monospace = is_monospace;
     if (is_monospace)
     {
-        font->monospace_width = floorf((float)unscaled_mono_advance * scale);
+        font->monospace_width = floorf((float)unscaled_mono_advance * stbtt_ScaleForMappingEmToPixels(&font->stbfont, size));
         if ((int)(font->monospace_width) % 2 == 1)
         {
-            font->monospace_width += 1;
+            font->monospace_width -= 1;
         }
     }
 
@@ -388,15 +388,19 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
 
     // center operators (just -> now)
     // ASCII offsets: '-' is 45, '>' is 62 (Adjust if using a custom unicode range array)
-    stbtt_packedchar* hyphen = get_glyph(font, '-');
-    stbtt_packedchar* gt     = get_glyph(font, '>');
+    bool center_hyphen = false;
+    if (center_hyphen)
+    {
+        stbtt_packedchar* hyphen = get_glyph(font, '-');
+        stbtt_packedchar* gt     = get_glyph(font, '>');
 
-    float gt_height = gt->yoff2 - gt->yoff;
-    float gt_center = gt->yoff + (gt_height / 2.0f);
+        float gt_height = gt->yoff2 - gt->yoff;
+        float gt_center = gt->yoff + (gt_height / 2.0f);
 
-    float hyphen_height = hyphen->yoff2 - hyphen->yoff;
-    hyphen->yoff  = gt_center - (hyphen_height / 2.0f);
-    hyphen->yoff2 = gt_center + (hyphen_height / 2.0f);
+        float hyphen_height = hyphen->yoff2 - hyphen->yoff;
+        hyphen->yoff  = gt_center - (hyphen_height / 2.0f);
+        hyphen->yoff2 = gt_center + (hyphen_height / 2.0f);
+    }
 
     // @note(maihd): tricks to fix the 'k' padding
     if (is_monospace) 

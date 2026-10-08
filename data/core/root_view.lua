@@ -51,10 +51,9 @@ function EmptyView:draw()
 
     draw_intro(x, y, style.dim, style.syntax["function"], style.syntax["keyword"])
 
-    -- local work_dir_text = "Working Directory: " .. core.project_dir
     local dir_icon          = ""
-    local dir_icon_width    = style.big_font:get_width(dir_icon)
-    local dir_icon_height   = style.big_font:get_height()
+    local dir_icon_width    = style.font:get_width(dir_icon)
+    local dir_icon_height   = style.font:get_height()
 
     local work_dir_text         = " " .. core.project_dir
     local work_dir_text_width   = style.font:get_width(work_dir_text)
@@ -63,10 +62,8 @@ function EmptyView:draw()
     local dir_text_x = x + w * 0.5 - (work_dir_text_width + dir_icon_width) * 0.5
     local dir_text_y = y + h + 50 * SCALE
 
-    renderer.draw_text(style.big_font, dir_icon, dir_text_x, dir_text_y, style.info)
+    renderer.draw_text(style.font, dir_icon, dir_text_x, dir_text_y, style.info)
     renderer.draw_text(style.font, work_dir_text, dir_text_x + dir_icon_width, dir_text_y + (dir_icon_height - work_dir_text_height) * 0.5, style.info)
-    -- renderer.draw_text(style.font, work_dir_text, x, y + h + 12, style.dim)
-
 end
 
 
@@ -150,7 +147,12 @@ end
 function Node:scroll_to_tab(idx)
     if self.tabs[idx] then
         local tab = self.tabs[idx]
-        self:scroll_tab_view(-tab.x)
+
+        local tabs_viewport = { x = self.tab_scroll, y = 0, w = self.size.x, h = self.size.y }
+        local do_scrolling  = tab.x < tabs_viewport.x or tab.x + tab.w > tabs_viewport.x + tabs_viewport.w
+        if do_scrolling then
+            self:scroll_tab_view(-tab.x)
+        end
     end
 end
 
@@ -198,18 +200,37 @@ function Node:close_view(view)
 end
 
 
+function Node:remove_view(view)
+    local idx = self:get_view_idx(view)
+    if idx then
+        for i = idx + 1, self.num_views do
+            self.views[i]   = self.views[i - 1]
+            self.tabs       = self.tabs[i - 1]
+        end
+
+        self.views[self.num_views]  = nil
+        self.tabs[self.num_views]   = nil
+        self.num_views              = self.num_views - 1
+
+        return idx
+    end
+end
+
+
 function Node:close_active_view(root)
     local do_close = function()
-        if #self.views > 1 then
-            local idx = self:get_view_idx(self.active_view)
-            table.remove(self.views, idx)
-            self:set_active_view(self.views[idx] or self.views[#self.views])
+        if self.num_views > 1 then
+            local idx = self:remove_view(self.active_view)
+            self:set_active_view(self.views[idx] or self.views[self.num_views])
         else
             local parent = self:get_parent_node(root)
             local is_a = (parent.a == self)
             local other = parent[is_a and "b" or "a"]
             if other:get_locked_size() then
-                self.views = {}
+                self.views      = {}
+                self.tabs       = {}
+                self.num_views  = 0
+
                 self:add_view(EmptyView())
             else
                 parent:consume(other)
@@ -235,9 +256,6 @@ function Node:add_view(view)
     assert(not self.locked, "Tried to add view to locked node")
 
     if self.views[1] and self.views[1]:is(EmptyView) then
-        -- self.views[1] = nil
-        -- self.tabs[1] = nil
-
         self.num_views = self.num_views - 1
     end
 
@@ -270,7 +288,9 @@ end
 
 function Node:get_view_idx(view)
     for i, v in ipairs(self.views) do
-        if v == view then return i end
+        if v == view then
+            return i
+        end
     end
 end
 
@@ -329,14 +349,9 @@ end
 
 
 function Node:get_tab_overlapping_point(px, py)
-    if #self.views == 1 then
+    if self.num_views == 1 then
         return nil
     end
-
-    -- local x, y, w, h = self:get_tab_rect(1, style.font)
-    -- if px >= x and py >= y and px < x + w * #self.views and py < y + h then
-    --     return math.floor((px - x) / w) + 1
-    -- end
 
     px = px - self.position.x
     py = py - self.position.y
@@ -383,7 +398,7 @@ function Node:get_tab_rect(idx, font)
     end
 
     local tw
-    if #self.views > 0 then
+    if self.num_views > 0 then
         tw = math.max(style.tab_width, font:get_width(self.views[idx]:get_name()) + style.padding.x * 2)
     else
         tw = style.tab_width
@@ -465,7 +480,7 @@ end
 function Node:update_layout()
     if self.type == "leaf" then
         local av = self.active_view
-        if #self.views > 1 then
+        if self.num_views > 1 then
             local _, _, _, th = self:get_tab_rect(1, style.font)
             av.position.x, av.position.y = self.position.x, self.position.y + th
             av.size.x, av.size.y = self.size.x, self.size.y - th
@@ -509,7 +524,6 @@ function Node:draw_tabs()
     local x, y, _, h = self:get_tab_rect(1, style.font)
     local ds = style.divider_size
 
-    -- core.push_clip_rect(x, y, self.size.x, h)
     core.push_clip_rect(self.position.x, self.position.y, self.size.x, h)
 
     renderer.draw_rect(x, y, self.size.x, h, style.background2)
@@ -549,9 +563,10 @@ end
 
 function Node:draw()
     if self.type == "leaf" then
-        if #self.views > 1 then
+        if self.num_views > 1 then
             self:draw_tabs()
         end
+
         local pos, size = self.active_view.position, self.active_view.size
         core.push_clip_rect(pos.x, pos.y, size.x + pos.x % 1, size.y + pos.y % 1)
         self.active_view:draw()
@@ -699,6 +714,7 @@ end
 
 function RootView:update()
     copy_position_and_size(self.root_node, self)
+    
     self.root_node:update()
     self.root_node:update_layout()
 end
@@ -706,6 +722,7 @@ end
 
 function RootView:draw()
     self.root_node:draw()
+
     while #self.deferred_draws > 0 do
         local t = table.remove(self.deferred_draws)
         t.fn(unpack(t))
