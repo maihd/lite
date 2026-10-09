@@ -74,37 +74,70 @@ syntax.add {
         ["asm"]         = "keyword",
 
         -- Primitive types
-        ["any"]     = "keyword2",
-        ["byte"]    = "keyword2",
-        ["rawptr"]  = "keyword2",
+        ["any"]         = "keyword2",
+        ["byte"]        = "keyword2",
+        ["rawptr"]      = "keyword2",
 
-        ["f16"]     = "keyword2",
-        ["f32"]     = "keyword2",
-        ["f64"]     = "keyword2",
+        ["f16"]         = "keyword2",
+        ["f32"]         = "keyword2",
+        ["f64"]         = "keyword2",
 
-        ["rune"]    = "keyword2",
-        ["string"]  = "keyword2",
-        ["cstring"] = "keyword2",
+        ["f16be"]       = "keyword2",
+        ["f32be"]       = "keyword2",
+        ["f64be"]       = "keyword2",
 
-        ["bool"]    = "keyword2",
-        ["b8"]      = "keyword2",
-        ["b16"]     = "keyword2",
-        ["b32"]     = "keyword2",
+        ["f16le"]       = "keyword2",
+        ["f32le"]       = "keyword2",
+        ["f64le"]       = "keyword2",
 
-        ["int"]     = "keyword2",
-        ["uint"]    = "keyword2",
-        ["uintptr"] = "keyword2",
+        ["rune"]        = "keyword2",
+        ["string"]      = "keyword2",
+        ["string16"]    = "keyword2",
+        ["cstring"]     = "keyword2",
+        ["cstring16"]   = "keyword2",
 
-        ["i8"]      = "keyword2",
-        ["i16"]     = "keyword2",
-        ["i32"]     = "keyword2",
-        ["i64"]     = "keyword2",
-        ["i128"]    = "keyword2",
-        ["u8"]      = "keyword2",
-        ["u16"]     = "keyword2",
-        ["u32"]     = "keyword2",
-        ["u64"]     = "keyword2",
-        ["u128"]    = "keyword2",
+        ["bool"]        = "keyword2",
+        ["b8"]          = "keyword2",
+        ["b16"]         = "keyword2",
+        ["b32"]         = "keyword2",
+
+        ["int"]         = "keyword2",
+        ["uint"]        = "keyword2",
+        ["uintptr"]     = "keyword2",
+
+        ["i8"]          = "keyword2",
+        ["i16"]         = "keyword2",
+        ["i32"]         = "keyword2",
+        ["i64"]         = "keyword2",
+        ["i128"]        = "keyword2",
+
+        ["u8"]          = "keyword2",
+        ["u16"]         = "keyword2",
+        ["u32"]         = "keyword2",
+        ["u64"]         = "keyword2",
+        ["u128"]        = "keyword2",
+
+        ["i16be"]       = "keyword2",
+        ["i32be"]       = "keyword2",
+        ["i64be"]       = "keyword2",
+        ["i128be"]      = "keyword2",
+
+        ["u8be"]        = "keyword2",
+        ["u16be"]       = "keyword2",
+        ["u32be"]       = "keyword2",
+        ["u64be"]       = "keyword2",
+        ["u128be"]      = "keyword2",
+
+        ["i16le"]       = "keyword2",
+        ["i32le"]       = "keyword2",
+        ["i64le"]       = "keyword2",
+        ["i128le"]      = "keyword2",
+
+        ["u8le"]        = "keyword2",
+        ["u16le"]       = "keyword2",
+        ["u32le"]       = "keyword2",
+        ["u64le"]       = "keyword2",
+        ["u128le"]      = "keyword2",
 
         ["complex32"]   = "keyword2",
         ["complex64"]   = "keyword2",
@@ -114,10 +147,14 @@ syntax.add {
         ["quaternion128"]   = "keyword2",
         ["quaternion256"]   = "keyword2",
 
+        ["Maybe"]           = "keyword2",
+        ["Objc_Block"]      = "keyword2",
+
         -- Literal, a.k.a untyped values
-        ["true"]     = "literal",
-        ["false"]    = "literal",
-        ["nil"]      = "literal",
+
+        ["true"]        = "literal",
+        ["false"]       = "literal",
+        ["nil"]         = "literal",
     },
 }
 

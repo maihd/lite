@@ -16,11 +16,17 @@ style.tab_width         = common.round(170 * SCALE)
 
 -- Fonts
 
-style.font              = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 16 * SCALE)
-style.big_font          = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 30 * SCALE)
+-- style.font              = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 16 * SCALE)
+-- style.big_font          = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 30 * SCALE)
+-- style.code_font         = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 14 * SCALE)
+-- style.titlebar_font     = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 30 * SCALE)
+-- style.icon_font         = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 16 * SCALE)
+
+style.font              = renderer.font.load(EXEDIR .. "/data/fonts/SauceCodeProNerdFontMono-Medium.ttf", 16 * SCALE)
+style.big_font          = renderer.font.load(EXEDIR .. "/data/fonts/SauceCodeProNerdFont-SemiBold.ttf", 30 * SCALE)
+style.code_font         = renderer.font.load(EXEDIR .. "/data/fonts/SauceCodeProNerdFontMono-Medium.ttf", 14 * SCALE)
+style.titlebar_font     = renderer.font.load(EXEDIR .. "/data/fonts/SauceCodeProNerdFont-SemiBold.ttf", 30 * SCALE)
 style.icon_font         = renderer.font.load(EXEDIR .. "/data/fonts/icons.ttf", 16 * SCALE)
-style.code_font         = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 14 * SCALE)
-style.titlebar_font     = renderer.font.load(EXEDIR .. "/data/fonts/NotoSansMNerdFontMono-Medium.ttf", 30 * SCALE)
 
 -- Colors
 
@@ -78,5 +84,10 @@ style.icons.folder          = "d"
 style.icons.graph           = "g"
 style.icons.language        = "l" -- Speaking/natural language
 style.icons.proglang        = "p" -- Programming language
+-- style.icons.file            = ""
+-- style.icons.folder          = ""
+-- style.icons.graph           = ""
+-- style.icons.language        = "" -- Speaking/natural language
+-- style.icons.proglang        = "" -- Programming language
 
 return style
