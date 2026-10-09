@@ -183,6 +183,45 @@ function console.run(opt)
 end
 
 
+local FILE_PATTERN = [[([A-Za-z]?:?[%w%s%./\\_-]*[/%\][%w%s%./\\_-]+)]]
+
+
+local function find_path(text)
+    return text:find(FILE_PATTERN)
+end
+
+
+local function parse_path(text)
+    -- Case 1: Just the path (e.g., D:/projects/main.lua)
+    local _, last, file = text:find(FILE_PATTERN)
+    if file then
+        local sub = text:sub(last + 1)
+
+        -- Case 2: Path with both line and col (e.g., D:/projects/main.lua:1:1)
+        local line, col = sub:match("^:(%d+):(%d+)")
+        if line then
+            return file, line, col
+        end
+
+        -- Case 3: Path with both line and col (e.g., D:/projects/main.lua(1:1))
+        local line, col = sub:match("^%((%d+):(%d+)%)")
+        if line then
+            return file, line, col
+        end
+
+        -- Case 4: Path with line only (e.g., D:/projects/main.lua:1)
+        local line = sub:match("^:(%d+)")
+        return file, line, nil
+    end
+
+    return file, nil, nil
+end
+
+-- test parse_path
+local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entity_processor_procs.odin(95:2)")
+core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
+
+
 
 local ConsoleView = View:extend()
 
@@ -229,12 +268,18 @@ end
 
 function ConsoleView:on_mouse_moved(mx, my, ...)
     ConsoleView.super.on_mouse_moved(self, mx, my, ...)
+
     self.hovered_idx = 0
-    for i, item, x,y,w,h in self:each_visible_line() do
+    for i, item, x, y, w, h in self:each_visible_line() do
         if mx >= x and my >= y and mx < x + w and my < y + h then
             if item.text:find(item.file_pattern) then
                 self.hovered_idx = i
+            else
+                if find_path(item.text) then
+                    self.hovered_idx = i
+                end
             end
+
             break
         end
     end
@@ -263,18 +308,23 @@ function ConsoleView:on_line_removed()
     self.scroll.to.y    = self.scroll.to.y - diff
 end
 
-
 function ConsoleView:on_mouse_pressed(...)
     local caught = ConsoleView.super.on_mouse_pressed(self, ...)
     if caught then
+        core.set_active_view(core.last_active_view)
         return
     end
 
     local item = output[self.hovered_idx]
     if item then
         local file, line, col = item.text:match(item.file_pattern)
+        if file == nil then
+            file, line, col = parse_path(item.text)
+        end
+
         local resolved_file = resolve_file(file)
         if not resolved_file then
+            core.set_active_view(core.last_active_view)
             core.error("Couldn't resolve file \"%s\"", file)
             return
         end
@@ -287,6 +337,8 @@ function ConsoleView:on_mouse_pressed(...)
                 dv:scroll_to_line(line, false, true)
             end
         end)
+    else
+        core.set_active_view(core.last_active_view)
     end
 end
 
@@ -356,7 +408,7 @@ end
 -- init static bottom-of-screen console
 local view = ConsoleView()
 local node = core.root_view:get_active_node()
-node:split("down", view, true)
+node:split("down", view, true, false)
 
 function view:update(...)
     local dest = visible and config.console_size or 0
@@ -399,5 +451,6 @@ keymap.add {
 package.loaded["plugins.console.view"] = ConsoleView
 
 console.clear()
+
 return console
 
