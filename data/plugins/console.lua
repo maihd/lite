@@ -241,8 +241,8 @@ function console.run(opt)
 end
 
 -- test parse_path
--- local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entity_processor_procs.odin(95:2)")
--- core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
+local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entities.odin(49:2) Error: Unknown attribute element name 'entity'")
+core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
 
 
 -- @region ConsoleView
@@ -297,12 +297,10 @@ function ConsoleView:on_mouse_moved(mx, my, ...)
     self.hovered_idx = 0
     for i, item, x, y, w, h in self:each_visible_line() do
         if mx >= x and my >= y and mx < x + w and my < y + h then
-            if item.text:find(item.file_pattern) then
+            if find_path(item.text) then
                 self.hovered_idx = i
-            else
-                if find_path(item.text) then
-                    self.hovered_idx = i
-                end
+            elseif item.text:find(item.file_pattern) then
+                self.hovered_idx = i
             end
 
             break
@@ -342,9 +340,9 @@ function ConsoleView:on_mouse_pressed(...)
 
     local item = output[self.hovered_idx]
     if item then
-        local file, line, col = item.text:match(item.file_pattern)
+        local file, line, col = parse_path(item.text)
         if file == nil then
-            file, line, col = parse_path(item.text)
+            file, line, col = item.text:match(item.file_pattern)
         end
 
         local resolved_file = resolve_file(file)
