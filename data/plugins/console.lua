@@ -27,8 +27,41 @@ local output_id = 0
 local visible = false
 
 
-function console.clear()
-    output = { { text = "", time = 0 } }
+local FILE_PATTERN = [[([A-Za-z]?:?[%w%s%./\\_-]*[/%\][%w%s%./\\_-]+)]]
+
+
+-- @region utils
+
+
+local function find_path(text)
+    return text:find(FILE_PATTERN)
+end
+
+
+local function parse_path(text)
+    -- Case 1: Just the path (e.g., D:/projects/main.lua)
+    local _, last, file = text:find(FILE_PATTERN)
+    if file then
+        local sub = text:sub(last + 1)
+
+        -- Case 2: Path with both line and col (e.g., D:/projects/main.lua:1:1)
+        local line, col = sub:match("^:(%d+):(%d+)")
+        if line then
+            return file, line, col
+        end
+
+        -- Case 3: Path with both line and col (e.g., D:/projects/main.lua(1:1))
+        local line, col = sub:match("^%((%d+):(%d+)%)")
+        if line then
+            return file, line, col
+        end
+
+        -- Case 4: Path with line only (e.g., D:/projects/main.lua:1)
+        local line = sub:match("^:(%d+)")
+        return file, line, nil
+    end
+
+    return file, nil, nil
 end
 
 
@@ -100,6 +133,31 @@ local function init_opt(opt)
     end
 
     return res
+end
+
+
+-- @region console
+
+
+function console.clear()
+    output = { { text = "", time = 0 } }
+end
+
+
+function console.log(text)
+    table.insert(output, {
+        text = text,
+        time = os.time(),
+        icon = "i",
+        file_pattern = FILE_PATTERN,
+    })
+
+    if #output > config.max_console_lines then
+        table.remove(output, 1)
+        for view in pairs(views) do
+            view:on_line_removed()
+        end
+    end
 end
 
 
@@ -182,45 +240,12 @@ function console.run(opt)
     if count == 1 then visible = true end
 end
 
-
-local FILE_PATTERN = [[([A-Za-z]?:?[%w%s%./\\_-]*[/%\][%w%s%./\\_-]+)]]
-
-
-local function find_path(text)
-    return text:find(FILE_PATTERN)
-end
-
-
-local function parse_path(text)
-    -- Case 1: Just the path (e.g., D:/projects/main.lua)
-    local _, last, file = text:find(FILE_PATTERN)
-    if file then
-        local sub = text:sub(last + 1)
-
-        -- Case 2: Path with both line and col (e.g., D:/projects/main.lua:1:1)
-        local line, col = sub:match("^:(%d+):(%d+)")
-        if line then
-            return file, line, col
-        end
-
-        -- Case 3: Path with both line and col (e.g., D:/projects/main.lua(1:1))
-        local line, col = sub:match("^%((%d+):(%d+)%)")
-        if line then
-            return file, line, col
-        end
-
-        -- Case 4: Path with line only (e.g., D:/projects/main.lua:1)
-        local line = sub:match("^:(%d+)")
-        return file, line, nil
-    end
-
-    return file, nil, nil
-end
-
 -- test parse_path
-local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entity_processor_procs.odin(95:2)")
-core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
+-- local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entity_processor_procs.odin(95:2)")
+-- core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
 
+
+-- @region ConsoleView
 
 
 local ConsoleView = View:extend()
