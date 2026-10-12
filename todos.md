@@ -92,6 +92,8 @@ ToDo list, order by priority.
     - Ascii art
 
 - Fix bugs:
+    - Console run will make the lite editor locked
+    - If tab close failed, the lite editor will run into unusable
     - Tab selection not worked after toggle to fullscreen (use f11 to toggle fullscreen)
     - Change tab name (usually occured when save as, saving unsaved file), does not changing the tab size
     - Create docview -> save file -> use existing file name -> existing file is written without asking.

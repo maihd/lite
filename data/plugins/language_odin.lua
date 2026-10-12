@@ -4,8 +4,8 @@ syntax.add {
     name = "Odin",
     files = { "%.odin$" },
     comment = "//",
-    scope_begin = { "{" },
-    scope_end = { "}" },
+    scope_begin = { "{", },
+    scope_end = { "}", },
     patterns = {
         { pattern = "//.-\n",                               type = "comment"  },
         { pattern = { "/%*", "%*/" },                       type = "comment"  },

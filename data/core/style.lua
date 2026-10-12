@@ -70,6 +70,7 @@ style.syntax["symbol"]      = { common.color "#e1e1e6" }
 style.syntax["comment"]     = { common.color "#676b6f" }
 style.syntax["keyword"]     = { common.color "#E58AC9" }
 style.syntax["keyword2"]    = { common.color "#F77483" }
+style.syntax["keyword3"]    = { common.color "#ed2b41" }
 style.syntax["number"]      = { common.color "#FFA94D" }
 style.syntax["literal"]     = { common.color "#FFA94D" }
 style.syntax["string"]      = { common.color "#f7c95c" }

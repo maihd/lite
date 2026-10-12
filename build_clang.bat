@@ -48,7 +48,7 @@ if "%DEBUG_BUILD%"=="true" (
 ) else (
     echo - Building in release mode
     clang src/*.c src/api/*.c src/lib/stb/*.c ^
-        -O3 -ffast-math -std=c11 -fno-strict-aliasing ^
+        -O3 -std=c11 -fno-strict-aliasing ^
         -Isrc ^
         -DNDEBUG -D_CRT_SECURE_NO_WARNINGS ^
         %NATIVE_LIBS% ^

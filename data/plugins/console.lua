@@ -64,6 +64,25 @@ local function parse_path(text)
     return file, nil, nil
 end
 
+-- test parse_path
+-- local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entities.odin(49:2) Error: Unknown attribute element name 'entity'")
+-- core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
+
+
+local function resolve_file(name)
+    if system.get_file_info(name) then
+        return name
+    end
+
+    local filenames = {}
+    for _, f in ipairs(core.project_files) do
+        table.insert(filenames, f.filename)
+    end
+
+    local t = common.fuzzy_match(filenames, name)
+    return t[1]
+end
+
 
 local function read_file(filename, offset)
     local fp = io.open(filename, "rb")
@@ -188,7 +207,9 @@ function console.run(opt)
         local function check_output_file()
             if PLATFORM == "Windows" then
                 local fp = io.open(files.output)
-                if fp then fp:close() end
+                if fp then
+                    fp:close()
+                end
             end
 
             local info = system.get_file_info(files.output)
@@ -202,7 +223,7 @@ function console.run(opt)
         -- read output file until we get a file indicating completion
         while not system.get_file_info(files.complete) do
             check_output_file()
-            coroutine.yield(0.1)
+            coroutine.yield(1.0)
         end
 
         check_output_file()
@@ -236,14 +257,14 @@ function console.run(opt)
 
     -- make sure static console is visible if it's the only ConsoleView
     local count = 0
-    for _ in pairs(views) do count = count + 1 end
-    if count == 1 then visible = true end
+    for _ in pairs(views) do -- @note(maihd): why for with pairs? because '#' in table is untrust
+        count = count + 1
+    end
+
+    if count == 1 then
+        visible = true
+    end
 end
-
--- test parse_path
-local file, line, col = parse_path("D:/projects/neonshooter-odin-fatstruct/game/entities.odin(49:2) Error: Unknown attribute element name 'entity'")
-core.log("Console pattern: " .. tostring(file) .. " " .. tostring(line) .. " " .. tostring(col))
-
 
 -- @region ConsoleView
 
@@ -306,21 +327,6 @@ function ConsoleView:on_mouse_moved(mx, my, ...)
             break
         end
     end
-end
-
-
-local function resolve_file(name)
-    if system.get_file_info(name) then
-        return name
-    end
-
-    local filenames = {}
-    for _, f in ipairs(core.project_files) do
-        table.insert(filenames, f.filename)
-    end
-
-    local t = common.fuzzy_match(filenames, name)
-    return t[1]
 end
 
 

@@ -495,6 +495,7 @@ static int f_exec(lua_State* L)
         luaL_error(L, "buffer allocation failed");
         return 0;
     }
+
 #if _WIN32
     sprintf(buf, "cmd /c \"%s\"", cmd);
     // WinExec(buf, SW_HIDE);
@@ -504,6 +505,32 @@ static int f_exec(lua_State* L)
     int res = system(buf);
     (void)res;
 #endif
+
+    free(buf);
+    return 0;
+}
+
+#if defined(_WIN32)
+#include <process.h>
+#endif
+
+
+static int f_exec_spawn(lua_State* L)
+{
+    size_t      len;
+    const char* cmd = luaL_checklstring(L, 1, &len);
+    char*       buf = malloc(len + 32);
+    if (!buf)
+    {
+        luaL_error(L, "buffer allocation failed");
+        return 0;
+    }
+
+#if defined(_WIN32)
+    sprintf(buf, "cmd /c \"%s\"", cmd);
+    _spawnl(_P_NOWAIT, "C:\\Windows\\System32\\cmd.exe", "cmd.exe", "/c", buf, nullptr);
+#endif
+
     free(buf);
     return 0;
 }
@@ -674,6 +701,7 @@ static int f_parent_directory(lua_State* L)
     return 1;
 }
 
+// @region register functions
 
 static const luaL_Reg lib_funcs[] = {
     {"poll_event",              f_poll_event            },
@@ -700,10 +728,12 @@ static const luaL_Reg lib_funcs[] = {
     {"set_clipboard",           f_set_clipboard         },
     {"get_time",                f_get_time              },
     {"sleep",                   f_sleep                 },
-    {"exec",                    f_exec                  },
     {"fuzzy_match",             f_fuzzy_match           },
     {"begin_frame",             f_begin_frame           },
     {"end_frame",               f_end_frame             },
+
+    {"exec",                    f_exec                  },
+    {"exec_spawn",              f_exec_spawn            },
 
     {"get_window_mode",         f_get_window_mode       },
     {"set_window_mode",         f_set_window_mode       },
@@ -717,8 +747,8 @@ static const luaL_Reg lib_funcs[] = {
     {"toggle_maximize_window",  f_toggle_maximize_window    },
     {"restore_maximize_window", f_restore_maximize_window   },
 
-    {"get_mouse_position",      f_get_mouse_position    },
-    {"get_global_mouse_position",      f_get_global_mouse_position    },
+    {"get_mouse_position",          f_get_mouse_position            },
+    {"get_global_mouse_position",   f_get_global_mouse_position     },
 
     {"close_window",            f_close_window          },
 

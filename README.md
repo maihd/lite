@@ -23,6 +23,9 @@ possible; easy to modify and extend, or to use without doing either.
     - The *simple* will be keep in the interfaces
     - The *implementation* will be seperated into two categories: *simple* and *optimized*.
 - This editor don't and won't support C++ editting. For C++, I will use full IDE for the jobs.
+    - Only support C++ syntaxes highlight for editting.
+    - I do practice a very C++ simple coding style, called Madness C++ (.mcx), because I `#define <keyword> DONOT_USE` all keywords I dont use.
+    - Add `keyword3` color to highlight keyword smell.
 
 Production ready Lite forks (recommended):
 - Lite XL Editor: https://lite-xl.com/

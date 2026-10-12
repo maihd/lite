@@ -2,7 +2,7 @@ local syntax = require "core.syntax"
 
 syntax.add {
     name = "C",
-    files = { "%.c$", "%.h$", "%.inl$", "%.cpp$", "%.hpp$" },
+    files = { "%.c$", "%.h$", "%.inl$" },
     comment = "//",
     scope_begin = { "{" },
     scope_end = { "}" },
