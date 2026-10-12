@@ -48,14 +48,6 @@ syntax.add {
         ["const"]    = "keyword",
         ["sizeof"]   = "keyword",
 
-        -- Custom keywords
-        ["__comptime"]      = "keyword",
-        ["__forceinline"]   = "keyword",
-
-        -- Compiler extensions keywords
-        ["__declspec"]      = "keyword",
-        ["__attribute__"]   = "keyword",
-
         -- Basic types
         ["void"]        = "keyword",
         ["int"]         = "keyword2",
@@ -119,6 +111,8 @@ syntax.add {
         ["template"]    = "keyword",
         ["typename"]    = "keyword",
         ["operator"]    = "keyword",
+        ["alignas"]     = "keyword",
+        ["alignof"]     = "keyword",
 
         -- @region banned keywords
 
@@ -141,6 +135,14 @@ syntax.add {
         ["import"]      = "keyword3",
         ["export"]      = "keyword3",
         ["module"]      = "keyword3",
+
+        -- Custom keywords
+        ["__comptime"]      = "keyword",
+        ["__forceinline"]   = "keyword",
+
+        -- Compiler extensions keywords
+        ["__declspec"]      = "keyword",
+        ["__attribute__"]   = "keyword",
     },
 }
 
