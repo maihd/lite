@@ -88,9 +88,6 @@ ToDo list, order by priority.
         - Clear
     - LogView
 
-- Issues:
-    - Ascii art
-
 - Fix bugs:
     - Console run will make the lite editor locked
     - If tab close failed, the lite editor will run into unusable
