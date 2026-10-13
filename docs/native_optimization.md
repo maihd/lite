@@ -13,3 +13,7 @@ Required:
 
 Final advices:
 - Don't touch theses landmine
+- Flags that I use to prevent float-point for pixel perfect rendering:
+```bash
+set FLOAT_FLAGS=-fno-fast-math -fno-strict-aliasing -ffp-model=strict -msse2 -mfpmath=sse -ffp-contract=off
+```

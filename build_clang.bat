@@ -32,11 +32,13 @@ if not exist .build (
     mkdir .build
 )
 
+set FLOAT_FLAGS=-fno-fast-math -fno-strict-aliasing -ffp-model=strict -msse2 -mfpmath=sse -ffp-contract=off
+
 set DEBUG_BUILD=false
 if "%DEBUG_BUILD%"=="true" (
     echo - Building in debug mode
     clang -g src/*.c src/api/*.c src/lib/stb/*.c ^
-        -std=c11 ^
+        -std=c11 %FLOAT_FLAGS% ^
         -Isrc ^
         -D_CRT_SECURE_NO_WARNINGS ^
         %NATIVE_LIBS% ^
@@ -48,7 +50,7 @@ if "%DEBUG_BUILD%"=="true" (
 ) else (
     echo - Building in release mode
     clang src/*.c src/api/*.c src/lib/stb/*.c ^
-        -O3 -std=c11 -fno-strict-aliasing -ffp-model=strict -msse2 -mfpmath=sse ^
+        -O3 -std=c11 %FLOAT_FLAGS% ^
         -Isrc ^
         -DNDEBUG -D_CRT_SECURE_NO_WARNINGS ^
         %NATIVE_LIBS% ^

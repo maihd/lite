@@ -251,10 +251,10 @@ static LiteGlyphSet* load_glyphset(LiteFont* font, int32_t idx)
 
     for (int32_t i = 0; i < NUM_GLYPHSET_CHARS; i++)
     {
-        set->glyphs[i].xadvance = ceilf(set->glyphs[i].xadvance);
+        set->glyphs[i].xadvance = floorf(set->glyphs[i].xadvance);
 
-        set->glyphs[i].xoff     = ceilf(set->glyphs[i].xoff);
-        set->glyphs[i].xoff2    = ceilf(set->glyphs[i].xoff2);
+        set->glyphs[i].xoff     = floorf(set->glyphs[i].xoff);
+        set->glyphs[i].xoff2    = floorf(set->glyphs[i].xoff2);
 
         set->glyphs[i].yoff     = floorf(set->glyphs[i].yoff + scaled_ascent);
         set->glyphs[i].yoff2    = floorf(set->glyphs[i].yoff2 + scaled_ascent + 0.5f);
@@ -403,7 +403,7 @@ LiteFont* lite_load_font(LiteStringView filename, float size)
     }
 
     // @note(maihd): tricks to fix the 'k' padding
-    if (is_monospace) 
+    if (is_monospace)
     {
         stbtt_packedchar* k = get_glyph(font, 'k');
         k->x0 -= 1;
